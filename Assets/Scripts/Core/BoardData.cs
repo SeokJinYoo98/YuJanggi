@@ -24,7 +24,7 @@ namespace Yujanggi.Core.Board
                 }
             }
         }
-        public CellData this[int z, int x]
+        public CellData this[int x, int z]
         {
             get { return _cellDatas[z, x]; }
         }

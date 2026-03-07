@@ -4,14 +4,16 @@ namespace Yujanggi.Runtime.Board
     using Yujanggi.Data.Board;
     using Yujanggi.Core.Domain;
 
-    public class Piece : MonoBehaviour
+    public class Piece : MonoBehaviour, IPiece
     {
         [SerializeField] private PieceData _data;
+     
+        public PlayerType Team  => _data.Team;
+        public PieceType  Type  => _data.Type;
 
-        private MeshFilter   _mesh;
         private void Awake()
         {
-            _mesh = GetComponent<MeshFilter>();
+   
         }
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
@@ -29,10 +31,9 @@ namespace Yujanggi.Runtime.Board
         {
             _data = data;
             transform.position = new(x, 0.1f, z);
-            _mesh.sharedMesh = _data.PieceMesh;
+            GetComponent<MeshFilter>().sharedMesh = _data.PieceMesh;
 
-            MaterialCheck();
-            
+            MaterialCheck();  
         }
         private void MaterialCheck()
         {
@@ -49,7 +50,6 @@ namespace Yujanggi.Runtime.Board
                 }
             }
         }
-
         private void SwapMaterial()
         {
             var renderer = GetComponent<MeshRenderer>();

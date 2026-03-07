@@ -11,7 +11,6 @@ namespace Yujanggi.Runtime.Board
         [SerializeField] private PieceDataBase  _pieceDB;
         [SerializeField] private Transform      _cho;
         [SerializeField] private Transform      _han;
-        
         private BoardData _boardData;
 
         private void Awake()
@@ -30,7 +29,11 @@ namespace Yujanggi.Runtime.Board
 
         }
         
-        public void SpawnPieces()
+
+
+
+        // Spawn
+        public  void SpawnPieces()
         {
             SpawnCho();
             SpawnHan();
@@ -78,9 +81,9 @@ namespace Yujanggi.Runtime.Board
             var parent = playerType == PlayerType.Cho ? _cho : _han;
             var prefab = _pieceDB.GetPrefab(playerType);
             var piece  = Instantiate(prefab, parent);
-            var data = _pieceDB.GetData(playerType, pieceType);
+            var data   = _pieceDB.GetData(playerType, pieceType);
             piece.Init(data, x, z);
+            _boardData[x, z].CurrentPiece = piece;
         }
     }
-
 }

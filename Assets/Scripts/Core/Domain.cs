@@ -1,3 +1,6 @@
+using System;
+using UnityEngine;
+
 namespace Yujanggi.Core.Domain
 {
     public struct Position
@@ -25,4 +28,28 @@ namespace Yujanggi.Core.Domain
         Soldier,    // 졸/병
         None
     }
+    public interface IPiece
+    {
+        PlayerType Team { get; }
+        PieceType  Type { get; }
+
+        // public void Highlight();
+        // public void OnMove(Vector3Int to);
+    }
+    public struct ClickCommand
+    {
+        PlayerType Type;
+        
+    }
+    public interface IPlayer
+    {
+        PlayerType Type { get; }
+        //event Action<ClickCommand> OnMouseClicked;
+        //(int x, int z) MouseClicked()
+        //{
+        //    return (1, 1);
+        //}
+    }
+
+   
 }
