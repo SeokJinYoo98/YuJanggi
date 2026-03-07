@@ -1,7 +1,7 @@
 using UnityEngine;
-namespace Yujanggi.View.Board
+namespace Yujanggi.Runtime.Board
 {
-    public class CellView : MonoBehaviour
+    public class Cell : MonoBehaviour
     {
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()

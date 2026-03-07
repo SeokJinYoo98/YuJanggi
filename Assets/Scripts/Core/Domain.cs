@@ -11,12 +11,18 @@ namespace Yujanggi.Core.Domain
     }
     public enum PlayerType
     {
-        None,
         Cho,
         Han
     }
     public enum PieceType
     {
-        Soldier
+        King,       // 궁
+        Chariot,    // 차
+        Cannon,     // 포
+        Horse,      // 마
+        Elephant,   // 상
+        Guard,      // 사
+        Soldier,    // 졸/병
+        None
     }
 }
