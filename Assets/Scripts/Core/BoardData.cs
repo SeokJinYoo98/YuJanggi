@@ -1,4 +1,5 @@
 using System;
+using Yujanggi.Core.Domain;
 
 namespace Yujanggi.Core.Board
 {
@@ -28,5 +29,6 @@ namespace Yujanggi.Core.Board
         {
             get { return _cellDatas[z, x]; }
         }
+
     }
 }

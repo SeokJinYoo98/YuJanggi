@@ -12,8 +12,8 @@ namespace Yujanggi.Runtime.Board
         [SerializeField] private PieceDataBase  _pieceDB;
         [SerializeField] private Transform      _cho;
         [SerializeField] private Transform      _han;
-        private BoardData _boardData;
-
+        private BoardData                       _boardData;
+        IPiece _currPiece   = null;
         private void Awake()
         {
             _boardData = new();
@@ -87,9 +87,22 @@ namespace Yujanggi.Runtime.Board
             _boardData[x, z].CurrentPiece = piece;
         }
 
-        public void OnClickCell(int x, int z, PlayerType type)
+        // 룰? 규칙? 1번 클릭한다.
+        public void HandleClick(int x, int z, PlayerType type)
         {
-            Debug.Log($"{x}, {z}, {type}");
+            var piece = _boardData[x, z].CurrentPiece;
+
+            // 1. 빈칸 클릭
+            if (piece == null)
+            {
+                _currPiece?.SwapMaterial();
+                _currPiece = null;
+                return;
+            }
+
+            _currPiece?.SwapMaterial();
+            _currPiece = piece;
+            _currPiece.SwapMaterial(); 
         }
     }
 }

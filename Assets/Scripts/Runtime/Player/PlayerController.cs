@@ -2,22 +2,25 @@ using UnityEngine;
 
 namespace Yujanggi.Runtime.Player
 {
+    using Core.Domain;
     using Input;
     using UnityEngine.InputSystem;
-    using Core.Domain;
 
     namespace Yujanggi.Runtime.Player
     {
         using Board;
+        using global::Yujanggi.Core.Board;
+
         public class PlayerController : MonoBehaviour, IPlayer
         {
             [SerializeField] private Camera _camera;
-            [SerializeField] private Board _board;
-            private PlayerInputs _input;
+            [SerializeField] private Board  _board;
+
+            private PlayerInputs               _input;
             private PlayerInputs.PlayerActions _actions;
 
             private PlayerType _type = PlayerType.Cho;
-            public PlayerType Type => _type;
+            public PlayerType  Type => _type;
             public void Init(PlayerType type)
                 => _type = type;
             private void Awake()
@@ -26,11 +29,13 @@ namespace Yujanggi.Runtime.Player
                 _actions = _input.Player;
             }
 
+
+            // 인풋
             private void OnEnable()
             {
-                _actions.Mouse.started   += OnPressStarted;
+                //_actions.Mouse.started   += OnPressStarted;
                 _actions.Mouse.performed += OnPressPerformed;
-                _actions.Mouse.canceled  += OnPressCanceled;
+               // _actions.Mouse.canceled  += OnPressCanceled;
 
                 _actions.Mouse.Enable();
 
@@ -41,46 +46,43 @@ namespace Yujanggi.Runtime.Player
             {
                 _actions.Mouse.Disable();
 
-                _actions.Mouse.started   -= OnPressStarted;
+                //_actions.Mouse.started   -= OnPressStarted;
                 _actions.Mouse.performed -= OnPressPerformed;
-                _actions.Mouse.canceled  -= OnPressCanceled;
+                //_actions.Mouse.canceled  -= OnPressCanceled;
 
                 _actions.MousePos.Disable();
             }
-            private void OnPressStarted(InputAction.CallbackContext context)
-            {
-                // 버튼 누름 시작
-                Debug.Log("마우스 눌림");
-                Clicked();
-            }
+
             private void OnPressPerformed(InputAction.CallbackContext context)
             {
-                // 버튼 뗐을 때 이벤트 발생
-                Debug.Log("마우스 떨어짐");
-                Clicked();
-            }
-            private void OnPressCanceled(InputAction.CallbackContext context)
-            {
-                // 드래그 등으로 취소될 경우
-                Debug.Log("마우스 취소");
+                var pos = Clicked();
+                if (!BoundaryCheck(pos.x, pos.z)) return;
+                _board.HandleClick(pos.x, pos.z, Type);
             }
 
-            private void Clicked()
+            private (int x, int z) Clicked()
             {
+                int x = -10, z = -10;
                 var mousePos = _actions.MousePos.ReadValue<Vector2>();
                 Ray ray = _camera.ScreenPointToRay(mousePos);
-
                 if (Physics.Raycast(ray, out RaycastHit hit))
                 {
                     var pos = hit.point;
 
-                    int x = Mathf.RoundToInt(pos.x);
-                    int z = Mathf.RoundToInt(pos.z);
-
-                    _board.OnClickCell(x, z, Type);
+                    x = Mathf.RoundToInt(pos.x);
+                    z = Mathf.RoundToInt(pos.z);
                 }
+                return (x, z);
             }
-
+            bool BoundaryCheck(int x, int z)
+            {
+                bool isValid = false;
+                if (BoardData.WIDTH - BoardData.WIDTH <= x && x < BoardData.WIDTH)
+                    if (BoardData.HEIGHT - BoardData.HEIGHT <= z && z < BoardData.HEIGHT)
+                        isValid = true;
+                return isValid;
+            }
+            
         }
         // 클릭, 땠을때 명령을 전송한다.
         // 플레이어 팀, 위치

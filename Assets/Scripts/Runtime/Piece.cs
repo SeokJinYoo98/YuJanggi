@@ -50,7 +50,7 @@ namespace Yujanggi.Runtime.Board
                 }
             }
         }
-        private void SwapMaterial()
+        public void SwapMaterial()
         {
             var renderer = GetComponent<MeshRenderer>();
             var mats = renderer.sharedMaterials;

@@ -32,14 +32,9 @@ namespace Yujanggi.Core.Domain
     {
         PlayerType Team { get; }
         PieceType  Type { get; }
-
+        void SwapMaterial();
         // public void Highlight();
         // public void OnMove(Vector3Int to);
-    }
-    public struct ClickCommand
-    {
-        PlayerType Type;
-        
     }
     public interface IPlayer
     {
@@ -53,7 +48,7 @@ namespace Yujanggi.Core.Domain
 
     public interface IBoard
     {
-        void OnClickCell(int x, int z, PlayerType type);
+        void HandleClick(int x, int z, PlayerType type);
     }
    
 }
