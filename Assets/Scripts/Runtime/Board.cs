@@ -1,12 +1,13 @@
 using UnityEngine;
 namespace Yujanggi.Runtime.Board
 {
+    using System;
     using System.Collections.Generic;
     using Core.Board;
     using Yujanggi.Core.Domain;
     using Yujanggi.Data.Board;
 
-    public class Board : MonoBehaviour
+    public class Board : MonoBehaviour, IBoard
     {
         [SerializeField] private PieceDataBase  _pieceDB;
         [SerializeField] private Transform      _cho;
@@ -84,6 +85,11 @@ namespace Yujanggi.Runtime.Board
             var data   = _pieceDB.GetData(playerType, pieceType);
             piece.Init(data, x, z);
             _boardData[x, z].CurrentPiece = piece;
+        }
+
+        public void OnClickCell(int x, int z, PlayerType type)
+        {
+            Debug.Log($"{x}, {z}, {type}");
         }
     }
 }

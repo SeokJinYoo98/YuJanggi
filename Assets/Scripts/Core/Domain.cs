@@ -51,5 +51,9 @@ namespace Yujanggi.Core.Domain
         //}
     }
 
+    public interface IBoard
+    {
+        void OnClickCell(int x, int z, PlayerType type);
+    }
    
 }
