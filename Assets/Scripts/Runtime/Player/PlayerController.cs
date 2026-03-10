@@ -57,7 +57,6 @@ namespace Yujanggi.Runtime.Player
                 var pos = Clicked();
                 _board.HandleClick(pos.x, pos.z, Type);
             }
-
             private (int x, int z) Clicked()
             {
                 int x = -10, z = -10;

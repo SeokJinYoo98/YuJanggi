@@ -16,10 +16,10 @@ namespace Yujanggi.Core.Board
     }
     public class BoardState : IBoardState
     {
-        private List<(int x, int z)> _highlightCells;
         public const int WIDTH = 9;
         public const int HEIGHT = 10;
 
+        private List<(int x, int z)> _highlightCells;
         private CellData[,] _board;
 
         public BoardState()
@@ -57,7 +57,9 @@ namespace Yujanggi.Core.Board
             _board[formZ, fromX].CurrentPiece = null;
         }
        
-        
+
+
+
         public void HightCell(int x, int z)
         {
             var piece = _board[z, x].CurrentPiece;
