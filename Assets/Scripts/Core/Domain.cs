@@ -29,7 +29,7 @@ namespace Yujanggi.Core.Domain
         PieceType   Type { get; }
         PlayerType  Team { get; }
         public void Highlight();
-        public void FindWays(IBoardState board, int x, int z);
+
         public void MoveTo(int x, int z);
 
     }
@@ -50,9 +50,24 @@ namespace Yujanggi.Core.Domain
     }
     public struct TurnInfo
     {
-        public TurnType             State;
-        public PlayerType           Turn;
-        public IPiece               CurrentPiece;
+        public TurnInfo(TurnType turn, PlayerType player)
+        {
+            Turn = turn;
+            Player = player;
+            Piece = null;
+            x = z = -100;
+        }
+        public TurnType             Turn;
+        public PlayerType           Player;
+        public IPiece               Piece;
         public int                  x, z;
+    }
+
+    public struct MovementInfo
+    {
+        public PlayerType Player;
+        public IPiece Piece;
+        public (int x, int z) From;
+        public (int x, int z) To;
     }
 }

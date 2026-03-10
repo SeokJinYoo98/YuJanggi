@@ -5,7 +5,7 @@ namespace Yujanggi.Core.Board
 
     public class CellData
     {
-        public IPiece   CurrentPiece;
+        public IPiece   Piece;
         public bool     Palace;
     }
 

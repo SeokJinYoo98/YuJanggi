@@ -64,7 +64,7 @@ namespace Yujanggi.Runtime.Board
             var piece = Instantiate(prefab, parent);
             var data = _pieceDB.GetData(playerType, pieceType);
             piece.Init(data, x, z);
-            _state[x, z].CurrentPiece = piece;
+            _state.GetCell(x, z).Piece = piece;
         }
     }
 }

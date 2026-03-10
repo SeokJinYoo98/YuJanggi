@@ -13,9 +13,9 @@ namespace Yujanggi.Core.Movement
 
     public abstract class Movement 
     {
-        public abstract void FindWays(IBoardState board, int x, int z, PlayerType team);
+        public abstract List<(int x, int z)> FindWays(IBoardState board, PlayerType team, int x, int z);
 
-        protected StepResult CheckCell(IBoardState board, int dx, int dz, PlayerType team)
+        protected StepResult CheckCell(IBoardState board, PlayerType team, int dx, int dz)
         {
             if (!board.BoundaryCheck(dx, dz))
                 return StepResult.Block;
@@ -31,18 +31,21 @@ namespace Yujanggi.Core.Movement
     }
     public class SoldierMovement : Movement
     {
-        public override void FindWays(IBoardState board, int x, int z, PlayerType team)
+        public override List<(int x, int z)> FindWays(
+            IBoardState board, 
+            PlayerType team, 
+            int x, int z)
         {
-            board.ClearWays();
+            List<(int, int)> ways = new();
 
-            if (CheckCell(board, x + 1, z, team) != StepResult.Block)
-                board.AddWay(x + 1, z);
-            if (CheckCell(board, x - 1, z, team) != StepResult.Block)
-                board.AddWay(x - 1, z);
-            if (CheckCell(board, x, z + 1, team) != StepResult.Block)
-                board.AddWay(x, z + 1);
+            if (CheckCell(board, team, x + 1, z) != StepResult.Block)
+                ways.Add((x + 1, z));
+            if (CheckCell(board, team, x - 1, z) != StepResult.Block)
+                ways.Add((x - 1, z));
+            if (CheckCell(board, team, x, z + 1) != StepResult.Block)
+                ways.Add((x, z + 1));
 
-            board.PrintWays();
+            return ways;
         }
     }
 }

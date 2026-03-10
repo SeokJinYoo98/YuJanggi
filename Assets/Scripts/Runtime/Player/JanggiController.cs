@@ -11,7 +11,7 @@ namespace Yujanggi.Runtime.Player
         using Board;
         using global::Yujanggi.Core.Board;
 
-        public class PlayerController : MonoBehaviour, IPlayer
+        public class JanggiController : MonoBehaviour, IPlayer
         {
             [SerializeField] private Camera _camera;
             [SerializeField] private Board  _board;

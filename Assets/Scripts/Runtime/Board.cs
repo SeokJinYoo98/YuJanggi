@@ -1,93 +1,142 @@
 using UnityEngine;
+using System.Collections.Generic;
 namespace Yujanggi.Runtime.Board
 {
     using Core.Board;
+    using System.Text;
     using Yujanggi.Core.Domain;
     using Yujanggi.Core.Rule;
-    using Yujanggi.Data.Board;
+ 
 
 
     public class Board : MonoBehaviour, IBoard
     {
-        [SerializeField] private PieceSpawner   _pieceSpawner;
-        private BoardState  _state;
+        [SerializeField] PieceSpawner   _pieceSpawner;
 
+        private BoardState  _boardState;
+        private JanggiRule  _janggiRule;
         private TurnInfo    _turnInfo;
-        private JanggiRule  _rule;
+        private bool _update = false;
+
         private void Awake()
         {
-            _rule     = new();
-            _state    = new();
-            _turnInfo = new();
-            _turnInfo.State         = TurnType.Select;
-            _turnInfo.Turn          = PlayerType.Cho;
-            _turnInfo.CurrentPiece  = null;
+            _janggiRule               = new();
+            _boardState               = new();
+            _turnInfo                 = new();
         }
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
         {
-            _pieceSpawner.SpawnPieces(_state);
+            _pieceSpawner.SpawnPieces(_boardState);
         }
 
-        public void HandleClick(int x, int z, PlayerType type)
+        void Update()
         {
-            if (_turnInfo.State == TurnType.Update) 
+            if (_update)
+            {
+                _update = UpdateBoard();
+            }
+        }
+        public void HandleClick(int x, int z, PlayerType player)
+        {
+            if (_turnInfo.Turn == TurnType.Update) 
                 return;
 
-            if (_turnInfo.State == TurnType.Select)
-                Select(x, z, type);
+            if (_turnInfo.Turn == TurnType.Select)
+                SelectPiece(x, z, player);
    
-            else if (_turnInfo.State == TurnType.Attack)
-                Attack(x, z, type);
+            else if (_turnInfo.Turn == TurnType.Attack)
+                SelectWay(x, z, player);
         }
-
-        private void Select(int x, int z, PlayerType type)
-        { 
-            // State로 옮기고
-            var piece = _state.GetPiece(x, z);
-            if (piece == null) return;
-            if (!piece.IsOwner(_turnInfo.Turn)) return;
-            _state.HightCell(x, z);
-
-            _turnInfo.CurrentPiece = piece;
-            _turnInfo.x = x; _turnInfo.z = z;
-            _turnInfo.State = TurnType.Attack;
-            
-            _turnInfo.CurrentPiece.FindWays(_state, x, z);
-        }
-
-        private void Attack(int x, int z, PlayerType type)
+        private void SelectPiece(int x, int z, PlayerType player)
         {
-            if (_state.IsValidMovement(x, z))
+            if (!IsValidInput(player)
+                || !TrySelectPiece(x, z, out var piece)) 
+                return;
+            UpdateTurnInfo(TurnType.Attack, _turnInfo.Player, piece, x, z);
+            HighlightPiece();
+            FindWays();
+            HighlightWays();
+        }
+        private void SelectWay(int x, int z, PlayerType player)
+        {
+            if (!IsValidInput(player)) return;
+            if (!TrySelectWay(x, z))
             {
-                _state.MoveTo(_turnInfo.x, _turnInfo.z, x, z);
-                _turnInfo.State = TurnType.Update;
-                _turnInfo.Turn  = PlayerType.Han;
-                _turnInfo.CurrentPiece  = null;
+                UnSelect(x, z);
+                UpdateTurnInfo(TurnType.Select, _turnInfo.Player);
+                return;
             }
-            // 리스트에 있나 본다?
-            // 없으면 -> 언셀렉트
-            // 있으면 -> 무브
-            
-            UnSelect(x, z, type);
+            MovePiece(x, z);
+            UnSelect(x, z);
+            UpdateTurnInfo(TurnType.Update, _turnInfo.Player);
         }
-
-        private void UnSelect(int x, int z, PlayerType type)
+        private bool UpdateBoard()
         {
-            _state.HightCell(_turnInfo.x, _turnInfo.z);
-            _turnInfo.CurrentPiece  = null;
-            _turnInfo.State         = TurnType.Select;
+            UpdateTurnInfo(TurnType.Select, NextPlayer());
+            return false;
         }
-        private void BoardUpdate()
+
+
+
+        private void UnSelect(int x, int z)
         {
-
+            HighlightPiece();
+            HighlightWays();
+            _boardState.ClearMovable();
         }
-
-        private void MovePiece()
+        private void UpdateTurnInfo(TurnType turn, PlayerType player, IPiece piece=null, int x=-100, int z=-100)
         {
-            
-        }
+            _turnInfo.x = x; _turnInfo.z = z;
+            _turnInfo.Turn = turn;
+            _turnInfo.Player = player;
+            _turnInfo.Piece= piece;
 
-        // 피스 관련 설정은 모두 스테이트로 옮기자.
+            if (_turnInfo.Turn == TurnType.Update) _update = true;
+        }
+        private bool TrySelectPiece(int x, int z, out IPiece piece)
+        {
+            piece = _boardState.GetPiece(x, z);
+            if (piece == null)
+                return false;
+            if (!piece.IsOwner(_turnInfo.Player))
+                return false;
+
+            return true;
+        }
+        private void HighlightPiece()
+        {
+            _turnInfo.Piece.Highlight();
+        }
+        private void FindWays()
+        {
+            _janggiRule.FindWays(_boardState, _turnInfo);
+        }
+        private void HighlightWays()
+        {
+            StringBuilder sb = new();
+            foreach (var way in _boardState.MovableCells)
+            {
+                sb.Append($"({way.x}, {way.z}) ");
+            }
+            Debug.Log("Ways: " + sb);
+        }
+        private bool IsValidInput(PlayerType player)
+        {
+            if (_turnInfo.Turn == TurnType.Update) return false;
+
+            return true; //player == _turnInfo.Player;
+        }
+        private bool TrySelectWay(int x, int z)
+        {
+            return _boardState.IsMovable(x, z);
+        }
+        private void MovePiece(int toX, int toZ)
+        {
+            int fromX = _turnInfo.x; int fromZ = _turnInfo.z;
+            var info = _boardState.MovePiece(fromX, fromZ, toX, toZ);
+        }
+        private PlayerType NextPlayer()
+            => _turnInfo.Player == PlayerType.Cho ? PlayerType.Han : PlayerType.Cho;
     }
 }

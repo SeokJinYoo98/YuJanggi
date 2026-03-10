@@ -4,25 +4,51 @@ namespace Yujanggi.Core.Rule
     using Domain;
     using System.Collections.Generic;
     using Yujanggi.Core.Board;
+    using Yujanggi.Core.Movement;
 
     public class JanggiRule
     {
-        Dictionary<PieceType, Func<TurnInfo, BoardState, List<(int x, int z)>>> _moveRules;
-        Dictionary<PieceType, List<(int, int)>> _ways;
+        private MovementRule _movementRule;
         public JanggiRule()
         {
-            _moveRules = new()
+            _movementRule = new();
+        }
+
+        public void FindWays(
+            IBoardState board,
+            TurnInfo info)
+        {
+            board.ClearMovable();
+
+            var candidate = _movementRule.CandidateWays(board, info);
+            
+            foreach(var way in candidate)
             {
-                //{PieceType.Soldier, CalcSoldier }
-            };
-            _ways = new();
-            _ways[PieceType.Soldier] = new List<(int x, int z)>
+                board.AddMovable(way.x, way.z);
+            }
+        }
+    }
+
+    public class MovementRule
+    {
+        Dictionary<PieceType, Movement> _rules;
+
+        public MovementRule()
+        {
+            _rules = new()
             {
-                (+0, 1),
-                (-1, 0),
-                (+1, 0)
+                {PieceType.Soldier, new SoldierMovement() }
             };
         }
 
+        public List<(int x, int z)> CandidateWays(
+            IBoardState board,
+            TurnInfo info)
+        {
+            if (!_rules.TryGetValue(info.Piece.Type, out var rule))
+                return new List<(int, int)>();
+
+            return rule.FindWays(board, info.Player, info.x, info.z);
+        }
     }
 }

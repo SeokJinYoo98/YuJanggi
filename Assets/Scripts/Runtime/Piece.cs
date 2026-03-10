@@ -12,7 +12,6 @@ namespace Yujanggi.Runtime.Board
     {
         [SerializeField] private PieceData _data;
 
-        private Movement _movement;
         public PieceType  Type => _data.Type;
         public PlayerType Team => _data.Team;
         public void Init(PieceData data, int x, int z)
@@ -21,23 +20,15 @@ namespace Yujanggi.Runtime.Board
             transform.position = new(x, 0.1f, z);
             GetComponent<MeshFilter>().sharedMesh = _data.PieceMesh;
             MaterialCheck();
-
-            if (_data.Type == PieceType.Soldier)
-                _movement = new SoldierMovement();
         }
 
         public void MoveTo(int x, int z)
             => transform.position = new(x, 0.1f, z);
         public bool IsOwner(PlayerType type)
             => type == _data.Team;
-
-        public void Highlight()
+        public void  Highlight()
         {
             SwapMaterial();
-        }
-        public void FindWays(IBoardState board, int x, int z)
-        {
-            _movement.FindWays(board, x, z, _data.Team);
         }
         private void MaterialCheck()
         {
@@ -63,9 +54,7 @@ namespace Yujanggi.Runtime.Board
             var mats = renderer.sharedMaterials;
             (mats[0], mats[1]) = (mats[1], mats[0]);
             renderer.sharedMaterials = mats;
-        }
-
-        
+        } 
     }
 
 }
