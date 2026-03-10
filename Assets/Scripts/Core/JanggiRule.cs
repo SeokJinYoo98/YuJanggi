@@ -1,11 +1,9 @@
 namespace Yujanggi.Core.Rule
 {
-    using System;
     using Domain;
     using System.Collections.Generic;
     using Yujanggi.Core.Board;
     using Yujanggi.Core.Movement;
-    using System.Diagnostics;
 
     public class JanggiRule
     {
@@ -30,26 +28,5 @@ namespace Yujanggi.Core.Rule
         }
     }
 
-    public class MovementRule
-    {
-        Dictionary<PieceType, Movement> _rules;
 
-        public MovementRule()
-        {
-            _rules = new()
-            {
-                {PieceType.Soldier, new SoldierMovement() }
-            };
-        }
-
-        public List<(int x, int z)> CandidateWays(
-            IBoardState board,
-            TurnInfo info)
-        {
-            if (!_rules.TryGetValue(info.Piece.Type, out var rule))
-                return new List<(int, int)>();
-
-            return rule.FindWays(board, info.Player, info.x, info.z);
-        }
-    }
 }

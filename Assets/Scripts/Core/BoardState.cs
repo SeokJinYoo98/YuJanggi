@@ -34,8 +34,17 @@ namespace Yujanggi.Core.Board
                     _board[z, x] = new CellData();
                 }
             }
+
+            for (int x = 3; x <= 5; ++x)
+            {
+                for (int z = 0; z <= 2; ++z)
+                {
+                    _board[z, x].Palace = true;
+                    _board[z + 7, x].Palace = true;
+                }
+            }
         }
-        public IPiece GetPiece(int x, int z)
+        public IPiece       GetPiece(int x, int z)
         {
             if (!BoundaryCheck(x, z)) return null;
             return _board[z, x].Piece;
@@ -48,18 +57,18 @@ namespace Yujanggi.Core.Board
 
             return new();
         }
-        public CellData GetCell(int x, int z)
+        public CellData     GetCell(int x, int z)
         {
             if (!BoundaryCheck(x, z)) return null;
             return _board[z, x];
         }
-        public void SetPiece(IPiece piece, int x, int z)
+        public void         SetPiece(IPiece piece, int x, int z)
             => _board[z, x].Piece = piece;
-        public void RemovePiece(int x, int z)
+        public void         RemovePiece(int x, int z)
             => _board[z, x] = null;
-        public bool BoundaryCheck(int x, int z)
+        public bool         BoundaryCheck(int x, int z)
             => 0 <= x && x < WIDTH && 0 <= z && z < HEIGHT;
-        public bool IsTherePiece(int x, int z, out PlayerType type)
+        public bool         IsTherePiece(int x, int z, out PlayerType type)
         {
             var p = GetPiece(x, z);
             if (p == null)

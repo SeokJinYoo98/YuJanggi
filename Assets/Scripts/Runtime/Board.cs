@@ -20,9 +20,9 @@ namespace Yujanggi.Runtime.Board
 
         private void Awake()
         {
-            _janggiRule               = new();
-            _boardState               = new();
-            _turnInfo                 = new();
+            _janggiRule = new();
+            _boardState = new();
+            _turnInfo   = new();
         }
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
@@ -37,7 +37,7 @@ namespace Yujanggi.Runtime.Board
                 _update = UpdateBoard();
             }
         }
-        public void HandleClick(int x, int z, PlayerType player)
+        public  void HandleClick(int x, int z, PlayerType player)
         {
             if (_turnInfo.Turn == TurnType.Update) 
                 return;
@@ -79,13 +79,13 @@ namespace Yujanggi.Runtime.Board
 
 
 
-        private void UnSelect(int x, int z)
+        private void        UnSelect(int x, int z)
         {
             HighlightPiece();
             HighlightWays();
             _boardState.ClearMovable();
         }
-        private void UpdateTurnInfo(TurnType turn, PlayerType player, IPiece piece=null, int x=-100, int z=-100)
+        private void        UpdateTurnInfo(TurnType turn, PlayerType player, IPiece piece=null, int x=-100, int z=-100)
         {
             _turnInfo.x = x; _turnInfo.z = z;
             _turnInfo.Turn = turn;
@@ -94,7 +94,7 @@ namespace Yujanggi.Runtime.Board
 
             if (_turnInfo.Turn == TurnType.Update) _update = true;
         }
-        private bool TrySelectPiece(int x, int z, out IPiece piece)
+        private bool        TrySelectPiece(int x, int z, out IPiece piece)
         {
             piece = _boardState.GetPiece(x, z);
             if (piece == null)
@@ -104,15 +104,15 @@ namespace Yujanggi.Runtime.Board
 
             return true;
         }
-        private void HighlightPiece()
+        private void        HighlightPiece()
         {
             _turnInfo.Piece.Highlight();
         }
-        private void FindWays()
+        private void        FindWays()
         {
             _janggiRule.FindWays(_boardState, _turnInfo);
         }
-        private void HighlightWays()
+        private void        HighlightWays()
         {
             StringBuilder sb = new();
             foreach (var way in _boardState.MovableCells)
@@ -121,22 +121,22 @@ namespace Yujanggi.Runtime.Board
             }
             Debug.Log("Ways: " + sb);
         }
-        private bool IsValidInput(PlayerType player)
+        private bool        IsValidInput(PlayerType player)
         {
             if (_turnInfo.Turn == TurnType.Update) return false;
 
             return true; //player == _turnInfo.Player;
         }
-        private bool TrySelectWay(int x, int z)
+        private bool        TrySelectWay(int x, int z)
         {
             return _boardState.IsMovable(x, z);
         }
-        private void MovePiece(int toX, int toZ)
+        private void        MovePiece(int toX, int toZ)
         {
             int fromX = _turnInfo.x; int fromZ = _turnInfo.z;
             var info = _boardState.MovePiece(fromX, fromZ, toX, toZ);
         }
-        private PlayerType NextPlayer()
+        private PlayerType  NextPlayer()
             => _turnInfo.Player == PlayerType.Cho ? PlayerType.Han : PlayerType.Cho;
     }
 }

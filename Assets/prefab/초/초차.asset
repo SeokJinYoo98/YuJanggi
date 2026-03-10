@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: "\uCD08\uCC28"
   m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Data.Board.PieceData
   _playerType: 0
-  _pieceType: 4
+  _pieceType: 1
   _mesh: {fileID: 2263991371892522459, guid: 143968ce79f25d744a27ffae99f3eeab, type: 3}
   _pieceValue: 13
