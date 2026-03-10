@@ -28,6 +28,9 @@ namespace Yujanggi.Core.Movement
 
             return StepResult.Enemy;
         }
+
+        protected int Forward(PlayerType team)
+            => team == PlayerType.Cho ? 1 : -1;
     }
     public class SoldierMovement : Movement
     {
@@ -42,8 +45,8 @@ namespace Yujanggi.Core.Movement
                 ways.Add((x + 1, z));
             if (CheckCell(board, team, x - 1, z) != StepResult.Block)
                 ways.Add((x - 1, z));
-            if (CheckCell(board, team, x, z + 1) != StepResult.Block)
-                ways.Add((x, z + 1));
+            if (CheckCell(board, team, x, z + Forward(team)) != StepResult.Block)
+                ways.Add((x, z + Forward(team)));
 
             return ways;
         }

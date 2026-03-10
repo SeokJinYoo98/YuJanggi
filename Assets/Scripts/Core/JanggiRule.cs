@@ -5,6 +5,7 @@ namespace Yujanggi.Core.Rule
     using System.Collections.Generic;
     using Yujanggi.Core.Board;
     using Yujanggi.Core.Movement;
+    using System.Diagnostics;
 
     public class JanggiRule
     {
