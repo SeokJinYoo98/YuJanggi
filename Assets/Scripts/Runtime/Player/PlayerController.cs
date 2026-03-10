@@ -20,7 +20,7 @@ namespace Yujanggi.Runtime.Player
             private PlayerInputs.PlayerActions _actions;
 
             private PlayerType _type = PlayerType.Cho;
-            public PlayerType  Type => _type;
+            public PlayerType   Type => _type;
             public void Init(PlayerType type)
                 => _type = type;
             private void Awake()
@@ -52,11 +52,9 @@ namespace Yujanggi.Runtime.Player
 
                 _actions.MousePos.Disable();
             }
-
             private void OnPressPerformed(InputAction.CallbackContext context)
             {
                 var pos = Clicked();
-                if (!BoundaryCheck(pos.x, pos.z)) return;
                 _board.HandleClick(pos.x, pos.z, Type);
             }
 
@@ -74,20 +72,7 @@ namespace Yujanggi.Runtime.Player
                 }
                 return (x, z);
             }
-            bool BoundaryCheck(int x, int z)
-            {
-                bool isValid = false;
-                if (BoardData.WIDTH - BoardData.WIDTH <= x && x < BoardData.WIDTH)
-                    if (BoardData.HEIGHT - BoardData.HEIGHT <= z && z < BoardData.HEIGHT)
-                        isValid = true;
-                return isValid;
-            }
-            
         }
-        // 클릭, 땠을때 명령을 전송한다.
-        // 플레이어 팀, 위치
-        // 그리드 좌표 변환
-        // 클릭 시스템 추가
     }
 
 }

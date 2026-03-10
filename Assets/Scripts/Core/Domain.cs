@@ -1,21 +1,16 @@
+using NUnit.Framework;
 using System;
-using UnityEngine;
-
 namespace Yujanggi.Core.Domain
 {
-    public struct Position
-    {
-        public int X;
-        public int Z;
-        public Position(int x, int z)
-        {
-            X = x; Z = z;
-        }
-    }
+    using System.Collections.Generic;
+    using UnityEngine.UIElements;
+    using Yujanggi.Core.Board;
+
     public enum PlayerType
     {
         Cho,
-        Han
+        Han,
+        None
     }
     public enum PieceType
     {
@@ -30,25 +25,34 @@ namespace Yujanggi.Core.Domain
     }
     public interface IPiece
     {
-        PlayerType Team { get; }
-        PieceType  Type { get; }
-        void SwapMaterial();
-        // public void Highlight();
-        // public void OnMove(Vector3Int to);
+        bool        IsOwner(PlayerType type);
+        PieceType   Type { get; }
+        PlayerType  Team { get; }
+        public void Highlight();
+        public void FindWays(IBoardState board, int x, int z);
+        public void MoveTo(int x, int z);
+
     }
     public interface IPlayer
     {
         PlayerType Type { get; }
-        //event Action<ClickCommand> OnMouseClicked;
-        //(int x, int z) MouseClicked()
-        //{
-        //    return (1, 1);
-        //}
     }
 
     public interface IBoard
     {
         void HandleClick(int x, int z, PlayerType type);
     }
-   
+    public enum TurnType
+    {
+        Select,
+        Attack,
+        Update
+    }
+    public struct TurnInfo
+    {
+        public TurnType             State;
+        public PlayerType           Turn;
+        public IPiece               CurrentPiece;
+        public int                  x, z;
+    }
 }
