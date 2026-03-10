@@ -16,10 +16,13 @@ namespace Yujanggi.Core.Movement
             int forward = Forward(team);
             for (int i = 0; i < 3; ++i)
             {
-                int dx = x + Dirs[i].x;
-                int dz = z + Dirs[i].z * forward;
-            }
+                var dir = Dirs[i];
+                int dx = x + dir.x;
+                int dz = z + dir.z * forward;
+                if (CheckCell(board, team, dx, dz) != StepResult.Block)
+                    ways.Add((dx, dz));
 
+            }
             return ways;
         }
     }
