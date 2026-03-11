@@ -1,11 +1,5 @@
-
-using System.Collections.Generic;
-using Yujanggi.Core.Board;
-using Yujanggi.Core.Domain;
-
 namespace Yujanggi.Core.Movement
 {
-
     public class ElephantMovement : PatternMovement
     {
         public ElephantMovement()

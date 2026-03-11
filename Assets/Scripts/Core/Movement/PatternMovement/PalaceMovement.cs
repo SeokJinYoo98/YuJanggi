@@ -1,11 +1,11 @@
-using Yujanggi.Core.Movement;
-
-public class PalaceMovement : PatternMovement
+namespace Yujanggi.Core.Movement
 {
-    public PalaceMovement()
+    public class PalaceMovement : PatternMovement
     {
-        _steps = new Step[][]
+        public PalaceMovement()
         {
+            _steps = new Step[][]
+            {
                 new [] { Step.Up},
                 new [] { Step.Down},
                 new [] { Step.Left},
@@ -14,6 +14,7 @@ public class PalaceMovement : PatternMovement
                 new [] {Step.LeftDown},
                 new [] {Step.RightUp},
                 new [] {Step.RightDown}
-        };
+            };
+        }
     }
 }

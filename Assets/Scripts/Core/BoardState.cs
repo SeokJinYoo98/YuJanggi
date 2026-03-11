@@ -70,7 +70,7 @@ namespace Yujanggi.Core.Board
         public bool         BoundaryCheck(int x, int z)
             => WIDTH - WIDTH <= x && x < WIDTH && HEIGHT - HEIGHT <= z && z < HEIGHT;
         public bool         IsTherePiece(int x, int z, out PlayerType playerTeam, out PieceType pieceType)
-        {            
+        {
             var p = GetPiece(x, z);
             if (p == null)
             {
