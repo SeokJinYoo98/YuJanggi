@@ -11,7 +11,7 @@ namespace Yujanggi.Core.Movement
     ├ JumpMovement   (포) 
     ├ Dialog         (말, 상) 
     */
-
+    
     public enum StepResult
     {
         Block, // 이동 불가
@@ -23,10 +23,14 @@ namespace Yujanggi.Core.Movement
     {
         protected static readonly (int x, int z)[] Dirs =
         {
-            (+1, +0),
-            (-1, +0),
-            (+0, +1),
-            (+0, -1)
+            (+1, +0), // 우
+            (-1, +0), // 좌
+            (+0, +1), // 상
+            (+0, -1), // 하
+            (+1, +1), // 우상
+            (+1, -1), // 우하
+            (-1, +1), // 좌상
+            (-1, -1)  // 좌하
         };
         public abstract List<(int x, int z)> FindWays(IBoardState board, PlayerType team, int x, int z);
         protected StepResult CheckCell(IBoardState board, PlayerType team, int dx, int dz)
