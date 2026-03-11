@@ -33,13 +33,16 @@ namespace Yujanggi.Core.Rule
 
         public MovementRule()
         {
+            var palace = new PalaceMovement();
             _rules = new()
             {
-                {PieceType.Soldier, new SoldierMovement() },
-                {PieceType.Chariot, new ChariotMovement() },
-                {PieceType.Cannon, new CannonMovement() },
-                {PieceType.Horse, new Horsemovement() },
-                {PieceType.Elephant, new ElephantMovement() }
+                {PieceType.Soldier,     new SoldierMovement() },
+                {PieceType.Chariot,     new ChariotMovement() },
+                {PieceType.Cannon,      new CannonMovement() },
+                {PieceType.Horse,       new Horsemovement() },
+                {PieceType.Elephant,    new ElephantMovement() },
+                {PieceType.King,        palace },
+                {PieceType.Guard,       palace }
             };
         }
 
