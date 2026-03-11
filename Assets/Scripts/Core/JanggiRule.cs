@@ -38,7 +38,8 @@ namespace Yujanggi.Core.Rule
                 {PieceType.Soldier, new SoldierMovement() },
                 {PieceType.Chariot, new ChariotMovement() },
                 {PieceType.Cannon, new CannonMovement() },
-                {PieceType.Horse, new Horsemovement() }
+                {PieceType.Horse, new Horsemovement() },
+                {PieceType.Elephant, new ElephantMovement() }
             };
         }
 
