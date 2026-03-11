@@ -22,7 +22,7 @@ namespace Yujanggi.Core.Movement
 
                     var result = CheckCell(board, team, dx, dz);
 
-                    if (result == StepResult.Block)
+                    if (result == StepResult.Block || result == StepResult.Team)
                         break;
 
                     ways.Add((dx, dz));

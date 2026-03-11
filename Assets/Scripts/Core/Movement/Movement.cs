@@ -16,7 +16,8 @@ namespace Yujanggi.Core.Movement
     {
         Block, // 이동 불가
         Empty, // 이동 가능
-        Enemy  // 이동 가능
+        Enemy, // 이동 가능
+        Team    
     }
     public abstract class Movement 
     {
@@ -33,11 +34,11 @@ namespace Yujanggi.Core.Movement
             if (!board.BoundaryCheck(dx, dz))
                 return StepResult.Block;
 
-            if (!board.IsTherePiece(dx, dz, out var pieceTeam))
+            if (!board.IsTherePiece(dx, dz, out var pieceTeam, out var _))
                 return StepResult.Empty;
 
             if (pieceTeam == team)
-                return StepResult.Block;
+                return StepResult.Team;
 
             return StepResult.Enemy;
         }
@@ -46,28 +47,25 @@ namespace Yujanggi.Core.Movement
         protected int Forward(PlayerType team)
             => team == PlayerType.Cho ? 1 : -1;
     }
-
-    public class MovementRule
+    public class StepMovement : Movement
     {
-        Dictionary<PieceType, Movement> _rules;
-
-        public MovementRule()
+        public override List<(int x, int z)> FindWays(IBoardState board, PlayerType team, int x, int z)
         {
-            _rules = new()
-            {
-                {PieceType.Soldier, new SoldierMovement() },
-                {PieceType.Chariot, new ChariotMovement() }
-            };
+            throw new System.NotImplementedException();
         }
-
-        public List<(int x, int z)> CandidateWays(
-            IBoardState board,
-            TurnInfo info)
+    }
+    public class SlideMovement : StepMovement
+    {
+        public override List<(int x, int z)> FindWays(IBoardState board, PlayerType team, int x, int z)
         {
-            if (!_rules.TryGetValue(info.Piece.Type, out var rule))
-                return new List<(int, int)>();
-
-            return rule.FindWays(board, info.Player, info.x, info.z);
+            throw new System.NotImplementedException();
+        }
+    }
+    public class DialogMovement : StepMovement
+    {
+        public override List<(int x, int z)> FindWays(IBoardState board, PlayerType team, int x, int z)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

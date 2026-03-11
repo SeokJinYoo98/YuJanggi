@@ -19,7 +19,9 @@ namespace Yujanggi.Core.Movement
                 var dir = Dirs[i];
                 int dx = x + dir.x;
                 int dz = z + dir.z * forward;
-                if (CheckCell(board, team, dx, dz) != StepResult.Block)
+
+                var result = CheckCell(board, team, dx, dz);
+                if (result != StepResult.Block && result != StepResult.Team)
                     ways.Add((dx, dz));
 
             }

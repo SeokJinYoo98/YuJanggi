@@ -27,6 +27,29 @@ namespace Yujanggi.Core.Rule
             }
         }
     }
+    public class MovementRule
+    {
+        Dictionary<PieceType, Movement> _rules;
 
+        public MovementRule()
+        {
+            _rules = new()
+            {
+                {PieceType.Soldier, new SoldierMovement() },
+                {PieceType.Chariot, new ChariotMovement() },
+                {PieceType.Cannon, new CannonMovement() }
+            };
+        }
+
+        public List<(int x, int z)> CandidateWays(
+            IBoardState board,
+            TurnInfo info)
+        {
+            if (!_rules.TryGetValue(info.Piece.Type, out var rule))
+                return new List<(int, int)>();
+
+            return rule.FindWays(board, info.Player, info.x, info.z);
+        }
+    }
 
 }

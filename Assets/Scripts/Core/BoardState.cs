@@ -9,11 +9,12 @@ namespace Yujanggi.Core.Board
     public interface IBoardState
     {
         public bool BoundaryCheck(int x, int z);
-        public bool IsTherePiece(int x, int z, out PlayerType type);
+        public bool IsTherePiece(int x, int z, out PlayerType playerTeam, out PieceType pieceType);
         public void ClearMovable();
         public void AddMovable(int x, int z);
         public bool IsMovable(int x, int z);
         public IReadOnlyList<(int x, int z)> MovableCells { get; }
+        public IPiece GetPiece(int x, int z);
 
     }
     public class BoardState : IBoardState
@@ -67,16 +68,18 @@ namespace Yujanggi.Core.Board
         public void         RemovePiece(int x, int z)
             => _board[z, x] = null;
         public bool         BoundaryCheck(int x, int z)
-            => 0 <= x && x < WIDTH && 0 <= z && z < HEIGHT;
-        public bool         IsTherePiece(int x, int z, out PlayerType type)
-        {
+            => WIDTH - WIDTH <= x && x < WIDTH && HEIGHT - HEIGHT <= z && z < HEIGHT;
+        public bool         IsTherePiece(int x, int z, out PlayerType playerTeam, out PieceType pieceType)
+        {            
             var p = GetPiece(x, z);
             if (p == null)
             {
-                type = PlayerType.None;
+                pieceType = PieceType.None;
+                playerTeam = PlayerType.None;
                 return false;
             }
-            type = p.Team;
+            pieceType = p.Type;
+            playerTeam = p.Team;
             return true;
         }
 
