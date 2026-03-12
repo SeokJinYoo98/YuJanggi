@@ -13,8 +13,9 @@ namespace Yujanggi.Core.Board
         public void ClearMovable();
         public void AddMovable(int x, int z);
         public bool IsMovable(int x, int z);
-        public IReadOnlyList<(int x, int z)> MovableCells { get; }
-        public IPiece GetPiece(int x, int z);
+        public      IReadOnlyList<(int x, int z)> MovableCells { get; }
+        public      IPiece GetPiece(int x, int z);
+        public bool IsPalace(int x, int z);
 
     }
     public class BoardState : IBoardState
@@ -92,5 +93,7 @@ namespace Yujanggi.Core.Board
         public bool IsMovable(int x, int z)
             => _movableCells.Contains((x, z));
         public IReadOnlyList<(int x, int z)> MovableCells => _movableCells;
+        public bool IsPalace(int x, int z)
+            => _board[z, x].Palace;
     }
 }

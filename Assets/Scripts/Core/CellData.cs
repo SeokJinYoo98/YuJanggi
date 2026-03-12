@@ -8,5 +8,8 @@ namespace Yujanggi.Core.Board
         public IPiece   Piece;
         public bool     Palace;
     }
+    public class PalaceData : CellData
+    {
 
+    }
 }

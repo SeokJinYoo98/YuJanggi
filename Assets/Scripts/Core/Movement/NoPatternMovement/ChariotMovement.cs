@@ -16,6 +16,7 @@ namespace Yujanggi.Core.Movement
                 while (true)
                 {
                     ApplyStep(step, team, ref dx, ref dz);
+                    if (!board.BoundaryCheck(dx, dz)) break;
                     if (board.IsTherePiece(dx, dz, out var team2, out var _))
                     {
                         if (team2 != team)
