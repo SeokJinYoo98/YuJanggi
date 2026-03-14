@@ -1,6 +1,7 @@
 
 
 using Mono.Cecil.Cil;
+using System;
 using System.Collections.Generic;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
@@ -45,53 +46,135 @@ namespace Yujanggi.Core.Movement
                 case PieceType.Chariot:
                     Chariot(board, team, x, z, ways);
                     break;
+
+                case PieceType.Cannon:
+                    Cannon(board, team, x, z, ways);
+                    break;
+                default:
+                    break;
             }
 
             return ways;
         }
-
-
-        private void Default(IBoardState board, PlayerType team, int x, int z, List<(int x, int z)> ways)
+        private void Default(IBoardState board, PlayerType team, int x, int z, List<(int, int)> ways)
         {
-            if (_palaceLinks.TryGetValue((x, z), out var steps))
+            ProcessPalaceMove(board, team, x, z, ways, DefaultStep);
+        }
+
+        private void Chariot(IBoardState board, PlayerType team, int x, int z, List<(int, int)> ways)
+        {
+            ProcessPalaceMove(board, team, x, z, ways, ChariotStep);
+        }
+
+        private void Cannon(IBoardState board, PlayerType team, int x, int z, List<(int, int)> ways)
+        {
+            ProcessPalaceMove(board, team, x, z, ways, CannonStep);
+        }
+        private void ProcessPalaceMove(
+            IBoardState board,
+            PlayerType team,
+            int x,
+            int z,
+            List<(int x, int z)> ways,
+            Func<IBoardState, PlayerType, Step, int, int, List<(int, int)>, bool> handler)
+        {
+            if (!_palaceLinks.TryGetValue((x, z), out var steps))
+                return;
+
+            foreach (var step in steps)
             {
-                foreach (var step in steps)
-                {
-                    int dx = x; int dz = z;
+                handler(board, team, step, x, z, ways);
+            }
+        }
+        private bool DefaultStep(
+            IBoardState board,
+            PlayerType team,
+            Step step,
+            int x,
+            int z,
+            List<(int, int)> ways)
+        {
+            int dx = x;
+            int dz = z;
+
+            ApplyStep(step, ref dx, ref dz);
+
+            var result = CheckCell(board, team, dx, dz);
+
+            if (result == StepResult.Empty || result == StepResult.Enemy)
+                ways.Add((dx, dz));
+
+            return true;
+        }
+        private bool ChariotStep(
+            IBoardState board,
+            PlayerType team,
+            Step step,
+            int x,
+            int z,
+            List<(int, int)> ways)
+        {
+            int dx = x;
+            int dz = z;
+
+            ApplyStep(step, ref dx, ref dz);
+
+            switch (CheckCell(board, team, dx, dz))
+            {
+                case StepResult.Empty:
+                    ways.Add((dx, dz));
+
                     ApplyStep(step, ref dx, ref dz);
+
+                    if (!board.IsPalace(dx, dz))
+                        return true;
+
                     var result = CheckCell(board, team, dx, dz);
 
                     if (result == StepResult.Empty || result == StepResult.Enemy)
                         ways.Add((dx, dz));
-                }
+
+                    break;
+
+                case StepResult.Enemy:
+                    ways.Add((dx, dz));
+                    break;
             }
 
-
+            return true;
         }
-        private void Chariot(IBoardState board, PlayerType team, int x, int z, List<(int x, int z)> ways)
+        private bool CannonStep(
+            IBoardState board,
+            PlayerType team,
+            Step step,
+            int x,
+            int z,
+            List<(int, int)> ways)
         {
-            if (_palaceLinks.TryGetValue((x, z), out var steps))
+            int dx = x;
+            int dz = z;
+
+            ApplyStep(step, ref dx, ref dz);
+
+            switch (CheckCell(board, team, dx, dz))
             {
-                foreach (var step in steps)
-                {
-                    int dx = x; int dz = z;
+                case StepResult.Team:
+                case StepResult.Enemy:
+
                     ApplyStep(step, ref dx, ref dz);
-                    switch (CheckCell(board, team, dx, dz))
-                    {
-                        case StepResult.Empty:
-                            ways.Add((dx, dz));
-                            ApplyStep(step, ref dx, ref dz);
-                            if (!board.IsPalace(dx, dz)) break;
-                            var result = CheckCell(board, team, dx, dz);
-                            if (result == StepResult.Empty || result == StepResult.Enemy)
-                                ways.Add((dx, dz));
-                            break;
-                        case StepResult.Enemy:
-                            ways.Add((dx, dz));
-                            break;
-                    }
-                }
+
+                    if (!board.IsPalace(dx, dz))
+                        return true;
+
+                    var result = CheckCell(board, team, dx, dz);
+
+                    if (result == StepResult.Empty || result == StepResult.Enemy)
+                        ways.Add((dx, dz));
+
+                    break;
             }
+
+            return true;
         }
     }
 }

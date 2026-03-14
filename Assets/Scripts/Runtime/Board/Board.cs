@@ -85,7 +85,7 @@ namespace Yujanggi.Runtime.Board
             HighlightPiece();
             HighlightWays();
         }
-        private void        UpdateTurnInfo(TurnType turn, PlayerType player, IPiece piece=null, int x=-100, int z=-100)
+        private void UpdateTurnInfo(TurnType turn, PlayerType player, IPiece piece=null, int x=-100, int z=-100)
         {
             _turnInfo.x = x; _turnInfo.z = z;
             _turnInfo.Turn = turn;
@@ -99,10 +99,8 @@ namespace Yujanggi.Runtime.Board
             piece = _boardState.GetPiece(x, z);
             if (piece == null)
                 return false;
-            if (!piece.IsOwner(_turnInfo.Player))
-                return false;
 
-            return true;
+            return piece.IsOwner(_turnInfo.Player);
         }
         private void        HighlightPiece()
         {

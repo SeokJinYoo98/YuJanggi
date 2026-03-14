@@ -12,17 +12,23 @@ namespace Yujanggi.Runtime.Board
         private List<CellHighlighter> _active;
         void Awake()
         {
-            _active = new(25);
+            _active = new List<CellHighlighter>(25);
+
             _pool = new ObjectPool<CellHighlighter>(
-                createFunc     : ()         => Instantiate(_prefab, transform),
-                actionOnGet    : obj        => obj.gameObject.SetActive(true),
-                actionOnRelease: obj        => obj.gameObject.SetActive(false),
-                actionOnDestroy: obj        => Destroy(obj.gameObject),
-                collectionCheck: false,
-                defaultCapacity: 10,
-                maxSize        : 25
+                () => Instantiate(_prefab, transform),
+                obj => obj.Show(),
+                obj => obj.Hide(),
+                obj => Destroy(obj.gameObject),
+                false,
+                25,
+                25
             );
+
+            // 미리 생성
+            for (int i = 0; i < 25; i++)
+                _pool.Release(_pool.Get());
         }
+        // [ToDo] 프레임 드랍
         public void Highlight(IReadOnlyList<(int x, int z)> cells)
         {
             Clear();

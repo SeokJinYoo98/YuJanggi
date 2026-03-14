@@ -5,15 +5,20 @@ namespace Yujanggi.Runtime.Board
 {
     public class CellHighlighter : MonoBehaviour
     {
-        private void OnEnable()
+        Renderer _renderer;
+        private void Awake()
         {
-
+            _renderer = GetComponent<Renderer>();
         }
-        private void OnDisable()
+        public void Show()
         {
-            
+            _renderer.enabled = true;
         }
 
+        public void Hide()
+        {
+            _renderer.enabled = false;
+        }
         public void MoveTo(Vector3 pos)
         {
             transform.position = pos;

@@ -22,15 +22,9 @@ namespace Yujanggi.Core.Rule
             board.ClearMovable();
 
             var candidates = _movementRule.CandidateWays(board, info);
-            
-            // [TODO] 필터 궁 룰 추 가.
             _palaceRule.ApplyPalaceRule(board, info, candidates);
 
-
-            foreach (var way in candidates)
-            {
-                board.AddMovable(way.x, way.z);
-            }
+            board.AddMovable(candidates);
         }
     }
     

@@ -12,7 +12,7 @@ namespace Yujanggi.Core.Board
         public bool BoundaryCheck(int x, int z);
         public bool IsTherePiece(int x, int z, out PlayerType playerTeam, out PieceType pieceType);
         public void ClearMovable();
-        public void AddMovable(int x, int z);
+        public void AddMovable(List<(int x, int z)> ways);
         public bool IsMovable(int x, int z);
         public      IReadOnlyList<(int x, int z)> MovableCells { get; }
         public      IPiece GetPiece(int x, int z);
@@ -90,11 +90,11 @@ namespace Yujanggi.Core.Board
         }
 
 
-        private List<(int x, int z)> _movableCells = new();
+        private List<(int x, int z)> _movableCells = new(25);
         public void ClearMovable()
             => _movableCells.Clear();
-        public void AddMovable(int x, int z)
-            => _movableCells.Add((x, z));
+        public void AddMovable(List<(int x, int z)> ways)
+            => _movableCells.AddRange(ways);
         public bool IsMovable(int x, int z)
             => _movableCells.Contains((x, z));
         public IReadOnlyList<(int x, int z)> MovableCells => _movableCells;
