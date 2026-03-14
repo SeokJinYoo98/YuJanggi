@@ -53,38 +53,44 @@ namespace Yujanggi.Core.Movement
 
         private void Default(IBoardState board, PlayerType team, int x, int z, List<(int x, int z)> ways)
         {
-            var steps = _palaceLinks[(x, z)];
-            foreach(var step in steps)
+            if (_palaceLinks.TryGetValue((x, z), out var steps))
             {
-                int dx = x; int dz = z;
-                ApplyStep(step, ref dx, ref dz);
-                var result = CheckCell(board, team, dx, dz);
+                foreach (var step in steps)
+                {
+                    int dx = x; int dz = z;
+                    ApplyStep(step, ref dx, ref dz);
+                    var result = CheckCell(board, team, dx, dz);
 
-                if (result == StepResult.Empty || result == StepResult.Enemy)
-                    ways.Add((dx, dz));
+                    if (result == StepResult.Empty || result == StepResult.Enemy)
+                        ways.Add((dx, dz));
+                }
             }
+
+
         }
         private void Chariot(IBoardState board, PlayerType team, int x, int z, List<(int x, int z)> ways)
         {
-            var steps = _palaceLinks[(x, z)];
-            foreach(var step in steps)
+            if (_palaceLinks.TryGetValue((x, z), out var steps))
             {
-                int dx = x; int dz = z;
-                ApplyStep(step, ref dx, ref dz);
-                switch(CheckCell(board, team, dx, dz))
+                foreach (var step in steps)
                 {
-                    case StepResult.Empty:
-                        ways.Add((dx, dz));
-                        ApplyStep(step, ref dx, ref dz);
-                        if (!board.IsPalace(dx, dz)) break;
-                        var result = CheckCell(board, team, dx, dz);
-                        if (result == StepResult.Empty || result == StepResult.Enemy)
+                    int dx = x; int dz = z;
+                    ApplyStep(step, ref dx, ref dz);
+                    switch (CheckCell(board, team, dx, dz))
+                    {
+                        case StepResult.Empty:
                             ways.Add((dx, dz));
-                        break;
-                    case StepResult.Enemy:
-                        ways.Add((dx, dz));
-                        break;
-                }     
+                            ApplyStep(step, ref dx, ref dz);
+                            if (!board.IsPalace(dx, dz)) break;
+                            var result = CheckCell(board, team, dx, dz);
+                            if (result == StepResult.Empty || result == StepResult.Enemy)
+                                ways.Add((dx, dz));
+                            break;
+                        case StepResult.Enemy:
+                            ways.Add((dx, dz));
+                            break;
+                    }
+                }
             }
         }
     }
