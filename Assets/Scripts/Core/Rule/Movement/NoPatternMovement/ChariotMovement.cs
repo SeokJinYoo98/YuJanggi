@@ -10,12 +10,13 @@ namespace Yujanggi.Core.Movement
         public override List<(int x, int z)> FindWays(IBoardState board, PlayerType team, int x, int z)
         {
             List<(int x, int z)> ways = new();
+            var bottom = board.BottomPalyer;
             foreach (var step in _steps)
             {
                 int dx = x; int dz = z;
                 while (true)
                 {
-                    ApplyStep(step, team, ref dx, ref dz);
+                    ApplyStep(step, team, bottom, ref dx, ref dz);
                     if (!board.BoundaryCheck(dx, dz)) break;
                     if (board.IsTherePiece(dx, dz, out var team2, out var _))
                     {

@@ -8,6 +8,7 @@ namespace Yujanggi.Core.Board
 {
     public interface IBoardState
     {
+        public PlayerType BottomPalyer { get; }
         public bool BoundaryCheck(int x, int z);
         public bool IsTherePiece(int x, int z, out PlayerType playerTeam, out PieceType pieceType);
         public void ClearMovable();
@@ -24,8 +25,10 @@ namespace Yujanggi.Core.Board
         private int         HEIGHT = 10;
         private CellData[,] _board;
  
-        public BoardState(int width = 9, int height = 10)
+        public BoardState(int width = 9, int height = 10, PlayerType bottom = PlayerType.Cho)
         {
+            _bottom = bottom;
+            
             WIDTH = width; HEIGHT = height;
             _board = new CellData[HEIGHT, WIDTH];
 
@@ -46,6 +49,8 @@ namespace Yujanggi.Core.Board
                 }
             }
         }
+        private PlayerType _bottom;
+        public PlayerType BottomPalyer => _bottom;
         public IPiece       GetPiece(int x, int z)
         {
             if (!BoundaryCheck(x, z)) return null;
@@ -94,6 +99,12 @@ namespace Yujanggi.Core.Board
             => _movableCells.Contains((x, z));
         public IReadOnlyList<(int x, int z)> MovableCells => _movableCells;
         public bool IsPalace(int x, int z)
-            => _board[z, x].Palace;
+        {
+            if (!BoundaryCheck(x, z)) 
+                return false;
+            
+            return _board[z, x].Palace;
+        }
+           
     }
 }

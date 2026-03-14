@@ -7,7 +7,10 @@ namespace Yujanggi.Core.Movement
     public class PatternMovement : Movement
     {
         protected Step[][] _steps;
-        public override List<(int x, int z)> FindWays(IBoardState board, PlayerType team, int x, int z)
+        public override List<(int x, int z)> FindWays(
+            IBoardState board, 
+            PlayerType team, 
+            int x, int z)
         {
             List<(int x, int z)> ways = new();
 
@@ -20,18 +23,17 @@ namespace Yujanggi.Core.Movement
             List<(int x, int z)> ways,
             IBoardState board,
             PlayerType team,
-            int x,
-            int z,
+            int x, int z,
             Step[] steps)
         {
             int dx = x;
             int dz = z;
 
             int len = steps.Length;
-
+            var bottom = board.BottomPalyer;
             for (int j = 0; j < len; ++j)
             {
-                ApplyStep(steps[j], team, ref dx, ref dz);
+                ApplyStep(steps[j], team, bottom, ref dx, ref dz);
 
                 if (j < len - 1)
                 {

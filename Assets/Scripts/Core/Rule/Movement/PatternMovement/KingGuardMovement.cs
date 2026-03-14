@@ -1,8 +1,8 @@
 namespace Yujanggi.Core.Movement
 {
-    public class PalaceMovement : PatternMovement
+    public class KingGuardMovement : PatternMovement
     {
-        public PalaceMovement()
+        public KingGuardMovement()
         {
             _steps = new Step[][]
             {

@@ -8,11 +8,11 @@ namespace Yujanggi.Core.Rule
 
     public class MovementRule
     {
-        Dictionary<PieceType, Movement> _rules;
+        readonly Dictionary<PieceType, Movement> _rules;
 
         public MovementRule()
         {
-            var palace = new PalaceMovement();
+            var skg = new KingGuardMovement();
             _rules = new()
             {
                 {PieceType.Soldier,     new SoldierMovement() },
@@ -20,8 +20,8 @@ namespace Yujanggi.Core.Rule
                 {PieceType.Cannon,      new CannonMovement() },
                 {PieceType.Horse,       new Horsemovement() },
                 {PieceType.Elephant,    new ElephantMovement() },
-                {PieceType.King,        palace },
-                {PieceType.Guard,       palace }
+                {PieceType.King,        skg },
+                {PieceType.Guard,       skg }
             };
         }
 

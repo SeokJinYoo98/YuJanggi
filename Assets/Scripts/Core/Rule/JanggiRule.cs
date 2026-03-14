@@ -1,7 +1,6 @@
 namespace Yujanggi.Core.Rule
 {
     using Domain;
-    using System.Collections.Generic;
     using Yujanggi.Core.Board;
     
 
@@ -11,6 +10,7 @@ namespace Yujanggi.Core.Rule
         private PalaceRule   _palaceRule;
         public JanggiRule()
         {
+            
             _movementRule = new();
             _palaceRule = new();
         }
@@ -22,6 +22,8 @@ namespace Yujanggi.Core.Rule
             board.ClearMovable();
 
             var candidates = _movementRule.CandidateWays(board, info);
+            
+            // [TODO] 필터 궁 룰 추 가.
             _palaceRule.ApplyPalaceRule(board, info, candidates);
 
 
