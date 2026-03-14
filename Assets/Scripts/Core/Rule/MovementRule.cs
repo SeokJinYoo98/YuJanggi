@@ -12,7 +12,7 @@ namespace Yujanggi.Core.Rule
 
         public MovementRule()
         {
-            var skg = new KingGuardMovement();
+            var kg = new KingGuardMovement();
             _rules = new()
             {
                 {PieceType.Soldier,     new SoldierMovement() },
@@ -20,14 +20,14 @@ namespace Yujanggi.Core.Rule
                 {PieceType.Cannon,      new CannonMovement() },
                 {PieceType.Horse,       new Horsemovement() },
                 {PieceType.Elephant,    new ElephantMovement() },
-                {PieceType.King,        skg },
-                {PieceType.Guard,       skg }
+                {PieceType.King,        kg },
+                {PieceType.Guard,       kg }
             };
         }
 
         public List<(int x, int z)> CandidateWays(
             IBoardState board,
-            TurnInfo info)
+            in TurnInfo info)
         {
             if (!_rules.TryGetValue(info.Piece.Type, out var rule))
                 return new List<(int, int)>();

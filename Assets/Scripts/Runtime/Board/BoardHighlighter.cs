@@ -15,7 +15,7 @@ namespace Yujanggi.Runtime.Board
             _active = new List<CellHighlighter>(25);
 
             _pool = new ObjectPool<CellHighlighter>(
-                () => Instantiate(_prefab, transform),
+                ()  => Instantiate(_prefab, transform),
                 obj => obj.Show(),
                 obj => obj.Hide(),
                 obj => Destroy(obj.gameObject),
@@ -24,11 +24,9 @@ namespace Yujanggi.Runtime.Board
                 25
             );
 
-            // 미리 생성
             for (int i = 0; i < 25; i++)
                 _pool.Release(_pool.Get());
         }
-        // [ToDo] 프레임 드랍
         public void Highlight(IReadOnlyList<(int x, int z)> cells)
         {
             Clear();

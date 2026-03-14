@@ -1,14 +1,11 @@
-using NUnit.Framework;
-using System;
 using System.Collections.Generic;
 using Yujanggi.Core.Domain;
-using UnityEngine;
-using Yujanggi.Core.Movement;
+
 namespace Yujanggi.Core.Board
 {
     public interface IBoardState
     {
-        public PlayerType BottomPalyer { get; }
+        public PlayerType BottomPlayer { get; }
         public bool BoundaryCheck(int x, int z);
         public bool IsTherePiece(int x, int z, out PlayerType playerTeam, out PieceType pieceType);
         public void ClearMovable();
@@ -21,8 +18,8 @@ namespace Yujanggi.Core.Board
     }
     public class BoardState : IBoardState
     {
-        private int         WIDTH  = 9;
-        private int         HEIGHT = 10;
+        private readonly int         WIDTH  = 9;
+        private readonly int         HEIGHT = 10;
         private CellData[,] _board;
  
         public BoardState(int width = 9, int height = 10, PlayerType bottom = PlayerType.Cho)
@@ -50,19 +47,18 @@ namespace Yujanggi.Core.Board
             }
         }
         private PlayerType _bottom;
-        public PlayerType BottomPalyer => _bottom;
+        public PlayerType   BottomPlayer => _bottom;
         public IPiece       GetPiece(int x, int z)
         {
             if (!BoundaryCheck(x, z)) return null;
             return _board[z, x].Piece;
         }
-        public MovementInfo MovePiece(int fromX, int formZ, int toX, int toZ)
+        public void MovePiece(int fromX, int fromZ, int toX, int toZ, out IPiece killed)
         {
-            _board[formZ, fromX].Piece?.MoveTo(toX, toZ);
-            _board[toZ, toX].Piece = _board[formZ, fromX].Piece;
-            _board[formZ, fromX].Piece = null;
-
-            return new();
+            _board[fromZ, fromX].Piece?.MoveTo(toX, toZ);
+            killed = _board[toZ, toX].Piece;
+            _board[toZ, toX].Piece = _board[fromZ, fromX].Piece;
+            RemovePiece(fromX, fromX);
         }
         public CellData     GetCell(int x, int z)
         {
@@ -72,9 +68,12 @@ namespace Yujanggi.Core.Board
         public void         SetPiece(IPiece piece, int x, int z)
             => _board[z, x].Piece = piece;
         public void         RemovePiece(int x, int z)
-            => _board[z, x] = null;
+            => _board[z, x].Piece = null;
         public bool         BoundaryCheck(int x, int z)
-            => WIDTH - WIDTH <= x && x < WIDTH && HEIGHT - HEIGHT <= z && z < HEIGHT;
+        {
+            return 0 <= x && x < WIDTH && 0 <= z && z < HEIGHT;
+        }
+
         public bool         IsTherePiece(int x, int z, out PlayerType playerTeam, out PieceType pieceType)
         {
             var p = GetPiece(x, z);

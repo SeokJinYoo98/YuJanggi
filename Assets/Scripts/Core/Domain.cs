@@ -7,11 +7,7 @@ namespace Yujanggi.Core.Domain
     using Yujanggi.Core.Board;
 
     public enum PlayerType
-    {
-        Cho,
-        Han,
-        None
-    }
+    { Cho, Han, None }
     public enum PieceType
     {
         King,       // 궁
@@ -29,11 +25,10 @@ namespace Yujanggi.Core.Domain
         PieceType   Type { get; }
         PlayerType  Team { get; }
         public void Highlight();
-
         public void MoveTo(int x, int z);
 
     }
-    public interface IPlayer
+    public interface IPlayerController
     {
         PlayerType Type { get; }
     }

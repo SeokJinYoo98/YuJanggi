@@ -10,7 +10,7 @@ namespace Yujanggi.Core.Movement
         public override List<(int x, int z)> FindWays(IBoardState board, PlayerType team, int x, int z)
         {
             List<(int x, int z)> ways = new();
-            var bottom = board.BottomPalyer;
+            var bottom = board.BottomPlayer;
             foreach (var step in _steps)
             {
                 int dx = x; int dz = z;

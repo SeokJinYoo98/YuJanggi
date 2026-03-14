@@ -14,7 +14,7 @@ namespace Yujanggi.Core.Movement
         {
             List<(int x, int z)> ways = new();
 
-            var bottom = board.BottomPalyer;
+            var bottom = board.BottomPlayer;
             foreach (var step in _steps)
             {
                 bool bridge = false;

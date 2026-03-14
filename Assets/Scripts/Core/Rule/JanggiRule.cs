@@ -17,16 +17,15 @@ namespace Yujanggi.Core.Rule
 
         public void FindWays(
             IBoardState board,
-            TurnInfo info)
+            in TurnInfo info)
         {
             board.ClearMovable();
 
+            // 리스트 최소화!!!
             var candidates = _movementRule.CandidateWays(board, info);
-            _palaceRule.ApplyPalaceRule(board, info, candidates);
+            _palaceRule.ApplyPalaceRule(board, in info, candidates);
 
             board.AddMovable(candidates);
         }
     }
-    
-
 }

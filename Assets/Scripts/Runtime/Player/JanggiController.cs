@@ -9,9 +9,8 @@ namespace Yujanggi.Runtime.Player
     namespace Yujanggi.Runtime.Player
     {
         using Board;
-        using global::Yujanggi.Core.Board;
 
-        public class JanggiController : MonoBehaviour, IPlayer
+        public class JanggiController : MonoBehaviour, IPlayerController
         {
             [SerializeField] private Camera _camera;
             [SerializeField] private Board  _board;
@@ -65,7 +64,7 @@ namespace Yujanggi.Runtime.Player
                 if (Physics.Raycast(ray, out RaycastHit hit))
                 {
                     var pos = hit.point;
-
+                   
                     x = Mathf.RoundToInt(pos.x);
                     z = Mathf.RoundToInt(pos.z);
                 }

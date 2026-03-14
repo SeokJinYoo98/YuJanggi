@@ -1,3 +1,4 @@
+using UnityEngine;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Movement;
@@ -26,7 +27,8 @@ namespace Yujanggi.Utills.Board
 
         public static bool IsBottomPlayer(IBoardState board, PlayerType team)
         {
-            return board.BottomPalyer == team;
+            return board.BottomPlayer == team;
         }
+
     }
 }

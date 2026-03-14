@@ -30,7 +30,7 @@ namespace Yujanggi.Core.Movement
             int dz = z;
 
             int len = steps.Length;
-            var bottom = board.BottomPalyer;
+            var bottom = board.BottomPlayer;
             for (int j = 0; j < len; ++j)
             {
                 ApplyStep(steps[j], team, bottom, ref dx, ref dz);

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7576599251126733646}
   - component: {fileID: 6216765477309133829}
   - component: {fileID: 6841181739881823339}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: HanPiece
   m_TagString: Untagged
   m_Icon: {fileID: 0}

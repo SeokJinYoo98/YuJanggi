@@ -18,6 +18,8 @@ namespace Yujanggi.Runtime.Board
         private TurnInfo    _turnInfo;
         private bool _update = false;
 
+        private List<(IPiece, int x, int z)> _hanDied = new();
+        private List<(IPiece, int x, int z)> _choDied = new();
         private void Awake()
         {
             _janggiRule = new();
@@ -39,14 +41,17 @@ namespace Yujanggi.Runtime.Board
         }
         public  void HandleClick(int x, int z, PlayerType player)
         {
-            if (_turnInfo.Turn == TurnType.Update) 
-                return;
-
-            if (_turnInfo.Turn == TurnType.Select)
-                SelectPiece(x, z, player);
-   
-            else if (_turnInfo.Turn == TurnType.Attack)
-                SelectWay(x, z, player);
+            switch(_turnInfo.Turn)
+            {
+                case TurnType.Update:
+                    break;
+                case TurnType.Select:
+                    SelectPiece(x, z, player);
+                    break;
+                case TurnType.Attack:
+                    SelectWay(x, z, player);
+                    break;
+            }
         }
         private void SelectPiece(int x, int z, PlayerType player)
         {
@@ -77,8 +82,6 @@ namespace Yujanggi.Runtime.Board
             return false;
         }
 
-
-
         private void UnSelect(int x, int z)
         {
             _boardState.ClearMovable(); 
@@ -88,9 +91,9 @@ namespace Yujanggi.Runtime.Board
         private void UpdateTurnInfo(TurnType turn, PlayerType player, IPiece piece=null, int x=-100, int z=-100)
         {
             _turnInfo.x = x; _turnInfo.z = z;
-            _turnInfo.Turn = turn;
+            _turnInfo.Turn   = turn;
             _turnInfo.Player = player;
-            _turnInfo.Piece= piece;
+            _turnInfo.Piece  = piece;
 
             if (_turnInfo.Turn == TurnType.Update) _update = true;
         }
@@ -127,7 +130,43 @@ namespace Yujanggi.Runtime.Board
         private void        MovePiece(int toX, int toZ)
         {
             int fromX = _turnInfo.x; int fromZ = _turnInfo.z;
-            var info = _boardState.MovePiece(fromX, fromZ, toX, toZ);
+            _boardState.MovePiece(fromX, fromZ, toX, toZ, out var killed);
+            
+            // 임시 코드
+            if (killed != null)
+            {
+                var type = killed.Team;
+                switch (type)
+                {
+                    case PlayerType.Cho:
+                        if (_choDied.Count > 0)
+                        {
+                            var last = _choDied[^1];
+                            _choDied.Add((killed, last.Item2 + 1, last.Item3));
+                        }
+                        else
+                        {
+                            _choDied.Add((killed, 0, -4)); // 초기 좌표 예시
+                        }
+                        var x = _choDied[^1];
+                        killed.MoveTo(x.x, x.z);
+                        break;
+
+                    case PlayerType.Han:
+                        if (_hanDied.Count > 0)
+                        {
+                            var last = _hanDied[^1];
+                            _hanDied.Add((killed, last.Item2 + 1, last.Item3));
+                        }
+                        else
+                        {
+                            _hanDied.Add((killed, 0, -3)); // 초기 좌표 예시
+                        }
+                        var z = _hanDied[^1];
+                        killed.MoveTo(z.x, z.z);
+                        break;
+                }
+            }
         }
         private PlayerType  NextPlayer()
             => _turnInfo.Player == PlayerType.Cho ? PlayerType.Han : PlayerType.Cho;
