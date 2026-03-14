@@ -27,12 +27,12 @@ namespace Yujanggi.Core.Rule
 
         public List<(int x, int z)> CandidateWays(
             IBoardState board,
-            in TurnInfo info)
+            in BoardInfo info)
         {
             if (!_rules.TryGetValue(info.Piece.Type, out var rule))
                 return new List<(int, int)>();
 
-            return rule.FindWays(board, info.Player, info.x, info.z);
+            return rule.FindWays(board, info.Team, info.x, info.z);
         }
     }
 }

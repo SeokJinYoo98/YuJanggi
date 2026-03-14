@@ -58,7 +58,7 @@ namespace Yujanggi.Core.Board
             _board[fromZ, fromX].Piece?.MoveTo(toX, toZ);
             killed = _board[toZ, toX].Piece;
             _board[toZ, toX].Piece = _board[fromZ, fromX].Piece;
-            RemovePiece(fromX, fromX);
+            _board[fromZ, fromX].Piece = null;
         }
         public CellData     GetCell(int x, int z)
         {

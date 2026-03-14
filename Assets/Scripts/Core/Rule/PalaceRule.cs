@@ -21,12 +21,12 @@ namespace Yujanggi.Core.Rule
             _palaceMovement = new();
         }
 
-        public void ApplyPalaceRule(IBoardState board, in TurnInfo info, List<(int x, int z)> candidates)
+        public void ApplyPalaceRule(IBoardState board, in BoardInfo info, List<(int x, int z)> candidates)
         {
             var type = info.Piece.Type;
             if (_addRule.Contains(type) && board.IsPalace(info.x, info.z))
             {
-                var ways = _palaceMovement.FindWays(board, info.Player, info.x, info.z);
+                var ways = _palaceMovement.FindWays(board, info.Team, info.x, info.z);
                 candidates.AddRange(ways);
             }
 
@@ -36,7 +36,7 @@ namespace Yujanggi.Core.Rule
 
 
 
-        private void Filter(IBoardState board, in TurnInfo info, List<(int x, int z)> ways, PieceType type)
+        private void Filter(IBoardState board, in BoardInfo info, List<(int x, int z)> ways, PieceType type)
         {
             switch(type)
             {
@@ -50,11 +50,11 @@ namespace Yujanggi.Core.Rule
                     break;
             }
         }
-        private void FilterSoldier(IBoardState board, in TurnInfo info, List<(int x, int z)> ways)
+        private void FilterSoldier(IBoardState board, in BoardInfo info, List<(int x, int z)> ways)
         {
   
             int z = info.z;
-            var isBottom = BoardHelper.IsBottomPlayer(board, info.Player);
+            var isBottom = BoardHelper.IsBottomPlayer(board, info.Team);
             if (isBottom)
                 ways.RemoveAll(pos => pos.z < z);
             else

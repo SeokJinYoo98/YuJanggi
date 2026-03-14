@@ -17,7 +17,7 @@ namespace Yujanggi.Core.Rule
 
         public void FindWays(
             IBoardState board,
-            in TurnInfo info)
+            in BoardInfo info)
         {
             board.ClearMovable();
 

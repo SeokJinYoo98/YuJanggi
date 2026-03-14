@@ -476,7 +476,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.Player.Yujanggi.Runtime.Player.JanggiController
   _camera: {fileID: 135010638}
-  _board: {fileID: 2126822363}
+  _gm: {fileID: 1642307853}
 --- !u!1 &1442720189
 GameObject:
   m_ObjectHideFlags: 0

@@ -35,7 +35,7 @@ namespace Yujanggi.Core.Domain
 
     public interface IBoard
     {
-        void HandleClick(int x, int z, PlayerType type);
+       
     }
     public enum TurnType
     {
@@ -43,17 +43,17 @@ namespace Yujanggi.Core.Domain
         Attack,
         Update
     }
-    public struct TurnInfo
+    public struct BoardInfo
     {
-        public TurnInfo(TurnType turn, PlayerType player)
+        public BoardInfo(PlayerType team)
         {
-            Turn = turn;
-            Player = player;
+            PieceType = PieceType.None;
+            Team = team;
             Piece = null;
             x = z = -100;
         }
-        public TurnType             Turn;
-        public PlayerType           Player;
+        public PlayerType           Team;
+        public PieceType            PieceType;  
         public IPiece               Piece;
         public int                  x, z;
     }

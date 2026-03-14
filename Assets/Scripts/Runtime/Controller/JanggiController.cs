@@ -6,14 +6,15 @@ namespace Yujanggi.Runtime.Player
     using Input;
     using UnityEngine.InputSystem;
 
-    namespace Yujanggi.Runtime.Player
+    namespace Yujanggi.Runtime.Controller
     {
         using Board;
+        using Manager;
 
         public class JanggiController : MonoBehaviour, IPlayerController
         {
-            [SerializeField] private Camera _camera;
-            [SerializeField] private Board  _board;
+            [SerializeField] private Camera     _camera;
+            [SerializeField] private GameManager _gm;
 
             private PlayerInputs               _input;
             private PlayerInputs.PlayerActions _actions;
@@ -54,7 +55,7 @@ namespace Yujanggi.Runtime.Player
             private void OnPressPerformed(InputAction.CallbackContext context)
             {
                 var pos = Clicked();
-                _board.HandleClick(pos.x, pos.z, Type);
+                _gm.HandleClick(pos.x, pos.z, Type);
             }
             private (int x, int z) Clicked()
             {
