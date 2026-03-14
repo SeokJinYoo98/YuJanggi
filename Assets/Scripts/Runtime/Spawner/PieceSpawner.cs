@@ -7,6 +7,7 @@ namespace Yujanggi.Runtime.Board
 
     public class PieceSpawner : MonoBehaviour
     {
+
         [SerializeField] private PieceDataBase _pieceDB;
         [SerializeField] private Transform _cho;
         [SerializeField] private Transform _han;

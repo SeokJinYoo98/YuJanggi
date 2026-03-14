@@ -11,8 +11,8 @@ namespace Yujanggi.Runtime.Board
 
     public class Board : MonoBehaviour, IBoard
     {
-        [SerializeField] PieceSpawner   _pieceSpawner;
-
+        [SerializeField] PieceSpawner     _pieceSpawner;
+        [SerializeField] BoardHighlighter _highlighter;
         private BoardState  _boardState;
         private JanggiRule  _janggiRule;
         private TurnInfo    _turnInfo;
@@ -79,11 +79,11 @@ namespace Yujanggi.Runtime.Board
 
 
 
-        private void        UnSelect(int x, int z)
+        private void UnSelect(int x, int z)
         {
+            _boardState.ClearMovable(); 
             HighlightPiece();
             HighlightWays();
-            _boardState.ClearMovable();
         }
         private void        UpdateTurnInfo(TurnType turn, PlayerType player, IPiece piece=null, int x=-100, int z=-100)
         {
@@ -112,14 +112,9 @@ namespace Yujanggi.Runtime.Board
         {
             _janggiRule.FindWays(_boardState, _turnInfo);
         }
-        private void        HighlightWays()
+        private void HighlightWays()
         {
-            StringBuilder sb = new();
-            foreach (var way in _boardState.MovableCells)
-            {
-                sb.Append($"({way.x}, {way.z}) ");
-            }
-            Debug.Log("Ways: " + sb);
+            _highlighter.Highlight(_boardState.MovableCells);
         }
         private bool        IsValidInput(PlayerType player)
         {

@@ -70,4 +70,5 @@ namespace Yujanggi.Core.Domain
         public (int x, int z) From;
         public (int x, int z) To;
     }
+
 }

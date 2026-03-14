@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: PieceDataBase
   m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Data.Board.PieceDataBase
   _prefabs:
-  - {fileID: 2438227590125569672, guid: 7601c00bfde27f546852bc3143f2576e, type: 3}
-  - {fileID: 2438227590125569672, guid: 57aa967f5320b1b45998070484beae97, type: 3}
+  - {fileID: 1505064607908544417, guid: 1344027d59651e049874a8d64f5d3554, type: 3}
+  - {fileID: 6841181739881823339, guid: 2e9cb1aa77588364da24cd7d32f3f221, type: 3}
   _baseScale: {x: 2.5, y: 2.5, z: 2.5}
   _chos:
   - {fileID: 11400000, guid: 6e6fef72e4182294d937851bb7b21192, type: 2}

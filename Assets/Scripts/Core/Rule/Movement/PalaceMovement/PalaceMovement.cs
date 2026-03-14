@@ -1,5 +1,6 @@
 
 
+using Mono.Cecil.Cil;
 using System.Collections.Generic;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
@@ -41,7 +42,9 @@ namespace Yujanggi.Core.Movement
                     Default(board, team, x, z, ways);
                     break;
 
-                
+                case PieceType.Chariot:
+                    Chariot(board, team, x, z, ways);
+                    break;
             }
 
             return ways;
@@ -60,8 +63,29 @@ namespace Yujanggi.Core.Movement
                 if (result == StepResult.Empty || result == StepResult.Enemy)
                     ways.Add((dx, dz));
             }
-           
         }
-
+        private void Chariot(IBoardState board, PlayerType team, int x, int z, List<(int x, int z)> ways)
+        {
+            var steps = _palaceLinks[(x, z)];
+            foreach(var step in steps)
+            {
+                int dx = x; int dz = z;
+                ApplyStep(step, ref dx, ref dz);
+                switch(CheckCell(board, team, dx, dz))
+                {
+                    case StepResult.Empty:
+                        ways.Add((dx, dz));
+                        ApplyStep(step, ref dx, ref dz);
+                        if (!board.IsPalace(dx, dz)) break;
+                        var result = CheckCell(board, team, dx, dz);
+                        if (result == StepResult.Empty || result == StepResult.Enemy)
+                            ways.Add((dx, dz));
+                        break;
+                    case StepResult.Enemy:
+                        ways.Add((dx, dz));
+                        break;
+                }     
+            }
+        }
     }
 }
