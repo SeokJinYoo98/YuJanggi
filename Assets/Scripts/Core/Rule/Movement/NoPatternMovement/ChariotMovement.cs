@@ -14,13 +14,13 @@ namespace Yujanggi.Core.Movement
             List<Pos> ways = new();
             var bottom = board.BottomPlayer;
             var team = boardInfo.Piece.Team;
-            var pos = boardInfo.Pos;
+            
             foreach (var step in _steps)
             {
-
+                var dPos = boardInfo.Pos;
                 while (true)
                 {
-                    var dPos = ApplyStep(step, team, bottom, pos);
+                    dPos = ApplyStep(step, team, bottom, dPos);
                     if (!board.BoundaryCheck(dPos)) break;
                     if (board.IsTherePiece(dPos, out var piece))
                     {
@@ -33,7 +33,5 @@ namespace Yujanggi.Core.Movement
             }
             return ways;
         }
-
-
     }
 }

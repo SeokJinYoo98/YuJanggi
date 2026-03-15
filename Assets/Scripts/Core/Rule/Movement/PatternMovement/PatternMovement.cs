@@ -27,9 +27,10 @@ namespace Yujanggi.Core.Movement
         {
             int len = steps.Length;
             var bottom = board.BottomPlayer;
+            var dPos = pos;
             for (int j = 0; j < len; ++j)
             {
-                var dPos = ApplyStep(steps[j], team, bottom, pos);
+                dPos = ApplyStep(steps[j], team, bottom, dPos);
 
                 if (j < len - 1)
                 {

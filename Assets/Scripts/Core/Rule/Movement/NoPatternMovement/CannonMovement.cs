@@ -13,16 +13,16 @@ namespace Yujanggi.Core.Movement
         {
             List<Pos> ways = new();
             var bottom = board.BottomPlayer;
-            var pos = info.Pos;
+ 
             var team = info.Piece.Team;
 
             foreach (var step in _steps)
             {
                 bool bridge = false;
-
+                var dPos = info.Pos;
                 while (true)
                 {
-                    var dPos = ApplyStep(step, team, bottom, pos);
+                    dPos = ApplyStep(step, team, bottom, dPos);
                     if (!board.BoundaryCheck(dPos)) 
                         break;
 
