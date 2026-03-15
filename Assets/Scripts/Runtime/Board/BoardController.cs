@@ -4,6 +4,7 @@ namespace Yujanggi.Runtime.Board
     using Core.Board;
     using Yujanggi.Core.Domain;
     using Yujanggi.Core.Rule;
+    using static UnityEditor.PlayerSettings;
 
     // ToDo: 보드인포 IPiece 제거.   
     // 보드 컨트롤러가 될 예정
@@ -13,67 +14,103 @@ namespace Yujanggi.Runtime.Board
         private BoardState  _boardState;
         private JanggiRule  _janggiRule;
 
-        private BoardInfo   _boardInfo;
-
+        private SelectionState   _selectionInfo;
+       
         private void Awake()
         {
             _boardView = GetComponent<BoardView>();
             _janggiRule = new();
         }
-        public void StartGame(PlayerType bottomPlayer)
+        public void StartGame(PlayerTeam bottomPlayer)
         {
-            _boardInfo   = new(bottomPlayer);
-            _boardState  = new(bottomPlayer);
+            _selectionInfo   = new(bottomPlayer);
+            _boardState      = new(bottomPlayer);
             _boardView.SpawnPieceView(_boardState);
         }
-        public bool SelectPiece(Pos pos, PlayerType team)
+        public BoardActionResult  HandleCellClick(Pos pos, PlayerTeam turn)
         {
-            if (!TrySelectPiece(team, pos))
-                return false;
-            FindWays();
-            RefreshSelectionView();
-            return true;
-        }
-        private bool TrySelectPiece(PlayerType team, Pos pos)
-        {
-            if (!_boardState.TryGetPiece(pos, out var pieceInfo))
-                return false;
+            if (!_boardState.IsInside(pos))
+                return BoardActionResult.None;
 
-            if (pieceInfo.Team != team)
-                return false;
-            _boardInfo.Select(pieceInfo, pos);
-            return true;
+            if (!_selectionInfo.HasSelection)
+                return HandleSelectPiece(pos, turn);
+
+            return HandleSelectedClick(pos, turn);
         }
-        private void FindWays()
+        private BoardActionResult HandleSelectPiece(Pos pos, PlayerTeam turn)
         {
-            _janggiRule.FindWays(_boardState, _boardInfo);
+            if (!CanSelectPiece(pos, turn))
+                return BoardActionResult.SelectFailed;
+
+            SelectPeice(pos);
+            FindWays(pos);
+
+            return BoardActionResult.SelectSuccess;
         }
-        public bool SelectWay(Pos pos)
+        private BoardActionResult HandleSelectedClick(Pos pos, PlayerTeam turn)
         {
+            if (CanSelectPiece(pos, turn))
+                ReselectPiece(pos, turn);
+
             if (!_boardState.IsMovable(pos))
             {
-                UnSelect();
-                return false;
+                ClearSelection();
+                return BoardActionResult.MoveFailed;
             }
-            MovePiece(pos);
-            UnSelect();
-            return true;
+
+
+            return MoveSelectedPiece(pos, turn);
         }
-        private void RefreshSelectionView()
+        private BoardActionResult ReselectPiece(Pos pos, PlayerTeam turn)
         {
-            _boardView.HighlightBoard(_boardState, _boardInfo);
+            if (!CanSelectPiece(pos, turn))
+            {
+                ClearSelection();
+                return BoardActionResult.SelectFailed;
+            }
+
+            SelectPeice(pos);
+            FindWays(pos);
+            return BoardActionResult.Reselect;
         }
-        private void UnSelect()
+        private BoardActionResult MoveSelectedPiece(Pos pos, PlayerTeam turn)
         {
-            _boardState.ClearMovable(); 
-            RefreshSelectionView(); 
-            _boardInfo.Clear();
+            var fromPos = _selectionInfo.SelectedPos;
+            _boardState.MovePiece(fromPos, pos, out var killedInfo);
+            _boardView.MovePieceView(fromPos, pos, out var killedView);
+
+            ClearSelection();
+
+            if (killedInfo.IsNone)
+                return BoardActionResult.MoveSuccess;
+
+            return BoardActionResult.CaptureSuccess;
         }
-        private void MovePiece(Pos toPos)
+
+        private void FindWays(Pos pos)
         {
-            var fromPos = _boardInfo.Pos;
-            _boardState.MovePiece(fromPos, toPos, out  _);
-            _boardView.ApplyMoveView(fromPos, toPos, out  _);
+            _boardState.ClearMovable();
+            _janggiRule.FindWays(_boardState, _selectionInfo);
+            _boardView.ShowHighlights(pos, _boardState.MovableCells);
+        }
+        private void ClearSelection()
+        {
+            _selectionInfo.Clear();
+            _boardView.HideHighlights();
+        }
+
+        private bool CanSelectPiece(Pos pos, PlayerTeam turn)
+        {
+            if (!_boardState.HasPiece(pos))
+                return false;
+
+            var pieceInfo = _boardState.GetPiece(pos);
+            return pieceInfo.Team == turn;
+        }
+        private void SelectPeice(Pos pos)
+        {
+            var pieceInfo = _boardState.GetPiece(pos);
+            _selectionInfo.Select(pieceInfo, pos);
         }
     }
 }

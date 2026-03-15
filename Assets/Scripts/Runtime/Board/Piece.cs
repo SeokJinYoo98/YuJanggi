@@ -7,7 +7,7 @@ namespace Yujanggi.Runtime.Board
 
     public interface IPiece
     {
-        bool IsOwner(PlayerType type);
+        bool IsOwner(PlayerTeam type);
 
         public void Highlight();
         public void MoveTo(Pos toPos);
@@ -27,15 +27,16 @@ namespace Yujanggi.Runtime.Board
 
         public void MoveTo(Pos toPos)
             => transform.position = BoardHelper.ToVector3(toPos, transform.position.y);
-        public bool IsOwner(PlayerType type)
+        public bool IsOwner(PlayerTeam type)
             => type == _data.Team;
         public void  Highlight()
         {
             SwapMaterial();
         }
+
         private void MaterialCheck()
         {
-            if (_data.Team == PlayerType.Cho)
+            if (_data.Team == PlayerTeam.Cho)
             {
                 if (_data.Type ==  PieceType.Guard)
                 {
@@ -43,7 +44,7 @@ namespace Yujanggi.Runtime.Board
                 }
             }
 
-            else if (_data.Team == PlayerType.Han)
+            else if (_data.Team == PlayerTeam.Han)
             {
                 if (_data.Type == PieceType.Soldier || _data.Type == PieceType.Cannon)
                 {

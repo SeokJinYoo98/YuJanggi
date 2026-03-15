@@ -6,11 +6,11 @@ namespace Yujanggi.Core.Manager
 {
     struct GameTurnInfo
     {
-        public GameTurnInfo(PlayerType player = PlayerType.Cho, TurnType turn = TurnType.Select)
+        public GameTurnInfo(PlayerTeam player = PlayerTeam.Cho, TurnType turn = TurnType.Select)
         {
             Player = player; Turn = turn;
         }
-        public PlayerType Player;
+        public PlayerTeam Player;
         public TurnType Turn;
     }
 }

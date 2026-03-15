@@ -11,12 +11,14 @@ namespace Yujanggi.Runtime.Board
         [SerializeField] private BoardHighlighter  _highlighter;
 
         private Dictionary<Pos, IPiece> _map;
+
+        private IPiece _highlightedPiece;
         private void Awake()
         {
             _map = new();
             
         }
-        public void ApplyMoveView(Pos fromPos, Pos toPos, out IPiece killed)
+        public void MovePieceView(Pos fromPos, Pos toPos, out IPiece killed)
         {
             killed = _map[toPos];
             var piece = _map[fromPos];
@@ -24,22 +26,23 @@ namespace Yujanggi.Runtime.Board
             piece.MoveTo(toPos);
             _map[fromPos] = null;
             _map[toPos] = piece;
-            piece.Highlight();
         }
-        public void HighlightBoard(IBoardState board, BoardInfo info)
+        public void ShowHighlights(Pos selectedPos, IReadOnlyList<Pos> movablePositions)
         {
-            HighlightWays(board);
-            HighlightPiece(info.Pos);
+            if (_highlightedPiece != null)
+                HideHighlights();
+
+            _highlightedPiece = _map[selectedPos];
+            _highlightedPiece.Highlight();
+            _highlighter.ShowHighlight(movablePositions);
         }
-        private void HighlightWays(IBoardState board)
+        public void HideHighlights()
         {
-            var movableCells = board.MovableCells;
-            _highlighter.Highlight(movableCells);
+            _highlightedPiece.Highlight();
+            _highlightedPiece = null;
+            _highlighter.HideHighlight();
         }
-        private void HighlightPiece(Pos pos)
-        {
-            _map[pos]?.Highlight();
-        }
+
         public void SpawnPieceView(IBoardState board)
         {
            
@@ -51,11 +54,12 @@ namespace Yujanggi.Runtime.Board
                 for (int j = 0; j < height; ++j)
                 {
                     var pos = new Pos(i, j);
-                    if (!board.IsTherePiece(pos, out var pieceInfo))
+                    if (!board.HasPiece(pos))
                     {
                         _map[pos] = null;
                         continue;
                     }
+                    var pieceInfo = board.GetPiece(pos);
                     var piece = _pieceSpawner.Spawn(pieceInfo, pos);
                     _map[pos] = piece;
                 }

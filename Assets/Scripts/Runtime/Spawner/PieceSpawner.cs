@@ -17,7 +17,7 @@ namespace Yujanggi.Runtime.Board
             var team = pieceInfo.Team;
             var type = pieceInfo.Type;
 
-            var parent = team == PlayerType.Cho ? _cho : _han;
+            var parent = team == PlayerTeam.Cho ? _cho : _han;
 
             var data    = _pieceDB.GetData(team, type); 
             var prefab  = _pieceDB.GetPrefab(team);

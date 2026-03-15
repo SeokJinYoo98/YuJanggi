@@ -21,27 +21,29 @@ namespace Yujanggi.Core.Rule
             _palaceMovement = new();
         }
 
-        public void ApplyPalaceRule(IBoardState board, in BoardInfo info, List<Pos> candidates)
+        public void ApplyPalaceRule(IBoardState board, in SelectionState selectInfo, List<Pos> candidates)
         {
-            var type = info.Piece.Type;
-            if (_addRule.Contains(type) && board.IsPalace(info.Pos))
+            var selectedPiece = selectInfo.SelectedPiece;
+            var type = selectedPiece.Type;
+            var pos = selectInfo.SelectedPos;
+            if (_addRule.Contains(type) && board.IsPalace(pos))
             {
-                var ways = _palaceMovement.FindWays(board, info);
+                var ways = _palaceMovement.FindWays(board, selectInfo);
                 candidates.AddRange(ways);
             }
 
             if (_filterRule.Contains(type))
-                Filter(board, info, candidates, type);
+                Filter(board, selectInfo, candidates, type);
         }
 
 
 
-        private void Filter(IBoardState board, in BoardInfo info, List<Pos> ways, PieceType type)
+        private void Filter(IBoardState board, in SelectionState selectPiece, List<Pos> ways, PieceType type)
         {
             switch(type)
             {
                 case PieceType.Soldier:
-                    FilterSoldier(board, info, ways);
+                    FilterSoldier(board, selectPiece, ways);
                     break;
 
                 case PieceType.King:
@@ -50,12 +52,12 @@ namespace Yujanggi.Core.Rule
                     break;
             }
         }
-        private void FilterSoldier(IBoardState board, in BoardInfo info, List<Pos> ways)
+        private void FilterSoldier(IBoardState board, SelectionState selectInfo, List<Pos> ways)
         {
-  
-            int z = info.Pos.Z;
-            var isBottom = BoardHelper.IsBottomPlayer(board, info.Piece.Team);
-            if (isBottom)
+
+            int z = selectInfo.SelectedPos.Z;
+         
+            if (selectInfo.IsBottom)
                 ways.RemoveAll(pos => pos.Z < z);
             else
                 ways.RemoveAll(pos => pos.Z > z);

@@ -27,12 +27,12 @@ namespace Yujanggi.Core.Rule
 
         public List<Pos> CandidateWays(
             IBoardState board,
-            in BoardInfo info)
+            SelectionState selectPiece)
         {
-            if (!_rules.TryGetValue(info.Piece.Type, out var rule))
+            if (!_rules.TryGetValue(selectPiece.SelectedPiece.Type, out var rule))
                 return new List<Pos>();
 
-            return rule.FindWays(board, info);
+            return rule.FindWays(board, selectPiece);
         }
     }
 }

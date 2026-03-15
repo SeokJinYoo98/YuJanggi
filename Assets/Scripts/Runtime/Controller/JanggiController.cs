@@ -19,9 +19,9 @@ namespace Yujanggi.Runtime.Player
             private PlayerInputs               _input;
             private PlayerInputs.PlayerActions _actions;
 
-            private PlayerType _type = PlayerType.Cho;
-            public PlayerType   Type => _type;
-            public void Init(PlayerType type)
+            private PlayerTeam _type = PlayerTeam.Cho;
+            public PlayerTeam   Type => _type;
+            public void Init(PlayerTeam type)
                 => _type = type;
             private void Awake()
             {
@@ -55,7 +55,7 @@ namespace Yujanggi.Runtime.Player
             private void OnPressPerformed(InputAction.CallbackContext context)
             {
                 var pos = Clicked();
-                _gm.HandleClick(pos.x, pos.z, Type);
+                _gm.HandleClick(pos.x, pos.z);
             }
             private (int x, int z) Clicked()
             {

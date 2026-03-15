@@ -13,7 +13,7 @@ namespace Yujanggi.Runtime.Manager
         [SerializeField] private AudioManager    _audio;
 
 
-        private readonly PlayerType BottomPlayer = PlayerType.Cho;
+        private readonly PlayerTeam BottomPlayer = PlayerTeam.Cho;
         private GameTurnInfo _turnInfo;
 
 
@@ -26,48 +26,46 @@ namespace Yujanggi.Runtime.Manager
             _board.StartGame(BottomPlayer);
         }
 
-        public void HandleClick(int x, int z, PlayerType team)
+        public void HandleClick(int x, int z)
         {
-            // if (team != _turnInfo.Player) return;
-            
-            bool isCompleted = false;
-            var pos = new Pos(x, z);
-                
-            switch (_turnInfo.Turn)
+            var result = _board.HandleCellClick(new Pos(x, z), _turnInfo.Player);
+            Debug.Log($"{result}");
+            switch (result)
             {
-                case TurnType.Select:
-                    isCompleted = _board.SelectPiece(pos, _turnInfo.Player);
-                    if (isCompleted)
-                    {
-                        _audio.PlaySelect();
-                        UpdateTurnInfo(_turnInfo.Player, TurnType.Attack);
-                    }
-                        
+                case BoardActionResult.SelectSuccess:
+                    _audio.PlaySelect();
+                    UpdateTurnInfo(_turnInfo.Player, TurnType.Attack);
                     break;
 
-                case TurnType.Attack:
-                    isCompleted = _board.SelectWay(pos);
-                    if (isCompleted)
-                    {
-                        _audio.PlayMove();
-                        UpdateTurnInfo(NextPlayer(), TurnType.Select);
-                    }
-                        
-                    else
-                        UpdateTurnInfo(_turnInfo.Player, TurnType.Select);
+                case BoardActionResult.MoveSuccess:
+                    _audio.PlayMove();
+                    UpdateTurnInfo(NextPlayer(), TurnType.Select);
                     break;
+
+                case BoardActionResult.CaptureSuccess:
+                    _audio.PlayCapture();
+                    UpdateTurnInfo(NextPlayer(), TurnType.Select);
+                    break;
+
+                case BoardActionResult.Reselect:
+                    _audio.PlaySelect();
+                    break;
+
+                case BoardActionResult.SelectFailed:
+                case BoardActionResult.None:
                 default:
                     break;
             }
+            
         }
-        public void UpdateTurnInfo(PlayerType next, TurnType turn)
+        public void UpdateTurnInfo(PlayerTeam next, TurnType turn)
         {
             _turnInfo.Player = next;
             _turnInfo.Turn   = turn;
         }
-        public PlayerType NextPlayer()
+        public PlayerTeam NextPlayer()
         {
-            return _turnInfo.Player == PlayerType.Cho ? PlayerType.Han : PlayerType.Cho;
+            return _turnInfo.Player == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho;
         }
     }
 }

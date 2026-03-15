@@ -9,26 +9,28 @@ namespace Yujanggi.Core.Movement
         Step[] _steps = new Step[] { Step.Up, Step.Down, Step.Left, Step.Right };
         public override List<Pos> FindWays(
             IBoardState board,
-            BoardInfo boardInfo)
+            SelectionState selectInfo)
         {
             List<Pos> ways = new();
-            var bottom = board.BottomPlayer;
-            var team = boardInfo.Piece.Team;
-            
+            var bottom = selectInfo.BottomPlayer;
+            var selectedPiece = selectInfo.SelectedPiece;
+            var team = selectedPiece.Team;
+
             foreach (var step in _steps)
             {
-                var dPos = boardInfo.Pos;
+                var dPos = selectInfo.SelectedPos;
                 while (true)
                 {
                     dPos = ApplyStep(step, team, bottom, dPos);
-                    if (!board.BoundaryCheck(dPos)) break;
-                    if (board.IsTherePiece(dPos, out var piece))
-                    {
-                        if (piece.Team != team)
-                            ways.Add(dPos);
+                    var result = CheckCell(board, team, dPos);
+          
+                    
+                    if (result == StepResult.Block || result == StepResult.Team)
                         break;
-                    }
+
                     ways.Add(dPos);
+                    if (result == StepResult.Enemy)
+                        break;
                 }
             }
             return ways;

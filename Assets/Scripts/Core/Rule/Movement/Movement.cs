@@ -12,7 +12,7 @@ namespace Yujanggi.Core.Movement
     public abstract class Movement
     {
         // 나중에 누가 플레이언지 체크
-        private int Forward(PlayerType team, PlayerType bottom)
+        private int Forward(PlayerTeam team, PlayerTeam bottom)
         {
 
             return team == bottom ? 1 : -1;
@@ -38,11 +38,11 @@ namespace Yujanggi.Core.Movement
             => Dirs[(int)step];
         protected Pos ApplyStep(
             Step step,
-            PlayerType team,
-            PlayerType bottom,
+            PlayerTeam team,
+            PlayerTeam bottom,
             Pos pos)
             => pos += GetDir(step, team, bottom);
-        protected Pos GetDir(Step step, PlayerType team, PlayerType bottom)
+        protected Pos GetDir(Step step, PlayerTeam team, PlayerTeam bottom)
         {
             var dir = Dirs[(int)step];
             return new Pos(dir.X, dir.Z * Forward(team, bottom));
@@ -51,10 +51,10 @@ namespace Yujanggi.Core.Movement
 
         public abstract List<Pos> FindWays(
                 IBoardState board,
-                BoardInfo info);
+                SelectionState selectPiece);
         protected StepResult CheckCell(
                 IBoardState board, 
-                PlayerType team, 
+                PlayerTeam team, 
                 Pos pos)
             => BoardHelper.CheckCell(board, team, pos);
     }

@@ -15,12 +15,12 @@ namespace Yujanggi.Data.Board
         [SerializeField] private List<PieceData> _hans;
 
         public Vector3 BaseScale => _baseScale;
-        public Piece GetPrefab(PlayerType type)
+        public Piece GetPrefab(PlayerTeam type)
             => _prefabs[(int)type];
 
-        public PieceData GetData(PlayerType playerType, PieceType pieceType)
+        public PieceData GetData(PlayerTeam playerType, PieceType pieceType)
         {
-            var list = playerType == PlayerType.Cho ? _chos : _hans;
+            var list = playerType == PlayerTeam.Cho ? _chos : _hans;
             return list[(int)pieceType];
         }
     }

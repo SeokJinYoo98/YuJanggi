@@ -9,45 +9,59 @@ namespace Yujanggi.Core.Movement
 
         public override List<Pos> FindWays(
             IBoardState board,
-            BoardInfo info)
+            SelectionState selectPiece)
         {
             List<Pos> ways = new();
-            var bottom = board.BottomPlayer;
- 
-            var team = info.Piece.Team;
+
+            var bottom  = selectPiece.BottomPlayer;
+            var team    = selectPiece.SelectedPiece.Team;
+            var start   = selectPiece.SelectedPos;
 
             foreach (var step in _steps)
             {
                 bool bridge = false;
-                var dPos = info.Pos;
+                var dPos = start;
+
                 while (true)
                 {
                     dPos = ApplyStep(step, team, bottom, dPos);
-                    if (!board.BoundaryCheck(dPos)) 
+
+                    var result = CheckCell(board, team, dPos);
+
+                    if (result == StepResult.Block)
                         break;
 
-                    if (!board.IsTherePiece(dPos, out var piece))
-                    {
-                        if (bridge)
-                            ways.Add(dPos);
-                        continue;
-                    }
-
-                    // 말 만났을 때
                     if (!bridge)
                     {
+                        if (result == StepResult.Empty)
+                            continue;
+
+                        var piece = board.GetPiece(dPos);
+
                         if (piece.Type != PieceType.Cannon)
                             bridge = true;
 
                         continue;
                     }
 
-                    // 두번째 말
-                    if (piece.Team != team && piece.Type != PieceType.Cannon)
+                    if (result == StepResult.Empty)
+                    {
                         ways.Add(dPos);
+                        continue;
+                    }
+
+                    if (result == StepResult.Enemy)
+                    {
+                        var piece = board.GetPiece(dPos);
+
+                        if (piece.Type != PieceType.Cannon)
+                            ways.Add(dPos);
+                    }
+
                     break;
                 }
             }
+
             return ways;
         }
     }

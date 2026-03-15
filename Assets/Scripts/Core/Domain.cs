@@ -2,10 +2,19 @@ using System;
 namespace Yujanggi.Core.Domain
 {
     using Yujanggi.Core.Board;
-
-    public enum PlayerType
+    public enum BoardActionResult
+    {
+        None,
+        SelectSuccess,
+        SelectFailed,
+        MoveSuccess,
+        MoveFailed,
+        CaptureSuccess,
+        Reselect
+    }
+    public enum             PlayerTeam
     { Cho, Han, None }
-    public enum PieceType
+    public enum             PieceType
     {
         King,       // 궁
         Chariot,    // 차
@@ -16,42 +25,16 @@ namespace Yujanggi.Core.Domain
         Soldier,    // 졸/병
         None
     }
-
-    public interface IPlayerController
+    public interface        IPlayerController
     {
-        PlayerType Type { get; }
+        PlayerTeam Type { get; }
     }
-    public enum TurnType
+    public enum             TurnType
     {
         Select,
         Attack,
         Update
     }
-    public struct BoardInfo
-    {
-        public BoardInfo(PlayerType bottomPlayer)
-        {
-            BottomPlayer = bottomPlayer;
-            this.Piece = new();
-            this.Pos = Pos.Invalid;
-        }
-        public void Select(PieceInfo piece, Pos pos)
-        {
-            Piece    = piece;
-            this.Pos = pos;
-        }
-
-        public void Clear()
-        {
-            this.Piece = new PieceInfo();
-            this.Pos   = Pos.Invalid;
-        }
-        public readonly PlayerType  BottomPlayer;
-        public PieceInfo   Piece;
-        public Pos         Pos;
-    }
-
-
     public readonly struct Pos : IEquatable<Pos>
     {
         public Pos(int x, int z)
@@ -61,7 +44,7 @@ namespace Yujanggi.Core.Domain
         }
         public readonly int X;
         public readonly int Z;
-        
+
         public static Pos operator +(Pos a, Pos b)
             => new Pos(a.X + b.X, a.Z + b.Z);
         public static Pos operator -(Pos a, Pos b)
@@ -77,14 +60,56 @@ namespace Yujanggi.Core.Domain
         public override int GetHashCode()
             => HashCode.Combine(X, Z);
 
-        public static readonly Pos Up            = new Pos(+0, +1);
-        public static readonly Pos Down          = new Pos(+0, -1);
-        public static readonly Pos Left          = new Pos(-1, +0);
-        public static readonly Pos Right         = new Pos(+1, +0);
-        public static readonly Pos LeftUp        = new Pos(-1, +1);
-        public static readonly Pos RightUp       = new Pos(+1, +1);
-        public static readonly Pos LeftDown      = new Pos(-1, -1);
-        public static readonly Pos RightDown     = new Pos(+1, -1);
-        public static readonly Pos Invalid       = new Pos(-100, -100);
+        public static readonly Pos Up = new Pos(+0, +1);
+        public static readonly Pos Down = new Pos(+0, -1);
+        public static readonly Pos Left = new Pos(-1, +0);
+        public static readonly Pos Right = new Pos(+1, +0);
+        public static readonly Pos LeftUp = new Pos(-1, +1);
+        public static readonly Pos RightUp = new Pos(+1, +1);
+        public static readonly Pos LeftDown = new Pos(-1, -1);
+        public static readonly Pos RightDown = new Pos(+1, -1);
+        public static readonly Pos Invalid = new Pos(-100, -100);
     }
+    public readonly struct SelectionInfo
+    {
+        public SelectionInfo(PieceInfo piece, Pos pos)
+        {
+            Piece = piece;
+            Pos = pos;
+        }
+
+        public PieceInfo Piece  { get; }
+        public Pos Pos          { get; }
+    }
+    public class SelectionState
+    {
+        public SelectionState(PlayerTeam bottomPlayer)
+        {
+            BottomPlayer = bottomPlayer;
+        }
+
+        public PlayerTeam   BottomPlayer { get; }
+
+        public SelectionInfo? Current { get; private set; }
+
+        public bool HasSelection => Current.HasValue;
+        public bool IsBottom => Current.HasValue && Current.Value.Piece.Team == BottomPlayer;
+
+        public PieceInfo SelectedPiece => Current!.Value.Piece;
+        public Pos       SelectedPos   => Current!.Value.Pos;
+        
+        public void Select(PieceInfo piece, Pos pos)
+        {
+            Current = new SelectionInfo(piece, pos);
+        }
+
+        public void Clear()
+        {
+            Current = null;
+        }
+    }
+ 
+
+
+
 }

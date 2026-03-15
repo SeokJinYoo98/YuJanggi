@@ -1,34 +1,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Yujanggi.Core.Domain;
+using Yujanggi.Runtime.Board;
 
 namespace Yujanggi.Core.Board
 {
     public interface IBoardState
     {
-        public PlayerType BottomPlayer { get; }
-        
-       
-        public void ClearMovable();
-       
-       
-       
-        
- 
-
-        //
-       
         public int WIDTH { get; }
         public int HEIGHT { get; }
-        public bool TryGetPiece(Pos pos, out PieceInfo piece);
-        public bool IsTherePiece(Pos pos, out PieceInfo piece);
+        public bool                 IsMovable(Pos pos);
+        public void                 AddMovable(List<Pos> ways);
+        public IReadOnlyList<Pos>   MovableCells { get; }
+        public void                 ClearMovable();
 
-        public bool IsMovable(Pos pos); 
-        public void AddMovable(List<Pos> ways);
-        public IReadOnlyList<Pos> MovableCells { get; }
 
-        public bool BoundaryCheck(Pos pos);
+        public bool IsInside(Pos pos);
         public bool IsPalace(Pos pos);
+        public bool HasPiece(Pos pos);
+        public PieceInfo GetPiece(Pos pos);
+        public void SetPiece(Pos pos, PieceInfo piece);
     }
 
     public class BoardState : IBoardState
@@ -38,27 +29,24 @@ namespace Yujanggi.Core.Board
         private readonly int         _width  = 9;
         private readonly int         _height = 10;
         private CellData[,] _board;
-        public BoardState(PlayerType bottom = PlayerType.Cho, int width = 9, int height = 10)
+        public BoardState(PlayerTeam bottom = PlayerTeam.Cho, int width = 9, int height = 10)
         {
-            _bottom = bottom;
             _width = width; _height = height;
             CreateBoard();
             RegisterPiece(bottom);
         }
-    
+        public bool IsPalace(Pos pos)
+            => _board[pos.X, pos.Z].Palace;
+        public bool IsInside(Pos pos)
+            => 0 <= pos.X && pos.X < _width && 0 <= pos.Z && pos.Z < _height;
+        public bool HasPiece(Pos pos)
+            => _board[pos.X, pos.Z].Piece != PieceInfo.None;
+        public PieceInfo GetPiece(Pos pos)
+            => _board[pos.X, pos.Z].Piece;
+        public void SetPiece(Pos pos, PieceInfo piece)
+            => _board[pos.X, pos.Z].Piece = piece;
 
-        private PlayerType _bottom;
-        public PlayerType   BottomPlayer => _bottom;
-        public bool    TryGetPiece(Pos pos, out PieceInfo pieceInfo)
-        {
-            var x = pos.X; var z = pos.Z;
-
-            pieceInfo = _board[x, z].Piece;
-            if (!BoundaryCheck(pos)) 
-                return false;
-
-            return true;
-        }
+        
         public void MovePiece(Pos fromPos, Pos toPos, out PieceInfo killed)
         {
             var fromX = fromPos.X; var fromZ = fromPos.Z;
@@ -69,42 +57,8 @@ namespace Yujanggi.Core.Board
             _board[fromX, fromZ].Piece = PieceInfo.None;
         }
 
-        public void SetPiece(PieceInfo piece, int x, int z)
-            => _board[x, z].Piece = piece;
-        public void RemovePiece(int x, int z)
-            => _board[x, z].Piece = new();
-        public bool BoundaryCheck(Pos pos)
-        {
-            return 0 <= pos.X && pos.X < _width && 0 <= pos.Z && pos.Z < _height;
-        }
-        
-        public void ClearMovable()
-            => _movableCells.Clear();
 
-       
-        public bool IsPalace(Pos pos)
-        {
-            if (!BoundaryCheck(pos)) 
-                return false;
-            
-            return _board[pos.X, pos.Z].Palace;
-        }
-        public void AddMovable(List<Pos> ways)
-    => _movableCells.AddRange(ways);
-        public bool IsMovable(Pos pos)
-            => _movableCells.Contains(pos);
-        private List<Pos> _movableCells = new(25);
-        public IReadOnlyList<Pos> MovableCells => _movableCells;
-        // 
-        public bool IsTherePiece(Pos pos, out PieceInfo piece)
-        {
-            piece = _board[pos.X, pos.Z].Piece;
-
-            if (piece.Team == PlayerType.None)
-                return false;
-
-            return true;
-        }
+        // 생성 관련
         private void CreateBoard()
         {
             _board = new CellData[_width, _height];
@@ -126,13 +80,13 @@ namespace Yujanggi.Core.Board
                 }
             }
         }
-        private void RegisterPiece(PlayerType bottomPlayer)
+        private void RegisterPiece(PlayerTeam bottomPlayer)
         {
-            var topPlayer = bottomPlayer == PlayerType.Cho ? PlayerType.Han : PlayerType.Cho;
+            var topPlayer = bottomPlayer == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho;
             SpawnBottom(bottomPlayer);
             SpawnTop(topPlayer);
         }
-        private void SpawnBottom(PlayerType bottom)
+        private void SpawnBottom(PlayerTeam bottom)
         {
             Spawn(bottom, PieceType.Chariot, 0, 0);
             Spawn(bottom, PieceType.Chariot, 8, 0);
@@ -157,7 +111,7 @@ namespace Yujanggi.Core.Board
             Spawn(bottom, PieceType.Soldier, 6, 3);
             Spawn(bottom, PieceType.Soldier, 8, 3);
         }
-        private void SpawnTop(PlayerType top)
+        private void SpawnTop(PlayerTeam top)
         {
             Spawn(top, PieceType.Chariot, 0, 9);
             Spawn(top, PieceType.Chariot, 8, 9);
@@ -183,10 +137,20 @@ namespace Yujanggi.Core.Board
             Spawn(top, PieceType.Soldier, 8, 6);
 
         }
-        private void Spawn(PlayerType team, PieceType type, int x, int z)
+        private void Spawn(PlayerTeam team, PieceType type, int x, int z)
         {
-            _board[x, z].Piece.Team = team;
-            _board[x, z].Piece.Type = type;
+            _board[x, z].Piece = new PieceInfo(type, team);
         }
+
+        // Movable 관련
+        private List<Pos> _movableCells = new(25);
+        public IReadOnlyList<Pos> MovableCells => _movableCells;
+        public void ClearMovable()
+            => _movableCells.Clear();
+        public void AddMovable(List<Pos> ways)
+            => _movableCells.AddRange(ways);
+        public bool IsMovable(Pos pos)
+            => _movableCells.Contains(pos);
+ 
     }
 }

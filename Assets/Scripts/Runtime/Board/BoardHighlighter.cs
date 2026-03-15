@@ -29,9 +29,8 @@ namespace Yujanggi.Runtime.Board
             for (int i = 0; i < 25; i++)
                 _pool.Release(_pool.Get());
         }
-        public void Highlight(IReadOnlyList<Pos> cells)
+        public void ShowHighlight(IReadOnlyList<Pos> cells)
         {
-            Clear();
             foreach (var pos in cells)
             {
                 var highlight = _pool.Get();
@@ -39,7 +38,7 @@ namespace Yujanggi.Runtime.Board
                 _active.Add(highlight);
             }
         }
-        public void Clear()
+        public void HideHighlight()
         {
             foreach (var h in _active)
                 _pool.Release(h);
