@@ -19,8 +19,6 @@ namespace Yujanggi.Runtime.Board
         {
             _boardView = GetComponent<BoardView>();
             _janggiRule = new();
-
-
         }
         public void StartGame(PlayerType bottomPlayer)
         {
@@ -63,7 +61,7 @@ namespace Yujanggi.Runtime.Board
         }
         private void RefreshSelectionView()
         {
-            _boardView.HighlightBoard(_boardState, in _boardInfo);
+            _boardView.HighlightBoard(_boardState, _boardInfo);
         }
         private void UnSelect()
         {

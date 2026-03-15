@@ -8,8 +8,7 @@ namespace Yujanggi.Runtime.Board
     public interface IPiece
     {
         bool IsOwner(PlayerType type);
-        PieceType Type { get; }
-        PlayerType Team { get; }
+
         public void Highlight();
         public void MoveTo(Pos toPos);
 
@@ -18,9 +17,6 @@ namespace Yujanggi.Runtime.Board
     public class Piece : MonoBehaviour, IPiece
     {    
         [SerializeField] private PieceData _data;
-
-        public PieceType  Type => _data.Type;
-        public PlayerType Team => _data.Team;
         public void Init(PieceData data, Pos pos)
         {
             _data = data;

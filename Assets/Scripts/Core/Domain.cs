@@ -33,7 +33,7 @@ namespace Yujanggi.Core.Domain
         {
             BottomPlayer = bottomPlayer;
             this.Piece = new();
-            this.Pos = new Pos(-1, -1);
+            this.Pos = Pos.Invalid;
         }
         public void Select(PieceInfo piece, Pos pos)
         {
@@ -44,7 +44,7 @@ namespace Yujanggi.Core.Domain
         public void Clear()
         {
             this.Piece = new PieceInfo();
-            this.Pos   = new(-1, -1);
+            this.Pos   = Pos.Invalid;
         }
         public readonly PlayerType  BottomPlayer;
         public PieceInfo   Piece;
@@ -85,5 +85,6 @@ namespace Yujanggi.Core.Domain
         public static readonly Pos RightUp       = new Pos(+1, +1);
         public static readonly Pos LeftDown      = new Pos(-1, -1);
         public static readonly Pos RightDown     = new Pos(+1, -1);
+        public static readonly Pos Invalid       = new Pos(-100, -100);
     }
 }

@@ -44,7 +44,6 @@ namespace Yujanggi.Runtime.Manager
         private void Start()
         {
             _board.StartGame(BottomPlayer);
-
         }
 
         public void HandleClick(int x, int z, PlayerType team)

@@ -26,7 +26,7 @@ namespace Yujanggi.Runtime.Board
             _map[toPos] = piece;
             piece.Highlight();
         }
-        public void HighlightBoard(IBoardState board, in BoardInfo info)
+        public void HighlightBoard(IBoardState board, BoardInfo info)
         {
             HighlightWays(board);
             HighlightPiece(info.Pos);
