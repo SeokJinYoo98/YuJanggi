@@ -20,8 +20,8 @@ namespace Yujanggi.Runtime.Board
         }
         public void MovePieceView(Pos fromPos, Pos toPos, out IPiece killed)
         {
-            killed = _map[toPos];
-            var piece = _map[fromPos];
+            killed      = _map[toPos];
+            var piece   = _map[fromPos];
             if (piece == null) return;
             piece.MoveTo(toPos);
             _map[fromPos] = null;

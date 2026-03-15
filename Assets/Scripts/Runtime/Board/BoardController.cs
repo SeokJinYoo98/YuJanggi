@@ -2,16 +2,19 @@ using UnityEngine;
 namespace Yujanggi.Runtime.Board
 {
     using Core.Board;
+    using System;
     using Yujanggi.Core.Domain;
     using Yujanggi.Core.Rule;
 
     public class BoardController : MonoBehaviour
     {
+        public event Action<CaptureContext> OnCapture;
+
         private BoardView   _boardView;
         private BoardModel  _boardModel;
-        private JanggiRule  _janggiRule;
 
-        private SelectionState   _selectionInfo;
+        private JanggiRule          _janggiRule;
+        private SelectionState      _selectionInfo;
        
         private void Awake()
         {
@@ -70,21 +73,36 @@ namespace Yujanggi.Runtime.Board
             FindWays(pos);
             return BoardActionResult.Reselect;
         }
-        private BoardActionResult  MoveSelectedPiece(Pos pos, PlayerTeam turn)
+        private BoardActionResult  MoveSelectedPiece(Pos toPos, PlayerTeam turn)
         {
-            var targetPiece = _boardModel.GetPiece(pos);
-            var result = targetPiece.IsNone
-                ? BoardActionResult.MoveSuccess
-                : BoardActionResult.CaptureSuccess;
-
             var fromPos = _selectionInfo.SelectedPos;
-            _boardModel.SetPiece(pos, _boardModel.GetPiece(fromPos));
+
+            var attackerPiece   = _boardModel.GetPiece(fromPos);
+            var victimPiece     = _boardModel.GetPiece(toPos);
+
+            var isCapture = !victimPiece.IsNone;
+            var result = isCapture
+                ? BoardActionResult.CaptureSuccess
+                : BoardActionResult.MoveSuccess;
+
+            _boardModel.SetPiece(toPos, attackerPiece);
             _boardModel.SetPiece(fromPos, PieceInfo.None);
 
-            _boardView.MovePieceView(fromPos, pos, out var killedView);
+            _boardView.MovePieceView(fromPos, toPos, out var victimView);
+
+            if (isCapture)
+            {
+                var context = new CaptureContext(
+                    fromPos,
+                    toPos,
+                    attackerPiece,
+                    victimPiece,
+                    victimView);
+
+                RaiseCapture(context);
+            }
 
             ClearSelection();
-
             return result;
         }
 
@@ -112,6 +130,11 @@ namespace Yujanggi.Runtime.Board
         {
             var pieceInfo = _boardModel.GetPiece(pos);
             _selectionInfo.Select(pieceInfo, pos);
+        }
+
+        private void RaiseCapture(CaptureContext context)
+        {
+            OnCapture?.Invoke(context);
         }
     }
 }

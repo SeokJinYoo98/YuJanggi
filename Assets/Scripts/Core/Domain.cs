@@ -2,6 +2,9 @@ using System;
 namespace Yujanggi.Core.Domain
 {
     using Yujanggi.Core.Board;
+    using Yujanggi.Data.Board;
+    using Yujanggi.Runtime.Board;
+
     public enum BoardActionResult
     {
         None,
@@ -108,7 +111,24 @@ namespace Yujanggi.Core.Domain
             Current = null;
         }
     }
- 
+    
+    public readonly struct CaptureContext
+    {
+        public CaptureContext(Pos from, Pos to, PieceInfo attacker, PieceInfo victim, IPiece victimView)
+        {
+            From = from;
+            To = to;
+            Attacker = attacker;
+            Victim = victim;
+            VictimView = victimView;
+        }
+
+        public Pos          From        { get; }
+        public Pos          To          { get; }
+        public PieceInfo    Attacker    { get; }
+        public PieceInfo    Victim      { get; }
+        public IPiece       VictimView  { get; }
+    }
 
 
 

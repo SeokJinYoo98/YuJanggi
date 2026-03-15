@@ -1,9 +1,11 @@
 using UnityEngine;
 namespace Yujanggi.Runtime.Board
 {
-    using Yujanggi.Data.Board;
+    using System.Collections;
     using Yujanggi.Core.Domain;
+    using Yujanggi.Data.Board;
     using Yujanggi.Utills.Board;
+    using static UnityEngine.Audio.ProcessorInstance;
 
     public interface IPiece
     {
@@ -15,18 +17,25 @@ namespace Yujanggi.Runtime.Board
     }
 
     public class Piece : MonoBehaviour, IPiece
-    {    
+    {
+        private Coroutine _moveRoutine;
         [SerializeField] private PieceData _data;
         public void Init(PieceData data, Pos pos)
         {
             _data = data;
             GetComponent<MeshFilter>().sharedMesh = _data.PieceMesh;
             MaterialCheck();
-            MoveTo(pos);
+            transform.position = BoardHelper.ToVector3(pos, transform.position.y);
+           
         }
 
         public void MoveTo(Pos toPos)
-            => transform.position = BoardHelper.ToVector3(toPos, transform.position.y);
+        {
+            if (_moveRoutine != null)
+                StopCoroutine(_moveRoutine);
+            Vector3 targetWorldPos = BoardHelper.ToVector3(toPos, transform.position.y);
+            _moveRoutine = StartCoroutine(CoMove(targetWorldPos, 0.18f));
+        }
         public bool IsOwner(PlayerTeam type)
             => type == _data.Team;
         public void  Highlight()
@@ -58,7 +67,23 @@ namespace Yujanggi.Runtime.Board
             var mats = renderer.sharedMaterials;
             (mats[0], mats[1]) = (mats[1], mats[0]);
             renderer.sharedMaterials = mats;
-        } 
+        }
+        private IEnumerator CoMove(Vector3 targetPos, float duration)
+        {
+            Vector3 startPos = transform.position;
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration;
+                transform.position = Vector3.Lerp(startPos, targetPos, t);
+                yield return null;
+            }
+
+            transform.position = targetPos;
+            _moveRoutine = null;
+        }
     }
 
 }
