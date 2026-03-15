@@ -2,14 +2,29 @@ using System;
 namespace Yujanggi.Core.Board
 {
     using Domain;
+    using Yujanggi.Utills.Board;
 
     public class CellData
     {
-        public IPiece   Piece;
-        public bool     Palace;
+        public CellData(bool palace = false, PlayerType team=PlayerType.None, PieceType type=PieceType.None)
+        {
+            Palace = palace;
+            Piece  = new PieceInfo(type, team);
+        }
+        public bool         Palace;
+        public PieceInfo    Piece;
     }
-    public class PalaceData : CellData
+    public struct PieceInfo
     {
+        public PieceInfo(PieceType type, PlayerType team)
+        {
+            Type = type;
+            Team = team;
+        }
+        public static PieceInfo None
+            => new(PieceType.None, PlayerType.None);
 
+        public PieceType  Type;
+        public PlayerType Team;
     }
 }

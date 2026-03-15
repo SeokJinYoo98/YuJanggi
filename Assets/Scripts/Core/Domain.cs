@@ -1,9 +1,6 @@
-using NUnit.Framework;
 using System;
 namespace Yujanggi.Core.Domain
 {
-    using System.Collections.Generic;
-    using UnityEngine.UIElements;
     using Yujanggi.Core.Board;
 
     public enum PlayerType
@@ -19,23 +16,10 @@ namespace Yujanggi.Core.Domain
         Soldier,    // 졸/병
         None
     }
-    public interface IPiece
-    {
-        bool        IsOwner(PlayerType type);
-        PieceType   Type { get; }
-        PlayerType  Team { get; }
-        public void Highlight();
-        public void MoveTo(int x, int z);
 
-    }
     public interface IPlayerController
     {
         PlayerType Type { get; }
-    }
-
-    public interface IBoard
-    {
-       
     }
     public enum TurnType
     {
@@ -45,25 +29,61 @@ namespace Yujanggi.Core.Domain
     }
     public struct BoardInfo
     {
-        public BoardInfo(PlayerType team)
+        public BoardInfo(PlayerType bottomPlayer)
         {
-            PieceType = PieceType.None;
-            Team = team;
-            Piece = null;
-            x = z = -100;
+            BottomPlayer = bottomPlayer;
+            this.Piece = new();
+            this.Pos = new Pos(-1, -1);
         }
-        public PlayerType           Team;
-        public PieceType            PieceType;  
-        public IPiece               Piece;
-        public int                  x, z;
+        public void Select(PieceInfo piece, Pos pos)
+        {
+            Piece    = piece;
+            this.Pos = pos;
+        }
+
+        public void Clear()
+        {
+            this.Piece = new PieceInfo();
+            this.Pos   = new(-1, -1);
+        }
+        public readonly PlayerType  BottomPlayer;
+        public PieceInfo   Piece;
+        public Pos         Pos;
     }
 
-    public struct MovementInfo
+
+    public readonly struct Pos : IEquatable<Pos>
     {
-        public PlayerType Player;
-        public IPiece Piece;
-        public (int x, int z) From;
-        public (int x, int z) To;
-    }
+        public Pos(int x, int z)
+        {
+            this.X = x;
+            this.Z = z;
+        }
+        public readonly int X;
+        public readonly int Z;
+        
+        public static Pos operator +(Pos a, Pos b)
+            => new Pos(a.X + b.X, a.Z + b.Z);
+        public static Pos operator -(Pos a, Pos b)
+            => new Pos(a.X - b.X, a.Z - b.Z);
+        public static bool operator ==(Pos a, Pos b)
+            => a.X == b.X && a.Z == b.Z;
+        public static bool operator !=(Pos a, Pos b)
+            => !(a == b);
+        public bool Equals(Pos other)
+            => X == other.X && Z == other.Z;
+        public override bool Equals(object obj)
+            => obj is Pos other && Equals(other);
+        public override int GetHashCode()
+            => HashCode.Combine(X, Z);
 
+        public static readonly Pos Up            = new Pos(+0, +1);
+        public static readonly Pos Down          = new Pos(+0, -1);
+        public static readonly Pos Left          = new Pos(-1, +0);
+        public static readonly Pos Right         = new Pos(+1, +0);
+        public static readonly Pos LeftUp        = new Pos(-1, +1);
+        public static readonly Pos RightUp       = new Pos(+1, +1);
+        public static readonly Pos LeftDown      = new Pos(-1, -1);
+        public static readonly Pos RightDown     = new Pos(+1, -1);
+    }
 }

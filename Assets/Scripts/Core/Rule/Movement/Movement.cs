@@ -17,58 +17,45 @@ namespace Yujanggi.Core.Movement
 
             return team == bottom ? 1 : -1;
         }
-            
-
-        protected static readonly (int x, int z)[] Dirs =
+        protected static readonly Pos[] Dirs =
         {
-            (+1, +0), // 우
-            (-1, +0), // 좌
-            (+0, +1), // 상
-            (+0, -1), // 하
-            (+1, +1), // 우상
-            (+1, -1), // 우하
-            (-1, +1), // 좌상
-            (-1, -1)  // 좌하
+            Pos.Right,
+            Pos.Left,
+            Pos.Up,
+            Pos.Down,
+            Pos.RightUp,
+            Pos.RightDown,
+            Pos.LeftUp,
+            Pos.LeftDown
         };
-        protected void ApplyStep(
+
+
+        protected Pos ApplyStep(
             Step step,
-            ref int x, ref int z)
-        {
-            var dir = GetDir(step);
-            x += dir.x;
-            z += dir.z;
-        }
-        protected (int x, int z) GetDir(Step step)
-        {
-            var dir = Dirs[(int)step];
-            return dir;
-        }
-        protected void ApplyStep(
-            Step step, 
+            Pos pos)
+            => pos + GetDir(step);
+        protected Pos GetDir(Step step)
+            => Dirs[(int)step];
+        protected Pos ApplyStep(
+            Step step,
             PlayerType team,
             PlayerType bottom,
-            ref int x, ref int z)
-        {
-            var dir = GetDir(step, team, bottom);
-            x += dir.x;
-            z += dir.z;
-        }
-        protected (int x, int z) GetDir(Step step, PlayerType team, PlayerType bottom)
+            Pos pos)
+            => pos += GetDir(step, team, bottom);
+        protected Pos GetDir(Step step, PlayerType team, PlayerType bottom)
         {
             var dir = Dirs[(int)step];
-            dir.z *= Forward(team, bottom);
-            return dir;
+            return new Pos(dir.X, dir.Z * Forward(team, bottom));
         }
 
- 
-        public abstract List<(int x, int z)> FindWays(
-                IBoardState board, 
-                PlayerType team, 
-                int x, int z);
+
+        public abstract List<Pos> FindWays(
+                IBoardState board,
+                BoardInfo info);
         protected StepResult CheckCell(
                 IBoardState board, 
                 PlayerType team, 
-                int dx, int dz)
-            => BoardHelper.CheckCell(board, team, dx, dz);
+                Pos pos)
+            => BoardHelper.CheckCell(board, team, pos);
     }
 }

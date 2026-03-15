@@ -25,14 +25,14 @@ namespace Yujanggi.Core.Rule
             };
         }
 
-        public List<(int x, int z)> CandidateWays(
+        public List<Pos> CandidateWays(
             IBoardState board,
             in BoardInfo info)
         {
             if (!_rules.TryGetValue(info.Piece.Type, out var rule))
-                return new List<(int, int)>();
+                return new List<Pos>();
 
-            return rule.FindWays(board, info.Team, info.x, info.z);
+            return rule.FindWays(board, info);
         }
     }
 }

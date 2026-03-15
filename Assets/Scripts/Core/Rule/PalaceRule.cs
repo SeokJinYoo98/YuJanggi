@@ -21,12 +21,12 @@ namespace Yujanggi.Core.Rule
             _palaceMovement = new();
         }
 
-        public void ApplyPalaceRule(IBoardState board, in BoardInfo info, List<(int x, int z)> candidates)
+        public void ApplyPalaceRule(IBoardState board, in BoardInfo info, List<Pos> candidates)
         {
             var type = info.Piece.Type;
-            if (_addRule.Contains(type) && board.IsPalace(info.x, info.z))
+            if (_addRule.Contains(type) && board.IsPalace(info.Pos))
             {
-                var ways = _palaceMovement.FindWays(board, info.Team, info.x, info.z);
+                var ways = _palaceMovement.FindWays(board, info);
                 candidates.AddRange(ways);
             }
 
@@ -36,7 +36,7 @@ namespace Yujanggi.Core.Rule
 
 
 
-        private void Filter(IBoardState board, in BoardInfo info, List<(int x, int z)> ways, PieceType type)
+        private void Filter(IBoardState board, in BoardInfo info, List<Pos> ways, PieceType type)
         {
             switch(type)
             {
@@ -50,19 +50,19 @@ namespace Yujanggi.Core.Rule
                     break;
             }
         }
-        private void FilterSoldier(IBoardState board, in BoardInfo info, List<(int x, int z)> ways)
+        private void FilterSoldier(IBoardState board, in BoardInfo info, List<Pos> ways)
         {
   
-            int z = info.z;
-            var isBottom = BoardHelper.IsBottomPlayer(board, info.Team);
+            int z = info.Pos.Z;
+            var isBottom = BoardHelper.IsBottomPlayer(board, info.Piece.Team);
             if (isBottom)
-                ways.RemoveAll(pos => pos.z < z);
+                ways.RemoveAll(pos => pos.Z < z);
             else
-                ways.RemoveAll(pos => pos.z > z);
+                ways.RemoveAll(pos => pos.Z > z);
         }
-        private void FilterKingGuard(IBoardState board, List<(int x, int z)> ways)
+        private void FilterKingGuard(IBoardState board, List<Pos> ways)
         {
-            ways.RemoveAll(pos => !board.IsPalace(pos.x, pos.z));
+            ways.RemoveAll(pos => !board.IsPalace(pos));
         }
     }
 }

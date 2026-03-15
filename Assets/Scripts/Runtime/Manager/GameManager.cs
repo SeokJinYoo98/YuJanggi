@@ -32,8 +32,8 @@ namespace Yujanggi.Runtime.Manager
 
     public class GameManager : MonoBehaviour
     {
-        [SerializeField] private Board _board;
-
+        [SerializeField] private BoardController _board;
+        private readonly PlayerType BottomPlayer = PlayerType.Cho;
         private GameTurnInfo _turnInfo;
 
 
@@ -41,20 +41,29 @@ namespace Yujanggi.Runtime.Manager
         {
             _turnInfo = new();
         }
+        private void Start()
+        {
+            _board.StartGame(BottomPlayer);
+
+        }
 
         public void HandleClick(int x, int z, PlayerType team)
         {
+            // if (team != _turnInfo.Player) return;
+            
             bool isCompleted = false;
+            var pos = new Pos(x, z);
+                
             switch (_turnInfo.Turn)
             {
                 case TurnType.Select:
-                    isCompleted = _board.SelectPiece(x, z, _turnInfo.Player);
+                    isCompleted = _board.SelectPiece(pos, _turnInfo.Player);
                     if (isCompleted) 
                         UpdateTurnInfo(_turnInfo.Player, TurnType.Attack);
                     break;
 
                 case TurnType.Attack:
-                    isCompleted = _board.SelectWay(x, z, _turnInfo.Player);
+                    isCompleted = _board.SelectWay(pos);
                     if (isCompleted)
                         UpdateTurnInfo(NextPlayer(), TurnType.Select);
                     else

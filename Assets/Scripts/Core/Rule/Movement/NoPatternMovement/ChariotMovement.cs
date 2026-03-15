@@ -7,24 +7,28 @@ namespace Yujanggi.Core.Movement
     public class ChariotMovement : Movement
     {
         Step[] _steps = new Step[] { Step.Up, Step.Down, Step.Left, Step.Right };
-        public override List<(int x, int z)> FindWays(IBoardState board, PlayerType team, int x, int z)
+        public override List<Pos> FindWays(
+            IBoardState board,
+            BoardInfo boardInfo)
         {
-            List<(int x, int z)> ways = new();
+            List<Pos> ways = new();
             var bottom = board.BottomPlayer;
+            var team = boardInfo.Piece.Team;
+            var pos = boardInfo.Pos;
             foreach (var step in _steps)
             {
-                int dx = x; int dz = z;
+
                 while (true)
                 {
-                    ApplyStep(step, team, bottom, ref dx, ref dz);
-                    if (!board.BoundaryCheck(dx, dz)) break;
-                    if (board.IsTherePiece(dx, dz, out var team2, out var _))
+                    var dPos = ApplyStep(step, team, bottom, pos);
+                    if (!board.BoundaryCheck(dPos)) break;
+                    if (board.IsTherePiece(dPos, out var piece))
                     {
-                        if (team2 != team)
-                            ways.Add((dx, dz));
+                        if (piece.Team != team)
+                            ways.Add(dPos);
                         break;
                     }
-                    ways.Add((dx, dz));
+                    ways.Add(dPos);
                 }
             }
             return ways;

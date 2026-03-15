@@ -10,25 +10,23 @@ namespace Yujanggi.Utills.Board
         public static StepResult CheckCell(
             IBoardState board,
             PlayerType team,
-            int dx,
-            int dz)
+            Pos pos)
         {
-            if (!board.BoundaryCheck(dx, dz))
+            if (!board.BoundaryCheck(pos))
                 return StepResult.Block;
 
-            if (!board.IsTherePiece(dx, dz, out var pieceTeam, out _))
+            if (!board.IsTherePiece(pos, out var piece))
                 return StepResult.Empty;
 
-            if (pieceTeam == team)
+            if (piece.Team == team)
                 return StepResult.Team;
 
             return StepResult.Enemy;
         }
 
         public static bool IsBottomPlayer(IBoardState board, PlayerType team)
-        {
-            return board.BottomPlayer == team;
-        }
-
+            => board.BottomPlayer == team;
+        public static Vector3 ToVector3(Pos pos, float y)
+            => new Vector3(pos.X, y, pos.Z);
     }
 }

@@ -7,47 +7,44 @@ namespace Yujanggi.Core.Movement
     {
         Step[] _steps = new Step[] { Step.Up, Step.Down, Step.Left, Step.Right };
 
-        public override List<(int x, int z)> FindWays(
-            IBoardState board, 
-            PlayerType team, 
-            int x, int z)
+        public override List<Pos> FindWays(
+            IBoardState board,
+            BoardInfo info)
         {
-            List<(int x, int z)> ways = new();
-
+            List<Pos> ways = new();
             var bottom = board.BottomPlayer;
+            var pos = info.Pos;
+            var team = info.Piece.Team;
+
             foreach (var step in _steps)
             {
                 bool bridge = false;
 
-                int dx = x;
-                int dz = z;
-
                 while (true)
                 {
-                    ApplyStep(step, team, bottom, ref dx, ref dz);
-
-                    if (!board.BoundaryCheck(dx, dz)) 
+                    var dPos = ApplyStep(step, team, bottom, pos);
+                    if (!board.BoundaryCheck(dPos)) 
                         break;
 
-                    if (!board.IsTherePiece(dx, dz, out var otherTeam, out var type))
+                    if (!board.IsTherePiece(dPos, out var piece))
                     {
                         if (bridge)
-                            ways.Add((dx, dz));
+                            ways.Add(dPos);
                         continue;
                     }
 
                     // 말 만났을 때
                     if (!bridge)
                     {
-                        if (type != PieceType.Cannon)
+                        if (piece.Type != PieceType.Cannon)
                             bridge = true;
 
                         continue;
                     }
 
                     // 두번째 말
-                    if (otherTeam != team && type != PieceType.Cannon)
-                        ways.Add((dx, dz));
+                    if (piece.Team != team && piece.Type != PieceType.Cannon)
+                        ways.Add(dPos);
                     break;
                 }
             }

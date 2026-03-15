@@ -7,54 +7,50 @@ namespace Yujanggi.Core.Movement
     public class PatternMovement : Movement
     {
         protected Step[][] _steps;
-        public override List<(int x, int z)> FindWays(
-            IBoardState board, 
-            PlayerType team, 
-            int x, int z)
+        public override List<Pos> FindWays(
+            IBoardState board,
+            BoardInfo info)
         {
-            List<(int x, int z)> ways = new();
+            List<Pos> ways = new();
 
             foreach (var steps in _steps)
-                ProcessDirection(ways, board, team, x, z, steps);
+                ProcessDirection(ways, board, info.Piece.Team, info.Pos, steps);
 
             return ways;
         }
         private void ProcessDirection(
-            List<(int x, int z)> ways,
+            List<Pos> ways,
             IBoardState board,
             PlayerType team,
-            int x, int z,
+            Pos pos,
             Step[] steps)
         {
-            int dx = x;
-            int dz = z;
-
             int len = steps.Length;
             var bottom = board.BottomPlayer;
             for (int j = 0; j < len; ++j)
             {
-                ApplyStep(steps[j], team, bottom, ref dx, ref dz);
+                var dPos = ApplyStep(steps[j], team, bottom, pos);
 
                 if (j < len - 1)
                 {
-                    if (IsBlocked(board, team, dx, dz))
+                    if (IsBlocked(board, team, dPos))
                         return;
                 }
                 else
                 {
-                    if (CanLand(board, team, dx, dz))
-                        ways.Add((dx, dz));
+                    if (CanLand(board, team, dPos))
+                        ways.Add((dPos));
                 }
             }
         }
-        private bool IsBlocked(IBoardState board, PlayerType team, int dx, int dz)
+        private bool IsBlocked(IBoardState board, PlayerType team, Pos pos)
         {
-            var result = CheckCell(board, team, dx, dz);
+            var result = CheckCell(board, team, pos);
             return result != StepResult.Empty;
         }
-        private bool CanLand(IBoardState board, PlayerType team, int dx, int dz)
+        private bool CanLand(IBoardState board, PlayerType team, Pos pos)
         {
-            var result = CheckCell(board, team, dx, dz);
+            var result = CheckCell(board, team, pos);
             return (result == StepResult.Empty) || (result == StepResult.Enemy);
         }
     }

@@ -1,7 +1,9 @@
 using UnityEngine;
 
 namespace Yujanggi.Runtime.Board
-{
+{ 
+    using Utills.Board;
+    using Core.Domain;
     using System.Collections.Generic;
     using UnityEngine.Pool;
 
@@ -27,13 +29,13 @@ namespace Yujanggi.Runtime.Board
             for (int i = 0; i < 25; i++)
                 _pool.Release(_pool.Get());
         }
-        public void Highlight(IReadOnlyList<(int x, int z)> cells)
+        public void Highlight(IReadOnlyList<Pos> cells)
         {
             Clear();
             foreach (var pos in cells)
             {
                 var highlight = _pool.Get();
-                highlight.MoveTo(BoardToWorld(pos.x, pos.z));
+                highlight.MoveTo(BoardHelper.ToVector3(pos, transform.position.y));
                 _active.Add(highlight);
             }
         }
@@ -45,9 +47,5 @@ namespace Yujanggi.Runtime.Board
             _active.Clear();
         }
 
-        Vector3 BoardToWorld(int x, int z)
-        {
-            return new Vector3(x, transform.position.y, z);
-        }
     }
 }
