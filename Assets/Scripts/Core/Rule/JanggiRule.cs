@@ -17,7 +17,7 @@ namespace Yujanggi.Core.Rule
         }
 
         public void FindWays(
-            IBoardState board,
+            IBoardModel board,
             SelectionState selectPiece)
         {
             if (!selectPiece.HasSelection)

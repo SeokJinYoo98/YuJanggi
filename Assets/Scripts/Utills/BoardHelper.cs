@@ -8,7 +8,7 @@ namespace Yujanggi.Utills.Board
     public static class BoardHelper
     {
         public static StepResult CheckCell(
-            IBoardState board,
+            IBoardModel board,
             PlayerTeam team,
             Pos pos)
         {

@@ -43,7 +43,7 @@ namespace Yujanggi.Runtime.Board
             _highlighter.HideHighlight();
         }
 
-        public void SpawnPieceView(IBoardState board)
+        public void SpawnPieceView(IBoardModel board)
         {
            
             int width = board.WIDTH;

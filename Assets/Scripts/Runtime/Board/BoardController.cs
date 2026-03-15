@@ -4,14 +4,11 @@ namespace Yujanggi.Runtime.Board
     using Core.Board;
     using Yujanggi.Core.Domain;
     using Yujanggi.Core.Rule;
-    using static UnityEditor.PlayerSettings;
 
-    // ToDo: 보드인포 IPiece 제거.   
-    // 보드 컨트롤러가 될 예정
     public class BoardController : MonoBehaviour
     {
         private BoardView   _boardView;
-        private BoardState  _boardState;
+        private BoardModel  _boardModel;
         private JanggiRule  _janggiRule;
 
         private SelectionState   _selectionInfo;
@@ -24,12 +21,12 @@ namespace Yujanggi.Runtime.Board
         public void StartGame(PlayerTeam bottomPlayer)
         {
             _selectionInfo   = new(bottomPlayer);
-            _boardState      = new(bottomPlayer);
-            _boardView.SpawnPieceView(_boardState);
+            _boardModel      = new(bottomPlayer);
+            _boardView.SpawnPieceView(_boardModel);
         }
-        public BoardActionResult  HandleCellClick(Pos pos, PlayerTeam turn)
+        public  BoardActionResult  HandleCellClick(Pos pos, PlayerTeam turn)
         {
-            if (!_boardState.IsInside(pos))
+            if (!_boardModel.IsInside(pos))
                 return BoardActionResult.None;
 
             if (!_selectionInfo.HasSelection)
@@ -37,7 +34,7 @@ namespace Yujanggi.Runtime.Board
 
             return HandleSelectedClick(pos, turn);
         }
-        private BoardActionResult HandleSelectPiece(Pos pos, PlayerTeam turn)
+        private BoardActionResult  HandleSelectPiece(Pos pos, PlayerTeam turn)
         {
             if (!CanSelectPiece(pos, turn))
                 return BoardActionResult.SelectFailed;
@@ -47,12 +44,12 @@ namespace Yujanggi.Runtime.Board
 
             return BoardActionResult.SelectSuccess;
         }
-        private BoardActionResult HandleSelectedClick(Pos pos, PlayerTeam turn)
+        private BoardActionResult  HandleSelectedClick(Pos pos, PlayerTeam turn)
         {
             if (CanSelectPiece(pos, turn))
                 ReselectPiece(pos, turn);
 
-            if (!_boardState.IsMovable(pos))
+            if (!_boardModel.IsMovable(pos))
             {
                 ClearSelection();
                 return BoardActionResult.MoveFailed;
@@ -61,7 +58,7 @@ namespace Yujanggi.Runtime.Board
 
             return MoveSelectedPiece(pos, turn);
         }
-        private BoardActionResult ReselectPiece(Pos pos, PlayerTeam turn)
+        private BoardActionResult  ReselectPiece(Pos pos, PlayerTeam turn)
         {
             if (!CanSelectPiece(pos, turn))
             {
@@ -73,25 +70,29 @@ namespace Yujanggi.Runtime.Board
             FindWays(pos);
             return BoardActionResult.Reselect;
         }
-        private BoardActionResult MoveSelectedPiece(Pos pos, PlayerTeam turn)
+        private BoardActionResult  MoveSelectedPiece(Pos pos, PlayerTeam turn)
         {
+            var targetPiece = _boardModel.GetPiece(pos);
+            var result = targetPiece.IsNone
+                ? BoardActionResult.MoveSuccess
+                : BoardActionResult.CaptureSuccess;
+
             var fromPos = _selectionInfo.SelectedPos;
-            _boardState.MovePiece(fromPos, pos, out var killedInfo);
+            _boardModel.SetPiece(pos, _boardModel.GetPiece(fromPos));
+            _boardModel.SetPiece(fromPos, PieceInfo.None);
+
             _boardView.MovePieceView(fromPos, pos, out var killedView);
 
             ClearSelection();
 
-            if (killedInfo.IsNone)
-                return BoardActionResult.MoveSuccess;
-
-            return BoardActionResult.CaptureSuccess;
+            return result;
         }
 
         private void FindWays(Pos pos)
         {
-            _boardState.ClearMovable();
-            _janggiRule.FindWays(_boardState, _selectionInfo);
-            _boardView.ShowHighlights(pos, _boardState.MovableCells);
+            _boardModel.ClearMovable();
+            _janggiRule.FindWays(_boardModel, _selectionInfo);
+            _boardView.ShowHighlights(pos, _boardModel.MovableCells);
         }
         private void ClearSelection()
         {
@@ -101,15 +102,15 @@ namespace Yujanggi.Runtime.Board
 
         private bool CanSelectPiece(Pos pos, PlayerTeam turn)
         {
-            if (!_boardState.HasPiece(pos))
+            if (!_boardModel.HasPiece(pos))
                 return false;
 
-            var pieceInfo = _boardState.GetPiece(pos);
+            var pieceInfo = _boardModel.GetPiece(pos);
             return pieceInfo.Team == turn;
         }
         private void SelectPeice(Pos pos)
         {
-            var pieceInfo = _boardState.GetPiece(pos);
+            var pieceInfo = _boardModel.GetPiece(pos);
             _selectionInfo.Select(pieceInfo, pos);
         }
     }

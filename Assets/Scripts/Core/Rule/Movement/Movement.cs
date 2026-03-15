@@ -50,10 +50,10 @@ namespace Yujanggi.Core.Movement
 
 
         public abstract List<Pos> FindWays(
-                IBoardState board,
+                IBoardModel board,
                 SelectionState selectPiece);
         protected StepResult CheckCell(
-                IBoardState board, 
+                IBoardModel board, 
                 PlayerTeam team, 
                 Pos pos)
             => BoardHelper.CheckCell(board, team, pos);

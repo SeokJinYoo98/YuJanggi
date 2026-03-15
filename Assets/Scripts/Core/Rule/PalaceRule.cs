@@ -21,7 +21,7 @@ namespace Yujanggi.Core.Rule
             _palaceMovement = new();
         }
 
-        public void ApplyPalaceRule(IBoardState board, in SelectionState selectInfo, List<Pos> candidates)
+        public void ApplyPalaceRule(IBoardModel board, in SelectionState selectInfo, List<Pos> candidates)
         {
             var selectedPiece = selectInfo.SelectedPiece;
             var type = selectedPiece.Type;
@@ -38,7 +38,7 @@ namespace Yujanggi.Core.Rule
 
 
 
-        private void Filter(IBoardState board, in SelectionState selectPiece, List<Pos> ways, PieceType type)
+        private void Filter(IBoardModel board, in SelectionState selectPiece, List<Pos> ways, PieceType type)
         {
             switch(type)
             {
@@ -52,7 +52,7 @@ namespace Yujanggi.Core.Rule
                     break;
             }
         }
-        private void FilterSoldier(IBoardState board, SelectionState selectInfo, List<Pos> ways)
+        private void FilterSoldier(IBoardModel board, SelectionState selectInfo, List<Pos> ways)
         {
 
             int z = selectInfo.SelectedPos.Z;
@@ -62,7 +62,7 @@ namespace Yujanggi.Core.Rule
             else
                 ways.RemoveAll(pos => pos.Z > z);
         }
-        private void FilterKingGuard(IBoardState board, List<Pos> ways)
+        private void FilterKingGuard(IBoardModel board, List<Pos> ways)
         {
             ways.RemoveAll(pos => !board.IsPalace(pos));
         }

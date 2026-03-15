@@ -29,7 +29,7 @@ namespace Yujanggi.Core.Movement
                 { new Pos (5, 2+top), new[] { Step.LeftDown }}
             };
         }
-        public override List<Pos> FindWays(IBoardState board, SelectionState selectInfo)
+        public override List<Pos> FindWays(IBoardModel board, SelectionState selectInfo)
         {
             List<Pos> ways = new(); 
             var selectedPiece   = selectInfo.SelectedPiece;
@@ -57,26 +57,26 @@ namespace Yujanggi.Core.Movement
 
             return ways;
         }
-        private void Default(IBoardState board, PlayerTeam team, Pos pos, List<Pos> ways)
+        private void Default(IBoardModel board, PlayerTeam team, Pos pos, List<Pos> ways)
         {
             ProcessPalaceMove(board, team, pos, ways, DefaultStep);
         }
 
-        private void Chariot(IBoardState board, PlayerTeam team, Pos pos, List<Pos> ways)
+        private void Chariot(IBoardModel board, PlayerTeam team, Pos pos, List<Pos> ways)
         {
             ProcessPalaceMove(board, team, pos, ways, ChariotStep);
         }
 
-        private void Cannon(IBoardState board, PlayerTeam team, Pos pos, List<Pos> ways)
+        private void Cannon(IBoardModel board, PlayerTeam team, Pos pos, List<Pos> ways)
         {
             ProcessPalaceMove(board, team, pos, ways, CannonStep);
         }
         private void ProcessPalaceMove(
-            IBoardState board,
+            IBoardModel board,
             PlayerTeam team,
             Pos pos,
             List<Pos> ways,
-            Func<IBoardState, PlayerTeam, Step, Pos, List<Pos>, bool> handler)
+            Func<IBoardModel, PlayerTeam, Step, Pos, List<Pos>, bool> handler)
         {
             if (!_palaceLinks.TryGetValue(pos, out var steps))
                 return;
@@ -87,7 +87,7 @@ namespace Yujanggi.Core.Movement
             }
         }
         private bool DefaultStep(
-            IBoardState board,
+            IBoardModel board,
             PlayerTeam team,
             Step step,
             Pos pos,
@@ -104,7 +104,7 @@ namespace Yujanggi.Core.Movement
             return true;
         }
         private bool ChariotStep(
-            IBoardState board,
+            IBoardModel board,
             PlayerTeam team,
             Step step,
             Pos pos,
@@ -139,7 +139,7 @@ namespace Yujanggi.Core.Movement
             return true;
         }
         private bool CannonStep(
-            IBoardState board,
+            IBoardModel board,
             PlayerTeam team,
             Step step,
             Pos pos,

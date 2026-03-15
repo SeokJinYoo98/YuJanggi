@@ -26,7 +26,7 @@ namespace Yujanggi.Core.Rule
         }
 
         public List<Pos> CandidateWays(
-            IBoardState board,
+            IBoardModel board,
             SelectionState selectPiece)
         {
             if (!_rules.TryGetValue(selectPiece.SelectedPiece.Type, out var rule))

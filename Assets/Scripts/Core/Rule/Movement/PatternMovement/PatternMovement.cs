@@ -9,7 +9,7 @@ namespace Yujanggi.Core.Movement
     {
         protected Step[][] _steps;
         public override List<Pos> FindWays(
-            IBoardState board,
+            IBoardModel board,
             SelectionState selectPiece)
         {
             List<Pos> ways = new();
@@ -21,7 +21,7 @@ namespace Yujanggi.Core.Movement
         }
         private void ProcessDirection(
             List<Pos> ways,
-            IBoardState board,
+            IBoardModel board,
             PlayerTeam team,
             PlayerTeam bottom,
             Pos pos,
@@ -45,12 +45,12 @@ namespace Yujanggi.Core.Movement
                 }
             }
         }
-        private bool IsBlocked(IBoardState board, PlayerTeam team, Pos pos)
+        private bool IsBlocked(IBoardModel board, PlayerTeam team, Pos pos)
         {
             var result = CheckCell(board, team, pos);
             return result != StepResult.Empty;
         }
-        private bool CanLand(IBoardState board, PlayerTeam team, Pos pos)
+        private bool CanLand(IBoardModel board, PlayerTeam team, Pos pos)
         {
             var result = CheckCell(board, team, pos);
             return (result == StepResult.Empty) || (result == StepResult.Enemy);

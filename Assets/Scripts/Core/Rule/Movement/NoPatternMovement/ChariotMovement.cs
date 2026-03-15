@@ -8,7 +8,7 @@ namespace Yujanggi.Core.Movement
     {
         Step[] _steps = new Step[] { Step.Up, Step.Down, Step.Left, Step.Right };
         public override List<Pos> FindWays(
-            IBoardState board,
+            IBoardModel board,
             SelectionState selectInfo)
         {
             List<Pos> ways = new();
