@@ -18,6 +18,7 @@ namespace Yujanggi.Runtime.Manager
 
         private void Awake()
         {
+            Application.targetFrameRate = 144;
             _turnInfo = new();
         }
         private void Start()

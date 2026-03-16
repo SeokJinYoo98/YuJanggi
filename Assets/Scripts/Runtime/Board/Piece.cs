@@ -34,7 +34,7 @@ namespace Yujanggi.Runtime.Board
             if (_moveRoutine != null)
                 StopCoroutine(_moveRoutine);
             Vector3 targetWorldPos = BoardHelper.ToVector3(toPos, transform.position.y);
-            _moveRoutine = StartCoroutine(CoMove(targetWorldPos, 0.18f));
+            _moveRoutine = StartCoroutine(CoMove(targetWorldPos, 0.16f));
         }
         public bool IsOwner(PlayerTeam type)
             => type == _data.Team;

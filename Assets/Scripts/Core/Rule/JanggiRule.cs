@@ -29,5 +29,7 @@ namespace Yujanggi.Core.Rule
 
             board.AddMovable(candidates);
         }
+
+
     }
 }

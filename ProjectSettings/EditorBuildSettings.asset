@@ -5,9 +5,9 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/Janggi.unity
+    guid: 18b47c7b94a12234fa654c0d76bcb0db
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: d398f39dc44bec444945c853d4889838, type: 3}
   m_UseUCBPForAssetBundles: 0

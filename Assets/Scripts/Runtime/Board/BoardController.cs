@@ -23,8 +23,9 @@ namespace Yujanggi.Runtime.Board
         }
         public void StartGame(PlayerTeam bottomPlayer)
         {
+            _boardModel      = new();
+            BoardInitializer.SetUpPieces(_boardModel, bottomPlayer);
             _selectionInfo   = new(bottomPlayer);
-            _boardModel      = new(bottomPlayer);
             _boardView.SpawnPieceView(_boardModel);
         }
         public  BoardActionResult  HandleCellClick(Pos pos, PlayerTeam turn)
