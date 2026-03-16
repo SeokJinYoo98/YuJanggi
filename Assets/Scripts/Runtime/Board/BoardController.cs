@@ -14,7 +14,7 @@ namespace Yujanggi.Runtime.Board
         private BoardModel  _boardModel;
 
         private JanggiRule          _janggiRule;
-        private SelectionState      _selectionInfo;
+        private SelectionState      _selection;
        
         private void Awake()
         {
@@ -25,7 +25,7 @@ namespace Yujanggi.Runtime.Board
         {
             _boardModel      = new();
             BoardInitializer.SetUpPieces(_boardModel, bottomPlayer);
-            _selectionInfo   = new(bottomPlayer);
+            _selection   = new(bottomPlayer);
             _boardView.SpawnPieceView(_boardModel);
         }
         public  BoardActionResult  HandleCellClick(Pos pos, PlayerTeam turn)
@@ -33,7 +33,7 @@ namespace Yujanggi.Runtime.Board
             if (!_boardModel.IsInside(pos))
                 return BoardActionResult.None;
 
-            if (!_selectionInfo.HasSelection)
+            if (!_selection.HasSelection)
                 return HandleSelectPiece(pos, turn);
 
             return HandleSelectedClick(pos, turn);
@@ -53,7 +53,7 @@ namespace Yujanggi.Runtime.Board
             if (CanSelectPiece(pos, turn))
                 ReselectPiece(pos, turn);
 
-            if (!_boardModel.IsMovable(pos))
+            if (!_selection.IsMovable(pos))
             {
                 ClearSelection();
                 return BoardActionResult.MoveFailed;
@@ -76,7 +76,7 @@ namespace Yujanggi.Runtime.Board
         }
         private BoardActionResult  MoveSelectedPiece(Pos toPos, PlayerTeam turn)
         {
-            var fromPos = _selectionInfo.SelectedPos;
+            var fromPos = _selection.SelectedPos;
 
             var attackerPiece   = _boardModel.GetPiece(fromPos);
             var victimPiece     = _boardModel.GetPiece(toPos);
@@ -109,13 +109,12 @@ namespace Yujanggi.Runtime.Board
 
         private void FindWays(Pos pos)
         {
-            _boardModel.ClearMovable();
-            _janggiRule.FindWays(_boardModel, _selectionInfo);
-            _boardView.ShowHighlights(pos, _boardModel.MovableCells);
+            _janggiRule.FindWays(_boardModel, _selection);
+            _boardView.ShowHighlights(pos, _selection.MovableCells);
         }
         private void ClearSelection()
         {
-            _selectionInfo.Clear();
+            _selection.Clear();
             _boardView.HideHighlights();
         }
 
@@ -130,7 +129,7 @@ namespace Yujanggi.Runtime.Board
         private void SelectPeice(Pos pos)
         {
             var pieceInfo = _boardModel.GetPiece(pos);
-            _selectionInfo.Select(pieceInfo, pos);
+            _selection.Select(pieceInfo, pos);
         }
 
         private void RaiseCapture(CaptureContext context)

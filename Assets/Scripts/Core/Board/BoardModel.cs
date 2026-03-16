@@ -9,12 +9,6 @@ namespace Yujanggi.Core.Board
     {
         public int WIDTH { get; }
         public int HEIGHT { get; }
-        public bool                 IsMovable(Pos pos);
-        public void                 AddMovable(List<Pos> ways);
-        public IReadOnlyList<Pos>   MovableCells { get; }
-        public void                 ClearMovable();
-
-
         public bool         IsInside(Pos pos);
         public bool         IsPalace(Pos pos);
         public bool         HasPiece(Pos pos);
@@ -26,12 +20,11 @@ namespace Yujanggi.Core.Board
     {
         public int WIDTH  => _width;
         public int HEIGHT => _height;
+
         private readonly int _width  = 9;
         private readonly int _height = 10;
-        private CellData[,]  _board;
 
-        private PieceInfo[]  _hanPieces;
-        private PieceInfo[]  _choPieces;
+        private CellData[,]  _board;
 
         public BoardModel(int width = 9, int height = 10)
         {
@@ -73,17 +66,5 @@ namespace Yujanggi.Core.Board
             => _board[pos.X, pos.Z].Piece;
         public void         SetPiece(Pos pos, PieceInfo piece)
             => _board[pos.X, pos.Z].Piece = piece;
-
-
-        // Movable 관련
-        private List<Pos> _movableCells = new(25);
-        public IReadOnlyList<Pos> MovableCells => _movableCells;
-        public void ClearMovable()
-            => _movableCells.Clear();
-        public void AddMovable(List<Pos> ways)
-            => _movableCells.AddRange(ways);
-        public bool IsMovable(Pos pos)
-            => _movableCells.Contains(pos);
- 
     }
 }

@@ -45,7 +45,6 @@ namespace Yujanggi.Runtime.Board
 
         public void SpawnPieceView(IBoardModel board)
         {
-           
             int width = board.WIDTH;
             int height = board.HEIGHT;
 

@@ -1,6 +1,7 @@
 using System;
 namespace Yujanggi.Core.Domain
 {
+    using System.Collections.Generic;
     using Yujanggi.Core.Board;
     using Yujanggi.Data.Board;
     using Yujanggi.Runtime.Board;
@@ -86,30 +87,34 @@ namespace Yujanggi.Core.Domain
     }
     public class SelectionState
     {
+        private readonly List<Pos> _movableCells = new(25);
         public SelectionState(PlayerTeam bottomPlayer)
-        {
-            BottomPlayer = bottomPlayer;
-        }
+            => BottomPlayer = bottomPlayer;
 
-        public PlayerTeam   BottomPlayer { get; }
-
-        public SelectionInfo? Current { get; private set; }
-
-        public bool HasSelection => Current.HasValue;
-        public bool IsBottom => Current.HasValue && Current.Value.Piece.Team == BottomPlayer;
-
-        public PieceInfo SelectedPiece => Current!.Value.Piece;
-        public Pos       SelectedPos   => Current!.Value.Pos;
+        public PlayerTeam           BottomPlayer { get; }
+        public SelectionInfo?       Current      { get; private set; }
+        public IReadOnlyList<Pos>   MovableCells => _movableCells;
+        public bool                 HasSelection => Current.HasValue;
+        public bool                 IsBottom => Current.HasValue && Current.Value.Piece.Team == BottomPlayer;
+        public PieceInfo            SelectedPiece => Current!.Value.Piece;
+        public Pos                  SelectedPos   => Current!.Value.Pos;
         
         public void Select(PieceInfo piece, Pos pos)
         {
             Current = new SelectionInfo(piece, pos);
+            _movableCells.Clear();
         }
-
         public void Clear()
         {
             Current = null;
+            _movableCells.Clear();
         }
+
+        // Movable 관련
+        public void SetMovable(List<Pos> ways)
+            => _movableCells.AddRange(ways);
+        public bool IsMovable(Pos pos)
+            => _movableCells.Contains(pos);
     }
     
     public readonly struct CaptureContext
