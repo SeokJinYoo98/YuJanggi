@@ -37,7 +37,6 @@ namespace Yujanggi.Runtime.Manager
         public void HandleClick(int x, int z)
         {
             var result = _board.HandleCellClick(new Pos(x, z), _turnInfo.Player);
-            Debug.Log($"{result}");
             switch (result)
             {
                 case BoardActionResult.SelectSuccess:
@@ -77,45 +76,70 @@ namespace Yujanggi.Runtime.Manager
         }
 
 
+        // 이동관련 처리
         private List<IPiece> _garbageCho = new();
         private Pos _garbageChoPos = new Pos(0, -7);
-
         private List<IPiece> _garbageHan = new();
         private Pos _garbagehanPos = new Pos(0, -6);
+
         private void OnMoved(MoveContext context)
         {
-            var From = context.Record.From;
-            var To = context.Record.To;
-            var Team = context.Record.CapturedPiece.Team;
-            var MovedType = context.Record.MovedPiece.Type;
-            var CapturedType = context.Record.CapturedPiece.Type;
-            Debug.Log($"From:({From.X},{From.Z}), " +
-                $"To:({To.X},{To.Z}), Moved:{MovedType}, " +
-                $"Captured:{CapturedType}");
+            LogMove(context);
+            SaveHistory(context);
+            HandleCapture(context);
+        }
 
-            _history.Push(context);
- 
-            if (context.IsCapture)
+        private void HandleCapture(in MoveContext context)
+        {
+            if (!context.IsCapture)
+                return;
+
+            var capturedView = context.CapturedPieceView;
+            var team = context.Record.CapturedPiece.Team;
+
+            var (garbageList, garbagePos) = GetGarbageData(team);
+
+            garbageList.Add(capturedView);
+            capturedView.MoveTo(garbagePos);
+
+            AdvanceGarbagePos(team);
+        }
+        private void LogMove(in MoveContext context)
+        {
+            var record = context.Record;
+
+            Debug.Log(
+                $"From:({record.From.X},{record.From.Z}), " +
+                $"To:({record.To.X},{record.To.Z}), " +
+                $"Moved:{record.MovedPiece.Type}, " +
+                $"Captured:{record.CapturedPiece.Type}"
+            );
+        }
+        private void SaveHistory(in MoveContext context)
+            => _history.Push(context);
+        private (List<IPiece> garbageList, Pos garbagePos) GetGarbageData(PlayerTeam team)
+        {
+            if (team == PlayerTeam.Cho)
+                return (_garbageCho, _garbageChoPos);
+
+            return (_garbageHan, _garbagehanPos);
+        }
+        private void AdvanceGarbagePos(PlayerTeam team)
+        {
+            if (team == PlayerTeam.Cho)
+                _garbageChoPos += Pos.Right;
+            else
+                _garbagehanPos += Pos.Right;
+        }
+
+
+        public void Undo()
+        {
+            if (_history.TryPop(out var context))
             {
-                
-                List<IPiece> garbage;
-                Pos pos;
-                if (Team == PlayerTeam.Cho)
-                {
-                    garbage = _garbageCho;
-                    pos = _garbageChoPos;
-                    _garbageChoPos += Pos.Right;
-                }
-                else
-                {
-                    garbage = _garbageHan;
-                    pos = _garbagehanPos;
-                    _garbagehanPos += Pos.Right;
-                }
-                var view = context.Capturedview;
-                garbage.Add(context.Capturedview);
-                view.MoveTo(pos);
+                LogMove(context);
             }
+            Debug.Log("Stack is empty");
         }
     }
 }

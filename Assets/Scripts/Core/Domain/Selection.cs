@@ -54,10 +54,10 @@ namespace Yujanggi.Core.Domain
         public MoveContext(MoveRecord record, IPiece capturedPiece)
         {
             Record = record;
-            Capturedview = capturedPiece;
+            CapturedPieceView = capturedPiece;
         }
         public MoveRecord   Record { get; }
         public bool         IsCapture => Record.IsCapture;
-        public IPiece       Capturedview { get; }
+        public IPiece       CapturedPieceView { get; }
     }
 }

@@ -440,7 +440,7 @@ GameObject:
   m_Component:
   - component: {fileID: 239210210}
   - component: {fileID: 239210209}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: AudioManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -489,7 +489,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 509507442}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Players
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -522,7 +522,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 510986754}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Highlighers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -814,7 +814,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1317028488}
   - component: {fileID: 1317028487}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: sfx
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1019,6 +1019,18 @@ MonoBehaviour:
       - m_Target: {fileID: 239210209}
         m_TargetAssemblyTypeName: Yujanggi.Runtime.Audio.AudioManager, Assembly-CSharp
         m_MethodName: PlayButton
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1642307853}
+        m_TargetAssemblyTypeName: Yujanggi.Runtime.Manager.GameManager, Assembly-CSharp
+        m_MethodName: Undo
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1253,7 +1265,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1546871214}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Spanwers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1286,7 +1298,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1642307854}
   - component: {fileID: 1642307853}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: GameManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1331,7 +1343,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1678781763}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Managers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1366,7 +1378,7 @@ GameObject:
   - component: {fileID: 2070058882}
   - component: {fileID: 2070058881}
   - component: {fileID: 2070058880}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: EventSystem
   m_TagString: Untagged
   m_Icon: {fileID: 0}

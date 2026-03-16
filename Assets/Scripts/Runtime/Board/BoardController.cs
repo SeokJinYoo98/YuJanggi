@@ -51,7 +51,7 @@ namespace Yujanggi.Runtime.Board
         {
             if (CanSelectPiece(pos, turn))
                 return ReselectPiece(pos, turn);
-
+      
             if (!_selection.IsMovable(pos))
             {
                 ClearSelection();
@@ -62,6 +62,8 @@ namespace Yujanggi.Runtime.Board
         }
         private BoardActionResult ReselectPiece(Pos pos, PlayerTeam turn)
         {
+            if (pos == _selection.SelectedPos)
+                return BoardActionResult.None;
             SelectPeice(pos);
             FindWays(pos);
             return BoardActionResult.Reselect;
