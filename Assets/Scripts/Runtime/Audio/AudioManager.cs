@@ -9,7 +9,7 @@ namespace Yujanggi.Runtime.Audio
         [SerializeField] private AudioClip _selectClip;
         [SerializeField] private AudioClip _moveClip;
         [SerializeField] private AudioClip _captureClip;
-
+        [SerializeField] private AudioClip _buttonClip;
         private void Awake()
         {
             
@@ -27,6 +27,12 @@ namespace Yujanggi.Runtime.Audio
         }
         public void PlayCapture()
             => _sfxSource.PlayOneShot(_captureClip);
+
+        public void PlayButton()
+        {
+            _sfxSource.pitch = 1.0f;
+            _sfxSource.PlayOneShot(_buttonClip);
+        }
     }
 
 }

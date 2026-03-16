@@ -84,18 +84,23 @@ namespace Yujanggi.Runtime.Manager
         private Pos _garbagehanPos = new Pos(0, -6);
         private void OnMoved(MoveContext context)
         {
-            Debug.Log($"From:({context.From.X},{context.From.Z}), " +
-                $"To:({context.To.X},{context.To.Z}), Attacker:{context.Attacker.Type}, " +
-                $"Captured:{context.CapturedPiece.Type}");
+            var From = context.Record.From;
+            var To = context.Record.To;
+            var Team = context.Record.CapturedPiece.Team;
+            var MovedType = context.Record.MovedPiece.Type;
+            var CapturedType = context.Record.CapturedPiece.Type;
+            Debug.Log($"From:({From.X},{From.Z}), " +
+                $"To:({To.X},{To.Z}), Moved:{MovedType}, " +
+                $"Captured:{CapturedType}");
 
             _history.Push(context);
  
             if (context.IsCapture)
             {
-                var team = context.CapturedPiece.Team;
+                
                 List<IPiece> garbage;
                 Pos pos;
-                if (team == PlayerTeam.Cho)
+                if (Team == PlayerTeam.Cho)
                 {
                     garbage = _garbageCho;
                     pos = _garbageChoPos;
@@ -107,8 +112,8 @@ namespace Yujanggi.Runtime.Manager
                     pos = _garbagehanPos;
                     _garbagehanPos += Pos.Right;
                 }
-                var view = context.VictimView;
-                garbage.Add(context.VictimView);
+                var view = context.Capturedview;
+                garbage.Add(context.Capturedview);
                 view.MoveTo(pos);
             }
         }
