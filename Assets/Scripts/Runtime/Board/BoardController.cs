@@ -50,7 +50,7 @@ namespace Yujanggi.Runtime.Board
         private BoardActionResult  HandleSelectedClick(Pos pos, PlayerTeam turn)
         {
             if (CanSelectPiece(pos, turn))
-                ReselectPiece(pos, turn);
+                return ReselectPiece(pos, turn);
 
             if (!_selection.IsMovable(pos))
             {
@@ -60,14 +60,8 @@ namespace Yujanggi.Runtime.Board
 
             return MoveSelectedPiece(pos, turn);
         }
-        private BoardActionResult  ReselectPiece(Pos pos, PlayerTeam turn)
+        private BoardActionResult ReselectPiece(Pos pos, PlayerTeam turn)
         {
-            if (!CanSelectPiece(pos, turn))
-            {
-                ClearSelection();
-                return BoardActionResult.SelectFailed;
-            }
-
             SelectPeice(pos);
             FindWays(pos);
             return BoardActionResult.Reselect;
@@ -75,30 +69,15 @@ namespace Yujanggi.Runtime.Board
         private BoardActionResult  MoveSelectedPiece(Pos toPos, PlayerTeam turn)
         {
             var fromPos = _selection.SelectedPos;
+            var record = _boardModel.DoMove(fromPos, toPos);
+            _boardView.DoMove(fromPos, toPos, out var capturedView);
+            
+            RaiseMove(new (record, capturedView));
+            ClearSelection();
 
-            var attackerPiece   = _boardModel.GetPiece(fromPos);
-            var victimPiece     = _boardModel.GetPiece(toPos);
-
-            var isCapture = !victimPiece.IsNone;
-            var result = isCapture
+            return record.IsCapture 
                 ? BoardActionResult.CaptureSuccess
                 : BoardActionResult.MoveSuccess;
-
-            _boardModel.DoMove(fromPos, toPos);
-            _boardView.DoMove(fromPos, toPos, out var victimView);
-
-            var context = new MoveContext(
-                fromPos,
-                toPos,
-                attackerPiece,
-                victimPiece,
-                victimView);
-
-            RaiseMove(context);
-
-
-            ClearSelection();
-            return result;
         }
         private void FindWays(Pos pos)
         {
