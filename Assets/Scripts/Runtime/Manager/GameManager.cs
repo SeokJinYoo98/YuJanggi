@@ -16,6 +16,9 @@ namespace Yujanggi.Runtime.Manager
         private readonly PlayerTeam BottomPlayer = PlayerTeam.Cho;
         private GameTurnInfo _turnInfo;
 
+
+        private Stack<MoveContext> _history = new();
+
         private void Awake()
         {
             Application.targetFrameRate = 144;
@@ -24,12 +27,12 @@ namespace Yujanggi.Runtime.Manager
         private void Start()
         {
             _board.StartGame(BottomPlayer);
-            _board.OnCapture += OnCaptured;
+            _board.OnMove += OnMoved;
         }
         private void OnDestroy()
         {
             if (_board != null)
-                _board.OnCapture -= OnCaptured;
+                _board.OnMove -= OnMoved;
         }
         public void HandleClick(int x, int z)
         {
@@ -63,12 +66,12 @@ namespace Yujanggi.Runtime.Manager
             }
             
         }
-        public void UpdateTurnInfo(PlayerTeam next, TurnType turn)
+        private void UpdateTurnInfo(PlayerTeam next, TurnType turn)
         {
             _turnInfo.Player = next;
             _turnInfo.Turn   = turn;
         }
-        public PlayerTeam NextPlayer()
+        private PlayerTeam NextPlayer()
         {
             return _turnInfo.Player == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho;
         }
@@ -79,29 +82,35 @@ namespace Yujanggi.Runtime.Manager
 
         private List<IPiece> _garbageHan = new();
         private Pos _garbagehanPos = new Pos(0, -6);
-        private void OnCaptured(CaptureContext context)
+        private void OnMoved(MoveContext context)
         {
             Debug.Log($"From:({context.From.X},{context.From.Z}), " +
-                $"To:({context.To.X},{context.To.Z}), Attacker:{context.Attacker.Type}, Victim:{context.Victim.Type}");
-            var team = context.Victim.Team;
+                $"To:({context.To.X},{context.To.Z}), Attacker:{context.Attacker.Type}, " +
+                $"Captured:{context.CapturedPiece.Type}");
 
-            List<IPiece> garbage;
-            Pos pos;
-            if (team == PlayerTeam.Cho)
+            _history.Push(context);
+ 
+            if (context.IsCapture)
             {
-                garbage = _garbageCho;
-                pos = _garbageChoPos;
-                _garbageChoPos += Pos.Right;
+                var team = context.CapturedPiece.Team;
+                List<IPiece> garbage;
+                Pos pos;
+                if (team == PlayerTeam.Cho)
+                {
+                    garbage = _garbageCho;
+                    pos = _garbageChoPos;
+                    _garbageChoPos += Pos.Right;
+                }
+                else
+                {
+                    garbage = _garbageHan;
+                    pos = _garbagehanPos;
+                    _garbagehanPos += Pos.Right;
+                }
+                var view = context.VictimView;
+                garbage.Add(context.VictimView);
+                view.MoveTo(pos);
             }
-            else
-            {
-                garbage = _garbageHan;
-                pos = _garbagehanPos;
-                _garbagehanPos += Pos.Right;
-            }
-            var view = context.VictimView;
-            garbage.Add(context.VictimView);
-            view.MoveTo(pos);
         }
     }
 }

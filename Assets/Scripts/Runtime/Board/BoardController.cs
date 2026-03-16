@@ -8,7 +8,7 @@ namespace Yujanggi.Runtime.Board
 
     public class BoardController : MonoBehaviour
     {
-        public event Action<CaptureContext> OnCapture;
+        public event Action<MoveContext> OnMove;
 
         private BoardView   _boardView;
         private BoardModel  _boardModel;
@@ -21,11 +21,10 @@ namespace Yujanggi.Runtime.Board
             _boardView = GetComponent<BoardView>();
             _janggiRule = new();
         }
-        public void StartGame(PlayerTeam bottomPlayer)
+        public void StartGame(PlayerTeam bottom)
         {
-            _boardModel      = new();
-            BoardInitializer.SetUpPieces(_boardModel, bottomPlayer);
-            _selection   = new(bottomPlayer);
+            _boardModel  = new(bottom); BoardInitializer.SetUpPieces(_boardModel, bottom);
+            _selection   = new(bottom);
             _boardView.SpawnPieceView(_boardModel);
         }
         public  BoardActionResult  HandleCellClick(Pos pos, PlayerTeam turn)
@@ -59,7 +58,6 @@ namespace Yujanggi.Runtime.Board
                 return BoardActionResult.MoveFailed;
             }
 
-
             return MoveSelectedPiece(pos, turn);
         }
         private BoardActionResult  ReselectPiece(Pos pos, PlayerTeam turn)
@@ -86,27 +84,22 @@ namespace Yujanggi.Runtime.Board
                 ? BoardActionResult.CaptureSuccess
                 : BoardActionResult.MoveSuccess;
 
-            _boardModel.SetPiece(toPos, attackerPiece);
-            _boardModel.SetPiece(fromPos, PieceInfo.None);
+            _boardModel.DoMove(fromPos, toPos);
+            _boardView.DoMove(fromPos, toPos, out var victimView);
 
-            _boardView.MovePieceView(fromPos, toPos, out var victimView);
+            var context = new MoveContext(
+                fromPos,
+                toPos,
+                attackerPiece,
+                victimPiece,
+                victimView);
 
-            if (isCapture)
-            {
-                var context = new CaptureContext(
-                    fromPos,
-                    toPos,
-                    attackerPiece,
-                    victimPiece,
-                    victimView);
+            RaiseMove(context);
 
-                RaiseCapture(context);
-            }
 
             ClearSelection();
             return result;
         }
-
         private void FindWays(Pos pos)
         {
             _janggiRule.FindWays(_boardModel, _selection);
@@ -117,7 +110,6 @@ namespace Yujanggi.Runtime.Board
             _selection.Clear();
             _boardView.HideHighlights();
         }
-
         private bool CanSelectPiece(Pos pos, PlayerTeam turn)
         {
             if (!_boardModel.HasPiece(pos))
@@ -132,9 +124,11 @@ namespace Yujanggi.Runtime.Board
             _selection.Select(pieceInfo, pos);
         }
 
-        private void RaiseCapture(CaptureContext context)
+
+        // 이벤트 관련
+        private void RaiseMove(MoveContext context)
         {
-            OnCapture?.Invoke(context);
+            OnMove?.Invoke(context);
         }
     }
 }

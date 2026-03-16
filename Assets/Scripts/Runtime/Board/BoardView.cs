@@ -18,7 +18,7 @@ namespace Yujanggi.Runtime.Board
             _map = new();
             
         }
-        public void MovePieceView(Pos fromPos, Pos toPos, out IPiece killed)
+        public void DoMove(Pos fromPos, Pos toPos, out IPiece killed)
         {
             killed      = _map[toPos];
             var piece   = _map[fromPos];
