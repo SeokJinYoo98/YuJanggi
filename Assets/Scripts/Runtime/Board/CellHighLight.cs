@@ -6,6 +6,7 @@ namespace Yujanggi.Runtime.Board
     public class CellHighlighter : MonoBehaviour
     {
         Renderer _renderer;
+
         private void Awake()
         {
             _renderer = GetComponent<Renderer>();

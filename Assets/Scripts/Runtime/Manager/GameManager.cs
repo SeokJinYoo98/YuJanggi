@@ -45,13 +45,21 @@ namespace Yujanggi.Runtime.Manager
                     break;
 
                 case BoardActionResult.MoveSuccess:
-                    _audio.PlayMove();
+                    
                     UpdateTurnInfo(NextPlayer(), TurnType.Select);
+                    if (JangunCheck())
+                        _audio.PlayJanggun();
+                    else
+                        _audio.PlayMove();
                     break;
 
                 case BoardActionResult.CaptureSuccess:
                     _audio.PlayCapture();
                     UpdateTurnInfo(NextPlayer(), TurnType.Select);
+                    if (JangunCheck())
+                        _audio.PlayJanggun();
+                    else
+                        _audio.PlayCapture();
                     break;
 
                 case BoardActionResult.Reselect:
@@ -64,6 +72,10 @@ namespace Yujanggi.Runtime.Manager
                     break;
             }
             
+        }
+        private bool JangunCheck()
+        {
+            return _board.IsJanggun(_turnInfo.Player);
         }
         private void UpdateTurnInfo(PlayerTeam next, TurnType turn)
         {

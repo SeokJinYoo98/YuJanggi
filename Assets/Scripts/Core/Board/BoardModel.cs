@@ -8,6 +8,7 @@ namespace Yujanggi.Core.Board
 {
     public interface IBoardModel
     {
+
         public Pos GetKingPos(PlayerTeam team);
         public int WIDTH { get; }
         public int HEIGHT { get; }

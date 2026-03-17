@@ -19,7 +19,7 @@ namespace Yujanggi.Core.Domain
     }
     public class SelectionState
     {
-        private readonly List<Pos> _movableCells = new(25);
+        private readonly List<Pos> _movableCells = new(35);
         public SelectionState(PlayerTeam bottomPlayer)
             => BottomPlayer = bottomPlayer;
 
@@ -29,6 +29,7 @@ namespace Yujanggi.Core.Domain
         public bool HasSelection => Current.HasValue;
         public bool IsBottom => Current.HasValue && Current.Value.Piece.Team == BottomPlayer;
         public PieceInfo SelectedPiece => Current!.Value.Piece;
+        public PlayerTeam Turn => Current!.Value.Piece.Team;
         public Pos SelectedPos => Current!.Value.Pos;
 
         public void Select(PieceInfo piece, Pos pos)
@@ -43,6 +44,8 @@ namespace Yujanggi.Core.Domain
         }
 
         // Movable 관련
+        public void AddMovable(Pos way)
+            => _movableCells.Add(way);
         public void SetMovable(List<Pos> ways)
             => _movableCells.AddRange(ways);
         public bool IsMovable(Pos pos)

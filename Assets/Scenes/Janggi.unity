@@ -464,6 +464,7 @@ MonoBehaviour:
   _moveClip: {fileID: 8300000, guid: e79d38f2b5d28954d91f35563989aa36, type: 3}
   _captureClip: {fileID: 8300000, guid: a62ad20a0cc95fd4796060f5c2e63fda, type: 3}
   _buttonClip: {fileID: 8300000, guid: 1dbcccf592d8e6d42bc1b4c2c268d564, type: 3}
+  _janggunClip: {fileID: 8300000, guid: d49a3f7172298ff45bb1138ecf608ed7, type: 3}
 --- !u!4 &239210210
 Transform:
   m_ObjectHideFlags: 0

@@ -10,6 +10,7 @@ namespace Yujanggi.Core.Rule
     {
         readonly Dictionary<PieceType, Movement> _rules;
 
+
         public MovementRule()
         {
             var kg = new KingGuardMovement();

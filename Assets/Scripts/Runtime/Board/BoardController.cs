@@ -20,12 +20,13 @@ namespace Yujanggi.Runtime.Board
         private void Awake()
         {
             _boardView = GetComponent<BoardView>();
-            _janggiRule = new();
+            
         }
         public void StartGame(PlayerTeam bottom)
         {
             _boardModel  = new(bottom); BoardInitializer.SetUpPieces(_boardModel, bottom);
             _selection   = new(bottom);
+            _janggiRule  = new(bottom);
             _boardView.SpawnPieceView(_boardModel, bottom);
         }
         public  BoardActionResult  HandleCellClick(Pos pos, PlayerTeam turn)
@@ -119,7 +120,11 @@ namespace Yujanggi.Runtime.Board
             var record = context.Record;
             _boardModel.UndoMove(record);
             _boardView.UndoMove(in context);
+        }
 
+        public bool IsJanggun(PlayerTeam turn)
+        {
+            return _janggiRule.IsKingInCheck(_boardModel, turn);
         }
     }
 }
