@@ -77,7 +77,15 @@ namespace Yujanggi.Core.Board
         }
         public void UndoMove(MoveRecord moveRecord)
         {
-            throw new System.NotImplementedException();
+            var from = moveRecord.From;
+            var to = moveRecord.To;
+
+            var moved = moveRecord.MovedPiece;
+
+            SetPiece(from, moved);
+            SetPiece(to, moveRecord.IsCapture ? moveRecord.CapturedPiece : PieceInfo.None);
+
+            UpdateKingPos(from, moved);
         }
         // private
         private CellData[,] _board;

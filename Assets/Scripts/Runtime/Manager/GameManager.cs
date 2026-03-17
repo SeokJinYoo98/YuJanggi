@@ -135,9 +135,12 @@ namespace Yujanggi.Runtime.Manager
 
         public void Undo()
         {
+            _audio.PlayButton();
             if (_history.TryPop(out var context))
             {
                 LogMove(context);
+                _board.Undo(context);
+                UpdateTurnInfo(NextPlayer(), TurnType.Select);
             }
             Debug.Log("Stack is empty");
         }

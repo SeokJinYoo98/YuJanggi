@@ -3,6 +3,7 @@ namespace Yujanggi.Runtime.Board
 {
     using Core.Board;
     using System;
+    using UnityEditor;
     using Yujanggi.Core.Domain;
     using Yujanggi.Core.Rule;
 
@@ -25,7 +26,7 @@ namespace Yujanggi.Runtime.Board
         {
             _boardModel  = new(bottom); BoardInitializer.SetUpPieces(_boardModel, bottom);
             _selection   = new(bottom);
-            _boardView.SpawnPieceView(_boardModel);
+            _boardView.SpawnPieceView(_boardModel, bottom);
         }
         public  BoardActionResult  HandleCellClick(Pos pos, PlayerTeam turn)
         {
@@ -107,9 +108,18 @@ namespace Yujanggi.Runtime.Board
 
 
         // 이벤트 관련
-        private void RaiseMove(MoveContext context)
+        private void RaiseMove(in MoveContext context)
         {
             OnMove?.Invoke(context);
+        }
+
+        // Undo 
+        public void Undo(in MoveContext context)
+        {
+            var record = context.Record;
+            _boardModel.UndoMove(record);
+            _boardView.UndoMove(in context);
+
         }
     }
 }

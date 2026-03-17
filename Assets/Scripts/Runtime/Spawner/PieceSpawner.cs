@@ -12,7 +12,7 @@ namespace Yujanggi.Runtime.Board
         [SerializeField] private Transform _cho;
         [SerializeField] private Transform _han;
         
-        public IPiece Spawn(PieceInfo pieceInfo, Pos pos)
+        public IPiece Spawn(PieceInfo pieceInfo, Pos pos, PlayerTeam bottom)
         {
             var team = pieceInfo.Team;
             var type = pieceInfo.Type;
@@ -22,8 +22,9 @@ namespace Yujanggi.Runtime.Board
             var data    = _pieceDB.GetData(team, type); 
             var prefab  = _pieceDB.GetPrefab(team);
             var piece = Instantiate(prefab, parent);
-            piece.Init(data, pos);
-   
+            piece.Init(data, pos, bottom);
+            
+            
             return piece;
         }
     }

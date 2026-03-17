@@ -20,7 +20,7 @@ namespace Yujanggi.Runtime.Player
             private PlayerInputs.PlayerActions _actions;
 
             private PlayerTeam _type = PlayerTeam.Cho;
-            public PlayerTeam   Type => _type;
+            public  PlayerTeam   Type => _type;
             public void Init(PlayerTeam type)
                 => _type = type;
             private void Awake()

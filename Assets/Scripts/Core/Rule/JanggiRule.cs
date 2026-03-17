@@ -23,7 +23,6 @@ namespace Yujanggi.Core.Rule
             if (!selectionState.HasSelection)
                 throw new Exception("셀렉션이 없는데 길을 왜 찾지?");
 
-            // 리스트 최소화!!!
             var candidates = _movementRule.CandidateWays(board, selectionState);
             _palaceRule.ApplyPalaceRule(board, selectionState, candidates);
 

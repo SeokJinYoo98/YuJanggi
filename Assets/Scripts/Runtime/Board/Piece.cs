@@ -5,8 +5,7 @@ namespace Yujanggi.Runtime.Board
     using Yujanggi.Core.Domain;
     using Yujanggi.Data.Board;
     using Yujanggi.Utills.Board;
-    using static UnityEngine.Audio.ProcessorInstance;
-
+    
     public interface IPiece
     {
         bool IsOwner(PlayerTeam type);
@@ -20,13 +19,15 @@ namespace Yujanggi.Runtime.Board
     {
         private Coroutine _moveRoutine;
         [SerializeField] private PieceData _data;
-        public void Init(PieceData data, Pos pos)
+        public void Init(PieceData data, Pos pos, PlayerTeam bottom)
         {
             _data = data;
             GetComponent<MeshFilter>().sharedMesh = _data.PieceMesh;
             MaterialCheck();
             transform.position = BoardHelper.ToVector3(pos, transform.position.y);
-           
+
+            if (_data.Team == bottom)
+                transform.Rotate(new Vector3(0, 180, 0));
         }
 
         public void MoveTo(Pos toPos)
