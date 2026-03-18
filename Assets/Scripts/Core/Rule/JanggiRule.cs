@@ -65,20 +65,28 @@ namespace Yujanggi.Core.Rule
 
             return false;
         }
-        public bool IsCheckMate(IBoardModel board, PlayerTeam team)
+        public bool IsCheckMate(IBoardModel board, PlayerTeam defence)
         {
-            var kingPos = board.GetKingPos(team);
-            var king = board.GetPiece(kingPos);
-            _simulation.Select(king, kingPos);
+            for (int x = 0; x < board.WIDTH; ++x)
+            {
+                for (int z = 0; z < board.HEIGHT; ++z)
+                {
+                    var pos = new Pos(x, z);
+                    if (!board.HasPiece(pos)) continue;
 
-            var ways = FindCandidates(board, _simulation);
-            if (ways.Count == 0)
-                return true;
-            FilterLegalMoves(board, _simulation, ways);
-            if (ways.Count == 0)
-                return true;
+                    var piece = board.GetPiece(pos);
+                    if (piece.Team != defence) continue;
 
-            return ways.Count == 0;
+                    _simulation.Clear();
+                    _simulation.Select(piece, pos);
+
+                    var ways = FindCandidates(board, _simulation);
+                    FilterLegalMoves(board, _simulation, ways);
+                    if (ways.Count > 0)
+                        return false;
+                }
+            }
+            return true;
         }
 
 
@@ -88,9 +96,6 @@ namespace Yujanggi.Core.Rule
             _palaceRule.ApplyPalaceRule(board, selectionState, candidates);
             return candidates;
         }
-
-
-        
         private void FilterLegalMoves(IBoardModel board, SelectionState selection, List<Pos> candidates)
         {
             var fromPos = selection.SelectedPos;

@@ -88,10 +88,13 @@ namespace Yujanggi.Runtime.Manager
 
         private void OnMoved(MoveContext context)
         {
+            
             JangunCheck(context);
             LogMove(context); 
             SaveHistory(context);
             HandleCapture(context);
+            if (context.EndGame)
+                Application.Quit();
         }
         private void JangunCheck(in MoveContext context)
         {
