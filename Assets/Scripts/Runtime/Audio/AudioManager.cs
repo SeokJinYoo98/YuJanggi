@@ -11,34 +11,38 @@ namespace Yujanggi.Runtime.Audio
         [SerializeField] private AudioClip _captureClip;
         [SerializeField] private AudioClip _buttonClip;
         [SerializeField] private AudioClip _janggunClip;
-
+        [SerializeField] private AudioClip _munggunClip;
+        [SerializeField] private AudioClip _checkmateClip;
         private void Awake()
         {
             
         }
         public void PlayJanggun()
         {
-            _sfxSource.pitch = 1.0f;
-            _sfxSource.PlayOneShot(_janggunClip, 5.0f);
+            _sfxSource.PlayOneShot(_janggunClip, 1.5f);
+        }
+        public void PlayMunggun()
+        {
+            _sfxSource.PlayOneShot(_munggunClip, 1.5f);
         }
         public void PlayMove()
         {
-            _sfxSource.pitch = 2.0f;
-            _sfxSource.PlayOneShot(_moveClip);
+            _sfxSource.PlayOneShot(_moveClip, 0.6f);
         }
         public void PlaySelect()
         {
-            _sfxSource.pitch = 1.5f;
             _sfxSource.PlayOneShot(_selectClip);
         }
         public void PlayCapture()
-            => _sfxSource.PlayOneShot(_captureClip);
+        {
+            _sfxSource.PlayOneShot(_captureClip, 0.8f);
+        }
 
         public void PlayButton()
         {
-            _sfxSource.pitch = 1.0f;
             _sfxSource.PlayOneShot(_buttonClip);
         }
+
     }
 
 }

@@ -10,7 +10,9 @@ namespace Yujanggi.Core.Rule
         private readonly MovementRule _movementRule;
         private readonly PalaceRule   _palaceRule;
 
-        private SelectionState _simulation;
+
+        private readonly List<Pos>  _legalMoveBuffer = new(35);
+        private SelectionState      _simulation;
         public JanggiRule(PlayerTeam bottomPlayer)
         {
             _simulation   = new(bottomPlayer);
@@ -25,19 +27,10 @@ namespace Yujanggi.Core.Rule
             if (!selectionState.HasSelection)
                 throw new Exception("셀렉션이 없는데 길을 왜 찾지?");
             var candidates = FindCandidates(board, selectionState);
-            JanggunRule(board, selectionState, candidates);
+            FilterLegalMoves(board, selectionState, candidates);
 
             selectionState.SetMovable(candidates);
         }
-       
-        private List<Pos> FindCandidates(IBoardModel board, SelectionState selectionState)
-        {
-            var candidates = _movementRule.CandidateWays(board, selectionState);
-            _palaceRule.ApplyPalaceRule(board, selectionState, candidates);
-            return candidates;
-        }
-
-
         public bool IsKingInCheck(IBoardModel board, PlayerTeam team)
         {
             var kingPos = board.GetKingPos(team);
@@ -72,25 +65,51 @@ namespace Yujanggi.Core.Rule
 
             return false;
         }
-        private void JanggunRule(IBoardModel board, SelectionState selection, List<Pos> candidates)
+        public bool IsCheckMate(IBoardModel board, PlayerTeam team)
+        {
+            var kingPos = board.GetKingPos(team);
+            var king = board.GetPiece(kingPos);
+            _simulation.Select(king, kingPos);
+
+            var ways = FindCandidates(board, _simulation);
+            if (ways.Count == 0)
+                return true;
+            FilterLegalMoves(board, _simulation, ways);
+            if (ways.Count == 0)
+                return true;
+
+            return ways.Count == 0;
+        }
+
+
+        private List<Pos> FindCandidates(IBoardModel board, SelectionState selectionState)
+        {
+            var candidates = _movementRule.CandidateWays(board, selectionState);
+            _palaceRule.ApplyPalaceRule(board, selectionState, candidates);
+            return candidates;
+        }
+
+
+        
+        private void FilterLegalMoves(IBoardModel board, SelectionState selection, List<Pos> candidates)
         {
             var fromPos = selection.SelectedPos;
             var myTeam = selection.SelectedPiece.Team;
 
-            var legalMoves = new List<Pos>();
+            _legalMoveBuffer.Clear();
 
             foreach (var toPos in candidates)
             {
                 var moveRecord = board.DoMove(fromPos, toPos);
 
                 if (!IsKingInCheck(board, myTeam))
-                    legalMoves.Add(toPos);
+                    _legalMoveBuffer.Add(toPos);
 
                 board.UndoMove(moveRecord);
             }
 
             candidates.Clear();
-            candidates.AddRange(legalMoves);
+            candidates.AddRange(_legalMoveBuffer);
         }
     }
 }

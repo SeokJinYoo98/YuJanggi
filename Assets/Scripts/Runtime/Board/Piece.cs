@@ -8,11 +8,8 @@ namespace Yujanggi.Runtime.Board
     
     public interface IPiece
     {
-        bool IsOwner(PlayerTeam type);
-
         public void Highlight();
         public void MoveTo(Pos toPos);
-
     }
 
     public class Piece : MonoBehaviour, IPiece
@@ -37,8 +34,7 @@ namespace Yujanggi.Runtime.Board
             Vector3 targetWorldPos = BoardHelper.ToVector3(toPos, transform.position.y);
             _moveRoutine = StartCoroutine(CoMove(targetWorldPos, 0.16f));
         }
-        public bool IsOwner(PlayerTeam type)
-            => type == _data.Team;
+
         public void  Highlight()
         {
             SwapMaterial();

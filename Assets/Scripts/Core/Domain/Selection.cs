@@ -54,13 +54,18 @@ namespace Yujanggi.Core.Domain
 
     public readonly struct MoveContext
     {
-        public MoveContext(MoveRecord record, IPiece capturedPiece)
+        public MoveContext(MoveRecord record, IPiece capturedPiece, bool isJanggun, bool isEnd)
         {
             Record = record;
             CapturedPieceView = capturedPiece;
+            IsJanggun = isJanggun;
+            EndGame = isEnd;
         }
         public MoveRecord   Record { get; }
         public bool         IsCapture => Record.IsCapture;
         public IPiece       CapturedPieceView { get; }
+
+        public bool         IsJanggun { get; }
+        public bool         EndGame { get; }
     }
 }

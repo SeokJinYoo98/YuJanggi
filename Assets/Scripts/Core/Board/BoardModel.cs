@@ -10,8 +10,8 @@ namespace Yujanggi.Core.Board
     {
 
         public Pos GetKingPos(PlayerTeam team);
-        public int WIDTH { get; }
-        public int HEIGHT { get; }
+        public int          WIDTH { get; }
+        public int          HEIGHT { get; }
 
         public bool         IsInside(Pos pos);
         public bool         IsPalace(Pos pos);
@@ -20,13 +20,14 @@ namespace Yujanggi.Core.Board
         public void         SetPiece(Pos pos, PieceInfo piece);
 
         public MoveRecord DoMove(Pos from, Pos to);
-        public void UndoMove(MoveRecord moveRecord);
+        public void       UndoMove(MoveRecord moveRecord);
     }
 
     public class BoardModel : IBoardModel
     {
         public int WIDTH  => _width;
         public int HEIGHT => _height;
+
 
         public BoardModel(PlayerTeam bottom, int width = 9, int height = 10)
         {

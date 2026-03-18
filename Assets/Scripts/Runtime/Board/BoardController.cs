@@ -9,7 +9,7 @@ namespace Yujanggi.Runtime.Board
 
     public class BoardController : MonoBehaviour
     {
-        public event Action<MoveContext> OnMove;
+        public event Action<MoveContext> OnMoved;
 
         private BoardView   _boardView;
         private BoardModel  _boardModel;
@@ -75,8 +75,12 @@ namespace Yujanggi.Runtime.Board
             var fromPos = _selection.SelectedPos;
             var record = _boardModel.DoMove(fromPos, toPos);
             _boardView.DoMove(fromPos, toPos, out var capturedView);
-            
-            RaiseMove(new (record, capturedView));
+
+            var otherTeam = turn == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho;
+            var isJanggun = IsJanggun(otherTeam);
+            var isEnd     = isJanggun && IsCheckMate(otherTeam);
+
+            RaiseMove(new (record, capturedView, isJanggun, isEnd));
             ClearSelection();
 
             return record.IsCapture 
@@ -111,7 +115,7 @@ namespace Yujanggi.Runtime.Board
         // 이벤트 관련
         private void RaiseMove(in MoveContext context)
         {
-            OnMove?.Invoke(context);
+            OnMoved?.Invoke(context);
         }
 
         // Undo 
@@ -122,9 +126,9 @@ namespace Yujanggi.Runtime.Board
             _boardView.UndoMove(in context);
         }
 
-        public bool IsJanggun(PlayerTeam turn)
-        {
-            return _janggiRule.IsKingInCheck(_boardModel, turn);
-        }
+        private bool IsJanggun(PlayerTeam otherTeam)
+            => _janggiRule.IsKingInCheck(_boardModel, otherTeam);
+        private bool IsCheckMate(PlayerTeam otherTeam)
+            => _janggiRule.IsCheckMate(_boardModel, otherTeam);
     }
 }

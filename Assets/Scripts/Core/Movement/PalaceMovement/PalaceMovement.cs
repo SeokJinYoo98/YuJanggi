@@ -146,7 +146,8 @@ namespace Yujanggi.Core.Movement
             List<Pos> ways)
         {
             var dPos = ApplyStep(step, pos);
-
+            if (board.GetPiece(dPos).Type == PieceType.Cannon)
+                return false;
             switch (CheckCell(board, team, dPos))
             {
                 case StepResult.Team:
@@ -158,6 +159,7 @@ namespace Yujanggi.Core.Movement
                         return true;
 
                     var result = CheckCell(board, team, dPos);
+                   
 
                     if (result == StepResult.Empty || result == StepResult.Enemy)
                         ways.Add((dPos));

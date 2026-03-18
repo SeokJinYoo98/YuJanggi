@@ -27,12 +27,12 @@ namespace Yujanggi.Runtime.Manager
         private void Start()
         {
             _board.StartGame(BottomPlayer);
-            _board.OnMove += OnMoved;
+            _board.OnMoved += OnMoved;
         }
         private void OnDestroy()
         {
             if (_board != null)
-                _board.OnMove -= OnMoved;
+                _board.OnMoved -= OnMoved;
         }
         public void HandleClick(int x, int z)
         {
@@ -40,26 +40,21 @@ namespace Yujanggi.Runtime.Manager
             switch (result)
             {
                 case BoardActionResult.SelectSuccess:
-                    _audio.PlaySelect();
+                    
                     UpdateTurnInfo(_turnInfo.Player, TurnType.Attack);
+                    _audio.PlaySelect();
                     break;
 
                 case BoardActionResult.MoveSuccess:
                     
                     UpdateTurnInfo(NextPlayer(), TurnType.Select);
-                    if (JangunCheck())
-                        _audio.PlayJanggun();
-                    else
-                        _audio.PlayMove();
+                    _audio.PlayMove();
                     break;
 
                 case BoardActionResult.CaptureSuccess:
-                    _audio.PlayCapture();
+                   
                     UpdateTurnInfo(NextPlayer(), TurnType.Select);
-                    if (JangunCheck())
-                        _audio.PlayJanggun();
-                    else
-                        _audio.PlayCapture();
+                    _audio.PlayCapture();
                     break;
 
                 case BoardActionResult.Reselect:
@@ -71,12 +66,9 @@ namespace Yujanggi.Runtime.Manager
                 default:
                     break;
             }
-            
+
         }
-        private bool JangunCheck()
-        {
-            return _board.IsJanggun(_turnInfo.Player);
-        }
+ 
         private void UpdateTurnInfo(PlayerTeam next, TurnType turn)
         {
             _turnInfo.Player = next;
@@ -90,17 +82,27 @@ namespace Yujanggi.Runtime.Manager
 
         // 이동관련 처리
         private List<IPiece> _garbageCho = new();
-        private Pos _garbageChoPos = new Pos(0, -7);
+        private Pos _garbageChoPos = new Pos(0, -5);
         private List<IPiece> _garbageHan = new();
-        private Pos _garbagehanPos = new Pos(0, -6);
+        private Pos _garbagehanPos = new Pos(0, -4);
 
         private void OnMoved(MoveContext context)
         {
-            LogMove(context);
+            JangunCheck(context);
+            LogMove(context); 
             SaveHistory(context);
             HandleCapture(context);
         }
-
+        private void JangunCheck(in MoveContext context)
+        {
+            if (context.IsJanggun)
+                _audio.PlayJanggun();
+            if (_history.Count > 0)
+            {
+                if (_history.Peek().IsJanggun)
+                    _audio.PlayMunggun();
+            }
+        }
         private void HandleCapture(in MoveContext context)
         {
             if (!context.IsCapture)

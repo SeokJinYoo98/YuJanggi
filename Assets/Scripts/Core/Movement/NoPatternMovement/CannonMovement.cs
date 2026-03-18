@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 namespace Yujanggi.Core.Movement
@@ -38,9 +39,10 @@ namespace Yujanggi.Core.Movement
 
                         var piece = board.GetPiece(dPos);
 
-                        if (piece.Type != PieceType.Cannon)
-                            bridge = true;
+                        if (piece.Type == PieceType.Cannon)
+                            break;
 
+                        bridge = true;
                         continue;
                     }
 
