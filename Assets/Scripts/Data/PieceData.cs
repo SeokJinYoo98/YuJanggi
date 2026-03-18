@@ -8,11 +8,8 @@ namespace Yujanggi.Data.Board
         [SerializeField] private PlayerTeam      _playerType;
         [SerializeField] private PieceType       _pieceType;
         [SerializeField] private Mesh            _mesh;
-        [SerializeField] private int             _pieceValue;
-
         public Mesh         PieceMesh   => _mesh;
         public PlayerTeam   Team        => _playerType;
         public PieceType    Type        => _pieceType;
-        public int          Value       => _pieceValue;
     }
 }

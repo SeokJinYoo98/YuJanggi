@@ -1,33 +1,38 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Yujanggi.Runtime.Manager
 {
+    using Audio;
     using Board;
     using Core.Domain;
-    using Core.Manager;
-    using Audio;
-    
+    using Core.Score;
+    using Core.Turn;
+    using Yujanggi.Core.Record;
+    using Yujanggi.Runtime.UI;
+
     public class GameManager : MonoBehaviour
     {
         [SerializeField] private BoardController _board;
         [SerializeField] private AudioManager    _audio;
-
+        [SerializeField] private TurnUI          _turnUI;
         private readonly PlayerTeam BottomPlayer = PlayerTeam.Cho;
-        private GameTurnInfo _turnInfo;
 
-
-        private Stack<MoveContext> _history = new();
-
+        private ScoreManager    _score;
+        private TurnManager     _turn;
+        private RecordManager   _recoder;
         private void Awake()
         {
             Application.targetFrameRate = 144;
-            _turnInfo = new();
+            _turn       = new();
+            _score      = new();
+            _recoder    = new();
         }
         private void Start()
         {
             _board.StartGame(BottomPlayer);
             _board.OnMoved += OnMoved;
+            _turn.StartTurn(PlayerTeam.Cho);
         }
         private void OnDestroy()
         {
@@ -36,28 +41,26 @@ namespace Yujanggi.Runtime.Manager
         }
         public void HandleClick(int x, int z)
         {
-            var result = _board.HandleCellClick(new Pos(x, z), _turnInfo.Player);
+            var result = _board.HandleCellClick(new Pos(x, z), _turn.Current);
             switch (result)
             {
                 case BoardActionResult.SelectSuccess:
-                    
-                    UpdateTurnInfo(_turnInfo.Player, TurnType.Attack);
+                    _turn.SetTurn(TurnType.Attack);
                     _audio.PlaySelect();
                     break;
 
                 case BoardActionResult.MoveSuccess:
-                    
-                    UpdateTurnInfo(NextPlayer(), TurnType.Select);
+                    _turn.NextTurn();
                     _audio.PlayMove();
                     break;
 
                 case BoardActionResult.CaptureSuccess:
-                   
-                    UpdateTurnInfo(NextPlayer(), TurnType.Select);
+                    _turn.NextTurn();
                     _audio.PlayCapture();
                     break;
 
                 case BoardActionResult.Reselect:
+                    _turn.SetTurn(TurnType.Select);
                     _audio.PlaySelect();
                     break;
 
@@ -68,31 +71,14 @@ namespace Yujanggi.Runtime.Manager
             }
 
         }
- 
-        private void UpdateTurnInfo(PlayerTeam next, TurnType turn)
-        {
-            _turnInfo.Player = next;
-            _turnInfo.Turn   = turn;
-        }
-        private PlayerTeam NextPlayer()
-        {
-            return _turnInfo.Player == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho;
-        }
-
-
-        // 이동관련 처리
-        private List<IPiece> _garbageCho = new();
-        private Pos _garbageChoPos = new Pos(0, -5);
-        private List<IPiece> _garbageHan = new();
-        private Pos _garbagehanPos = new Pos(0, -4);
 
         private void OnMoved(MoveContext context)
-        {
-            
+        { 
             JangunCheck(context);
-            LogMove(context); 
             SaveHistory(context);
             HandleCapture(context);
+
+        
             if (context.EndGame)
                 Application.Quit();
         }
@@ -100,66 +86,37 @@ namespace Yujanggi.Runtime.Manager
         {
             if (context.IsJanggun)
                 _audio.PlayJanggun();
-            if (_history.Count > 0)
+            
+            if(_recoder.TryPeek(out var record) && record.IsCapture)
             {
-                if (_history.Peek().IsJanggun)
-                    _audio.PlayMunggun();
+                _audio.PlayMunggun();
             }
         }
         private void HandleCapture(in MoveContext context)
         {
             if (!context.IsCapture)
                 return;
-
-            var capturedView = context.CapturedPieceView;
-            var team = context.Record.CapturedPiece.Team;
-
-            var (garbageList, garbagePos) = GetGarbageData(team);
-
-            garbageList.Add(capturedView);
-            capturedView.MoveTo(garbagePos);
-
-            AdvanceGarbagePos(team);
-        }
-        private void LogMove(in MoveContext context)
-        {
-            var record = context.Record;
-
-            Debug.Log(
-                $"From:({record.From.X},{record.From.Z}), " +
-                $"To:({record.To.X},{record.To.Z}), " +
-                $"Moved:{record.MovedPiece.Type}, " +
-                $"Captured:{record.CapturedPiece.Type}"
-            );
+            _score.AddCaptureScore(context.Record.CapturedPiece);
         }
         private void SaveHistory(in MoveContext context)
-            => _history.Push(context);
-        private (List<IPiece> garbageList, Pos garbagePos) GetGarbageData(PlayerTeam team)
         {
-            if (team == PlayerTeam.Cho)
-                return (_garbageCho, _garbageChoPos);
-
-            return (_garbageHan, _garbagehanPos);
+            _recoder.Push(context);
+            _turnUI.UpdateMoveText(_recoder.MoveCount);
         }
-        private void AdvanceGarbagePos(PlayerTeam team)
-        {
-            if (team == PlayerTeam.Cho)
-                _garbageChoPos += Pos.Right;
-            else
-                _garbagehanPos += Pos.Right;
-        }
-
-
         public void Undo()
         {
             _audio.PlayButton();
-            if (_history.TryPop(out var context))
+            if (_recoder.TryPop(out var context))
             {
-                LogMove(context);
                 _board.Undo(context);
-                UpdateTurnInfo(NextPlayer(), TurnType.Select);
+                _turn.NextTurn();
+                
             }
+            _turnUI.UpdateMoveText(_recoder.MoveCount);
             Debug.Log("Stack is empty");
         }
+
+
+
     }
 }

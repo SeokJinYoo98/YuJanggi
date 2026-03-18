@@ -26,20 +26,17 @@ namespace Yujanggi.Runtime.Board
             if (_data.Team == bottom)
                 transform.Rotate(new Vector3(0, 180, 0));
         }
-
-        public void MoveTo(Pos toPos)
+        public void  MoveTo(Pos toPos)
         {
             if (_moveRoutine != null)
                 StopCoroutine(_moveRoutine);
             Vector3 targetWorldPos = BoardHelper.ToVector3(toPos, transform.position.y);
             _moveRoutine = StartCoroutine(CoMove(targetWorldPos, 0.16f));
         }
-
         public void  Highlight()
         {
             SwapMaterial();
         }
-
         private void MaterialCheck()
         {
             if (_data.Team == PlayerTeam.Cho)

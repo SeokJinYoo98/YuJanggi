@@ -62,7 +62,7 @@ namespace Yujanggi.Runtime.Board
 
             return MoveSelectedPiece(pos, turn);
         }
-        private BoardActionResult ReselectPiece(Pos pos, PlayerTeam turn)
+        private BoardActionResult  ReselectPiece(Pos pos, PlayerTeam turn)
         {
             if (pos == _selection.SelectedPos)
                 return BoardActionResult.None;
@@ -121,6 +121,7 @@ namespace Yujanggi.Runtime.Board
         // Undo 
         public void Undo(in MoveContext context)
         {
+            ClearSelection();
             var record = context.Record;
             _boardModel.UndoMove(record);
             _boardView.UndoMove(in context);

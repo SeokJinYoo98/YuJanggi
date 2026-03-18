@@ -42,7 +42,7 @@ namespace Yujanggi.Runtime.Board
         }
         public void HideHighlights()
         {
-            _highlightedPiece.Highlight();
+            _highlightedPiece?.Highlight();
             _highlightedPiece = null;
             _highlighter.HideHighlight();
         }

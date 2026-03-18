@@ -28,12 +28,7 @@ namespace Yujanggi.Core.Domain
     {
         PlayerTeam Type { get; }
     }
-    public enum             TurnType
-    {
-        Select,
-        Attack,
-        Update
-    }
+
     public readonly struct Pos : IEquatable<Pos>
     {
         public Pos(int x, int z)
