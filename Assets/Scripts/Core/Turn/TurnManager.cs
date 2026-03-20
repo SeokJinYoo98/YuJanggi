@@ -9,19 +9,15 @@ namespace Yujanggi.Core.Turn
     {
         Select,
         Attack,
-        Update
-    }
-    public struct TrunInfo
-    {
-        public PlayerTeam Current;
-
+        Update,
+        End
     }
     public class TurnManager
     {
         public event Action<PlayerTeam> OnTurnChanged;
         public PlayerTeam Current { get; private set; }
         public TurnType   TurnState { get; private set; }
-
+        public bool IsEnd => TurnState == TurnType.End;
         public void StartTurn(PlayerTeam player)
         {
             Current = player;
@@ -30,7 +26,7 @@ namespace Yujanggi.Core.Turn
 
         public void SetTurn(TurnType type)
             => TurnState = type;
-
+        
         public void NextTurn()
         {
             Current = (Current == PlayerTeam.Cho)

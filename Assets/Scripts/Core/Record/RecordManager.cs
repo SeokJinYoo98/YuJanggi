@@ -9,7 +9,7 @@ namespace Yujanggi.Core.Record
     {
         public event Action<(int, int)> OnRecordChanged; 
         private readonly Stack<MoveContext> _records = new();
-        private int MoveCount => _records.Count;
+        public int MoveCount => _records.Count;
 
         private Pos _garbageChoPos = new (0, -5);
         private Pos _garbagehanPos = new (0, -4);

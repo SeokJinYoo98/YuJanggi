@@ -66,6 +66,18 @@ namespace Yujanggi.Core.Domain
     }
     
 
-
+    public enum GameResult
+    {
+        Draw,
+        CheckMate,
+        GiveUp,
+        Score
+    }
+    public struct GameResultInfo
+    {
+        public int          MoveCnt;
+        public GameResult   Type;
+        public PlayerTeam   Winner;
+    }
 
 }

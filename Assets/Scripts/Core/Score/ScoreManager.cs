@@ -21,8 +21,6 @@ namespace Yujanggi.Core.Score
 
             OnScoreChanged?.Invoke(team, team == PlayerTeam.Cho ? _choScore : _hanScore);
         }
-
-
         public PlayerTeam Winner()
         {
             if (_choScore == _hanScore)
