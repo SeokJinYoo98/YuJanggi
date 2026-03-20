@@ -57,6 +57,7 @@ namespace Yujanggi.Core.Domain
         public MoveContext(MoveRecord record, IPiece capturedPiece, bool isJanggun, bool isEnd)
         {
             Record = record;
+            MoveTeam = record.MovedPiece.Team;
             CapturedPieceView = capturedPiece;
             IsJanggun = isJanggun;
             EndGame = isEnd;
@@ -64,7 +65,7 @@ namespace Yujanggi.Core.Domain
         public MoveRecord   Record { get; }
         public bool         IsCapture => Record.IsCapture;
         public IPiece       CapturedPieceView { get; }
-
+        public PlayerTeam   MoveTeam { get; }
         public bool         IsJanggun { get; }
         public bool         EndGame { get; }
     }

@@ -15,11 +15,17 @@ namespace Yujanggi.Runtime.UI
 
         [SerializeField] private TMP_Text _hanScoreText;
         [SerializeField] private TMP_Text _hanTimerText;
-
         TMP_Text _currTimer = null;
         const float _maxTime = 30;
-        float       _time    = 30;
-        float       _acc     = 0;
+        float _time = 30;
+        float _acc = 0;
+
+
+        [SerializeField] private TMP_Text _janggunText;
+        private bool _janggunAnim = false;
+        private float _speed = 10;
+
+
         public void Start()
         {
             _turnText.color = Color.green;
@@ -27,6 +33,18 @@ namespace Yujanggi.Runtime.UI
         }
         public void Update()
         {
+            if (_janggunAnim)
+            {
+                var pos = _janggunText.transform.localPosition;
+                pos.x += _speed;
+                if (900 <= pos.x)
+                {
+                    _janggunAnim = false;
+                    pos.x = -700;
+
+                }
+                _janggunText.transform.localPosition = pos;
+            }
             if (_currTimer == null) return;
             _acc += Time.deltaTime;
 
@@ -72,7 +90,17 @@ namespace Yujanggi.Runtime.UI
             
             else
                 _hanScoreText.text = $"{score}:점수";
-            
+        }
+
+        public void PlayJanggun(PlayerTeam team)
+        {
+            if (team == PlayerTeam.Cho)
+                _janggunText.color = Color.red;
+            else
+                _janggunText.color = Color.green;
+
+            _janggunText.transform.localPosition = new Vector2(-700, 0);
+            _janggunAnim = true;
         }
     }
 }

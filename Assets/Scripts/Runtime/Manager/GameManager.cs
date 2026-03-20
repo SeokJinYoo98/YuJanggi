@@ -98,7 +98,11 @@ namespace Yujanggi.Runtime.Manager
         private void JangunCheck(in MoveContext context)
         {
             if (context.IsJanggun)
+            {
                 _audio.PlayJanggun();
+                _uis.PlayJanggun(context.MoveTeam);
+            }
+                
             
             if(_recoder.TryPeek(out var record) && record.IsJanggun)
             {
