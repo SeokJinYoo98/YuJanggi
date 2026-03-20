@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Yujanggi.Runtime.Manager
@@ -10,17 +9,20 @@ namespace Yujanggi.Runtime.Manager
     using Core.Turn;
     using Yujanggi.Core.Record;
     using Yujanggi.Runtime.UI;
+    using Yujanggi.Utills.Board;
 
     public class GameManager : MonoBehaviour
     {
+        [SerializeField] private MatchUI         _uis;
         [SerializeField] private BoardController _board;
         [SerializeField] private AudioManager    _audio;
-        [SerializeField] private TurnUI          _turnUI;
         private readonly PlayerTeam BottomPlayer = PlayerTeam.Cho;
 
         private ScoreManager    _score;
         private TurnManager     _turn;
         private RecordManager   _recoder;
+
+        
         private void Awake()
         {
             Application.targetFrameRate = 144;
@@ -33,11 +35,22 @@ namespace Yujanggi.Runtime.Manager
             _board.StartGame(BottomPlayer);
             _board.OnMoved += OnMoved;
             _turn.StartTurn(PlayerTeam.Cho);
+
+            _turn.OnTurnChanged      += _uis.UpdateTurn;
+            _recoder.OnRecordChanged += _uis.UpdateRecord;
+            _score.OnScoreChanged    += _uis.UpdateScore;
         }
         private void OnDestroy()
         {
             if (_board != null)
                 _board.OnMoved -= OnMoved;
+
+            if (_uis != null && _turn != null)
+            {
+                _turn.OnTurnChanged      -= _uis.UpdateTurn;
+                _recoder.OnRecordChanged -= _uis.UpdateRecord;
+                _score.OnScoreChanged    -= _uis.UpdateScore;
+            }
         }
         public void HandleClick(int x, int z)
         {
@@ -78,16 +91,16 @@ namespace Yujanggi.Runtime.Manager
             SaveHistory(context);
             HandleCapture(context);
 
-        
             if (context.EndGame)
                 Application.Quit();
+
         }
         private void JangunCheck(in MoveContext context)
         {
             if (context.IsJanggun)
                 _audio.PlayJanggun();
             
-            if(_recoder.TryPeek(out var record) && record.IsCapture)
+            if(_recoder.TryPeek(out var record) && record.IsJanggun)
             {
                 _audio.PlayMunggun();
             }
@@ -96,27 +109,28 @@ namespace Yujanggi.Runtime.Manager
         {
             if (!context.IsCapture)
                 return;
-            _score.AddCaptureScore(context.Record.CapturedPiece);
+
+            var team = context.Record.CapturedPiece.Team;
+            var type = context.Record.CapturedPiece.Type;
+            var value = BoardHelper.GetPieceScore(type);
+            _score.SetScore(team, value);
         }
         private void SaveHistory(in MoveContext context)
         {
             _recoder.Push(context);
-            _turnUI.UpdateMoveText(_recoder.MoveCount);
         }
         public void Undo()
         {
-            _audio.PlayButton();
-            if (_recoder.TryPop(out var context))
-            {
-                _board.Undo(context);
-                _turn.NextTurn();
-                
-            }
-            _turnUI.UpdateMoveText(_recoder.MoveCount);
-            Debug.Log("Stack is empty");
+            if (!_recoder.TryPop(out var context))
+                return;
+
+            var team = context.Record.CapturedPiece.Team;
+            var type = context.Record.CapturedPiece.Type;
+            var value = BoardHelper.GetPieceScore(type);
+            _score.SetScore(team, -value);
+
+            _board.Undo(context);
+            _turn.NextTurn();
         }
-
-
-
     }
 }

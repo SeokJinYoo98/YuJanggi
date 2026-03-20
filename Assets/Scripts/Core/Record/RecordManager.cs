@@ -1,13 +1,15 @@
 
 
+using System;
 using System.Collections.Generic;
 using Yujanggi.Core.Domain;
 namespace Yujanggi.Core.Record
 {
     public class RecordManager
     {
+        public event Action<(int, int)> OnRecordChanged; 
         private readonly Stack<MoveContext> _records = new();
-        public int MoveCount => _records.Count;
+        private int MoveCount => _records.Count;
 
         private Pos _garbageChoPos = new (0, -5);
         private Pos _garbagehanPos = new (0, -4);
@@ -15,6 +17,8 @@ namespace Yujanggi.Core.Record
         {
             _records.Push(record);
             UpdateGarbagePos(record, false);
+
+            OnRecordChanged?.Invoke((MoveCount, MoveCount));
         }
 
         public bool TryPop(out MoveContext record)
@@ -27,6 +31,7 @@ namespace Yujanggi.Core.Record
             record = _records.Pop();
             UpdateGarbagePos(record, true);
 
+            OnRecordChanged?.Invoke((MoveCount, MoveCount));
             return true;
         }
 
