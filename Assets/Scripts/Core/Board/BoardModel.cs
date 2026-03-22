@@ -8,7 +8,6 @@ namespace Yujanggi.Core.Board
 {
     public interface IBoardModel
     {
-
         public Pos GetKingPos(PlayerTeam team);
         public int          WIDTH { get; }
         public int          HEIGHT { get; }
@@ -19,8 +18,8 @@ namespace Yujanggi.Core.Board
         public PieceInfo    GetPiece(Pos pos);
         public void         SetPiece(Pos pos, PieceInfo piece);
 
-        public MoveRecord DoMove(Pos from, Pos to);
-        public void       UndoMove(MoveRecord moveRecord);
+        public MoveRecord   DoMove(Pos from, Pos to);
+        public void         UndoMove(MoveRecord moveRecord);
     }
 
     public class BoardModel : IBoardModel
@@ -49,7 +48,10 @@ namespace Yujanggi.Core.Board
 
         // 공개 API Set은 공개인가?
         public bool         IsPalace(Pos pos)
-            => _board[pos.X, pos.Z].Palace;
+        {
+            if (!IsInside(pos)) return false;
+            return _board[pos.X, pos.Z].Palace;
+        }
         public bool         IsInside(Pos pos)
             => 0 <= pos.X && pos.X < _width && 0 <= pos.Z && pos.Z < _height;
         public bool         HasPiece(Pos pos)
@@ -57,15 +59,12 @@ namespace Yujanggi.Core.Board
         public PieceInfo    GetPiece(Pos pos)
             => _board[pos.X, pos.Z].Piece;
         public void         SetPiece(Pos pos, PieceInfo piece)
-            => _board[pos.X, pos.Z].Piece = piece;
-
-
-
-
-        public Pos  GetKingPos(PlayerTeam team)
+        {
+            _board[pos.X, pos.Z].Piece = piece;
+        }
+        public Pos          GetKingPos(PlayerTeam team)
             => team == PlayerTeam.Cho ? _choKingPos : _hanKingPos;
-
-        public MoveRecord DoMove(Pos from, Pos to)
+        public MoveRecord   DoMove(Pos from, Pos to)
         {
             var moved       = GetPiece(from);
             var captured    = GetPiece(to);
@@ -89,6 +88,7 @@ namespace Yujanggi.Core.Board
 
             UpdateKingPos(from, moved);
         }
+
         // private
         private CellData[,] _board;
 

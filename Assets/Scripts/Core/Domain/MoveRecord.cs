@@ -3,8 +3,6 @@
 namespace Yujanggi.Core.Domain
 {
     using Board;
-    public enum ASD
-    { None, Janggun, Mungun };
     public readonly struct MoveRecord
     {
         public MoveRecord(Pos from, Pos to, PieceInfo moved, PieceInfo captured)

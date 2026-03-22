@@ -28,5 +28,14 @@ namespace Yujanggi.Core.Score
 
             return _choScore < _hanScore ? PlayerTeam.Han : PlayerTeam.Cho;
         }
+
+        public void StartGame()
+        {
+            _choScore = 72;
+            _hanScore = 72;
+
+            OnScoreChanged?.Invoke(PlayerTeam.Cho, _choScore);
+            OnScoreChanged?.Invoke(PlayerTeam.Han, _hanScore);
+        }
     }
 }

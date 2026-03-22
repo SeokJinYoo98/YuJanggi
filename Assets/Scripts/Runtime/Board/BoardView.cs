@@ -5,6 +5,8 @@ using Yujanggi.Core.Domain;
 
 namespace Yujanggi.Runtime.Board
 {
+    using Yujanggi.Runtime.Piece;
+   
     public class BoardView : MonoBehaviour
     {
         [SerializeField] private PieceSpawner      _pieceSpawner;

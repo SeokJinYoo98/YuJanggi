@@ -1,11 +1,13 @@
 
-
+using System;
+using UnityEngine;
 using Yujanggi.Core.Domain;
 
 namespace Yujanggi.Core.Board
 {
     internal class BoardInitializer
     {
+        private static int PieceId = 0;
         public static void SetUpPieces(IBoardModel board, PlayerTeam bottomPlayer)
         {
             var topPlayer = bottomPlayer == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho;
@@ -63,8 +65,12 @@ namespace Yujanggi.Core.Board
             Spawn(board, top, PieceType.Soldier, 8, 6);
 
         }
+       
         private static void Spawn(IBoardModel board, PlayerTeam team, PieceType type, int x, int z)
-            => board.SetPiece(new Pos(x, z), new PieceInfo(type, team));
+            => board.SetPiece(new Pos(x, z), new PieceInfo(type, team, PieceId++));
+ 
+
+        
         
 
     }

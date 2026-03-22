@@ -13,8 +13,10 @@ namespace Yujanggi.Core.Rule
 
         private readonly List<Pos>  _legalMoveBuffer = new(35);
         private SelectionState      _simulation;
+        private SelectionState      _checkMate;
         public JanggiRule(PlayerTeam bottomPlayer)
         {
+            _checkMate    = new (bottomPlayer);
             _simulation   = new(bottomPlayer);
             _movementRule = new();
             _palaceRule   = new();
@@ -65,7 +67,7 @@ namespace Yujanggi.Core.Rule
 
             return false;
         }
-        public bool IsCheckMate(IBoardModel board, PlayerTeam defence)
+        public bool HasAnyLegalMove(IBoardModel board, PlayerTeam defence)
         {
             for (int x = 0; x < board.WIDTH; ++x)
             {
@@ -82,8 +84,13 @@ namespace Yujanggi.Core.Rule
 
                     var ways = FindCandidates(board, _simulation);
                     FilterLegalMoves(board, _simulation, ways);
-                    if (ways.Count > 0)
+                    
+                    if (0 < ways.Count)
+                    {
+                        UnityEngine.Debug.Log($"Ways:{ways.Count}");
                         return false;
+                    }
+                        
                 }
             }
             return true;

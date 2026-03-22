@@ -215,55 +215,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07926151f5984ac4b878a84f99d81a5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.UI.ResultUI
-  _winner: {fileID: 0}
-  _cnt: {fileID: 0}
---- !u!1 &40174592
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 40174594}
-  - component: {fileID: 40174593}
-  m_Layer: 2
-  m_Name: PieceSpawner
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &40174593
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 40174592}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d00fde7c4077c154c8f5fe6bdece421e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.Board.PieceSpawner
-  _pieceDB: {fileID: 11400000, guid: 91b60798b7aa6b947a530e34e5f1bd84, type: 2}
-  _cho: {fileID: 1161876143}
-  _han: {fileID: 1442720190}
---- !u!4 &40174594
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 40174592}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4.78485, y: -14.18131, z: 5.65741}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1546871214}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  _winner: {fileID: 1154979685}
+  _cnt: {fileID: 503004688}
 --- !u!1 &56062713
 GameObject:
   m_ObjectHideFlags: 0
@@ -1224,6 +1177,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1678781764}
+        m_TargetAssemblyTypeName: Yujanggi.Runtime.Manager.GameManager, Assembly-CSharp
+        m_MethodName: StartGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &326687930
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1948,8 +1913,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 509507442}
+  - component: {fileID: 509507444}
+  - component: {fileID: 509507443}
   m_Layer: 2
-  m_Name: Players
+  m_Name: Pieces
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1972,6 +1939,34 @@ Transform:
   - {fileID: 1161876143}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &509507443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 509507441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 927e457b863e0ff4384a5f8c7bc595c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.Piece.PieceSpawner
+  _pieceDB: {fileID: 11400000, guid: 91b60798b7aa6b947a530e34e5f1bd84, type: 2}
+  _cho: {fileID: 1161876143}
+  _han: {fileID: 1442720190}
+--- !u!114 &509507444
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 509507441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eebc9367781b3a24aab1b0d4b80fb279, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.Piece.PieceManager
+  _pieceSpawner: {fileID: 509507443}
 --- !u!1 &510986753
 GameObject:
   m_ObjectHideFlags: 0
@@ -2003,6 +1998,37 @@ Transform:
   m_Children:
   - {fileID: 1524079746}
   m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &603468295
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 603468296}
+  m_Layer: 2
+  m_Name: PieceManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &603468296
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 603468295}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1678781763}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &720711491
 GameObject:
@@ -2464,7 +2490,7 @@ GameObject:
   - component: {fileID: 943914200}
   - component: {fileID: 943914199}
   m_Layer: 5
-  m_Name: Winner
+  m_Name: GameResult
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2675,6 +2701,18 @@ MonoBehaviour:
       - m_Target: {fileID: 239210209}
         m_TargetAssemblyTypeName: Yujanggi.Runtime.Audio.AudioManager, Assembly-CSharp
         m_MethodName: PlayButton
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1678781764}
+        m_TargetAssemblyTypeName: Yujanggi.Runtime.Manager.GameManager, Assembly-CSharp
+        m_MethodName: GiveUp
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2969,7 +3007,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 180}
-  m_SizeDelta: {x: 200, y: 50}
+  m_SizeDelta: {x: 250, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1154979685
 MonoBehaviour:
@@ -2991,7 +3029,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uCD08\n"
+  m_text: "\uBB34\uC2B9\uBD80\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e4c178d748e944449b1eb36fb5be60a5, type: 2}
   m_sharedMaterial: {fileID: 3786226043550964637, guid: e4c178d748e944449b1eb36fb5be60a5, type: 2}
@@ -3097,7 +3135,7 @@ Transform:
   m_GameObject: {fileID: 1161876142}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -6.81827, y: -5.18694, z: -14.34607}
+  m_LocalPosition: {x: -6.81827, y: 1, z: -14.34607}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4149,7 +4187,7 @@ Transform:
   m_GameObject: {fileID: 1442720189}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -6.81827, y: -5.18694, z: -14.34607}
+  m_LocalPosition: {x: -6.81827, y: 1, z: -14.34607}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4333,38 +4371,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.Board.BoardHighlighter
   _prefab: {fileID: -4218553759093457651, guid: 0f63ac58968e97e438f2dda825c0e34c, type: 3}
---- !u!1 &1546871213
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1546871214}
-  m_Layer: 2
-  m_Name: Spanwers
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1546871214
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1546871213}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.04076, y: -0.72, z: 0.4737}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 40174594}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1548855159
 GameObject:
   m_ObjectHideFlags: 0
@@ -4880,6 +4886,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 239210210}
+  - {fileID: 603468296}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1678781764
@@ -5654,6 +5661,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d47369a604ff30041b502cf54a5833e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.View.Board.BoardView
+  _pieces: {fileID: 0}
 --- !u!114 &2126822364
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5666,7 +5674,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84dc0e156af284744be51607443fadf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.Board.BoardView
-  _pieceSpawner: {fileID: 40174593}
+  _pieceSpawner: {fileID: 0}
   _highlighter: {fileID: 1524079747}
 --- !u!1 &2129848564
 GameObject:
@@ -5858,7 +5866,6 @@ SceneRoots:
   m_Roots:
   - {fileID: 2126822362}
   - {fileID: 510986754}
-  - {fileID: 1546871214}
   - {fileID: 1678781763}
   - {fileID: 509507442}
   - {fileID: 1424797982}

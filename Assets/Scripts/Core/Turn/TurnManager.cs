@@ -18,7 +18,7 @@ namespace Yujanggi.Core.Turn
         public PlayerTeam Current { get; private set; }
         public TurnType   TurnState { get; private set; }
         public bool IsEnd => TurnState == TurnType.End;
-        public void StartTurn(PlayerTeam player)
+        public void StartGame(PlayerTeam player)
         {
             Current = player;
             TurnState = TurnType.Select;
@@ -52,6 +52,12 @@ namespace Yujanggi.Core.Turn
                 _timer -= _maxTurnTime;
                 // 턴 옮김 처리
             }
+        }
+
+        public void ResetTurn()
+        {
+            StartGame(PlayerTeam.Cho);
+            _timer = _maxTurnTime;
         }
     }
 }

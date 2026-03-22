@@ -11,8 +11,18 @@ namespace Yujanggi.Core.Record
         private readonly Stack<MoveContext> _records = new();
         public int MoveCount => _records.Count;
 
-        private Pos _garbageChoPos = new (0, -5);
-        private Pos _garbagehanPos = new (0, -4);
+        private readonly Pos _choOrigin = new Pos(0, -2);
+        private readonly Pos _hanOrigin = new Pos(0, -3);
+        private Pos _garbageChoPos;
+        private Pos _garbagehanPos;
+
+        public void StartGame()
+        {
+            _records.Clear();
+            _garbageChoPos = _choOrigin;
+            _garbagehanPos = _hanOrigin;
+            OnRecordChanged?.Invoke((MoveCount, MoveCount));
+        }
         public void Push(MoveContext record)
         {
             _records.Push(record);
@@ -71,6 +81,10 @@ namespace Yujanggi.Core.Record
                     _garbagehanPos += Pos.Right;
                 }
             }
+        }
+        public void ResetRecord()
+        {
+
         }
     }
 }

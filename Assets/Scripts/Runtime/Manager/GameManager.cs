@@ -16,8 +16,10 @@ namespace Yujanggi.Runtime.Manager
     {
         [SerializeField] private ResultUI        _resultUI;
         [SerializeField] private MatchUI         _matchUI;
+
         [SerializeField] private BoardController _board;
         [SerializeField] private AudioManager    _audio;
+
         private readonly PlayerTeam BottomPlayer = PlayerTeam.Cho;
 
         private ScoreManager    _score;
@@ -28,16 +30,17 @@ namespace Yujanggi.Runtime.Manager
         private void Awake()
         {
             Application.targetFrameRate = 144;
+
             _turn       = new();
             _score      = new();
             _recoder    = new();
         }
         private void Start()
         {
-            _board.StartGame(BottomPlayer);
-            _board.OnMoved += OnMoved;
-            _turn.StartTurn(PlayerTeam.Cho);
+            StartGame();
 
+
+            _board.OnMoved           += OnMoved;
             _turn.OnTurnChanged      += _matchUI.UpdateTurn;
             _recoder.OnRecordChanged += _matchUI.UpdateRecord;
             _score.OnScoreChanged    += _matchUI.UpdateScore;
@@ -108,6 +111,7 @@ namespace Yujanggi.Runtime.Manager
             {
                 _audio.PlayJanggun();
                 _matchUI.PlayJanggun(context.MoveTeam);
+                return;
             }
                 
             
@@ -154,6 +158,31 @@ namespace Yujanggi.Runtime.Manager
 
             _resultUI.Show();
             _resultUI.EndGame(info);
+        }
+        public void GiveUp()
+        {
+            _turn.SetTurn(TurnType.End);
+
+            GameResultInfo info;
+            info.MoveCnt = _recoder.MoveCount;
+            info.Type    = GameResult.GiveUp;
+            info.Winner  = _turn.Current;
+
+            _resultUI.Show();
+            _resultUI.GiveUp(info);
+        }
+
+        public void StartGame()
+        {
+            _score.StartGame();
+            _recoder.StartGame();
+            _board.StartGame(BottomPlayer);
+            _turn.StartGame(PlayerTeam.Cho);
+        }
+
+        public void ResetGame()
+        {
+
         }
     }
 }

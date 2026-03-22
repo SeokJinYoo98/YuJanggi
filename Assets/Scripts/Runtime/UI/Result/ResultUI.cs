@@ -31,6 +31,19 @@ namespace Yujanggi.Runtime.UI
 
             _cnt.text = result.MoveCnt.ToString();
         }
-
+        public void GiveUp(GameResultInfo result)
+        {
+            if (result.Winner == PlayerTeam.Cho)
+            {
+                _winner.color = Color.red;
+                _winner.text = "한";
+            }
+            else
+            {
+                _winner.color = Color.green;
+                _winner.text = "초";
+            }
+            _cnt.text = result.MoveCnt.ToString();
+        }
     }
 }

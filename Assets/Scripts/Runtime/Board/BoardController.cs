@@ -6,9 +6,12 @@ namespace Yujanggi.Runtime.Board
     using UnityEditor;
     using Yujanggi.Core.Domain;
     using Yujanggi.Core.Rule;
+    using Yujanggi.Runtime.Piece;
 
     public class BoardController : MonoBehaviour
     {
+        [SerializeField] private PieceManager _pieces;
+
         public event Action<MoveContext> OnMoved;
 
         private BoardView   _boardView;
@@ -16,7 +19,9 @@ namespace Yujanggi.Runtime.Board
 
         private JanggiRule          _janggiRule;
         private SelectionState      _selection;
-       
+
+
+
         private void Awake()
         {
             _boardView = GetComponent<BoardView>();
@@ -27,7 +32,8 @@ namespace Yujanggi.Runtime.Board
             _boardModel  = new(bottom); BoardInitializer.SetUpPieces(_boardModel, bottom);
             _selection   = new(bottom);
             _janggiRule  = new(bottom);
-            _boardView.SpawnPieceView(_boardModel, bottom);
+            _pieces.SpawnPieces(_boardModel, bottom);
+            //_boardView.SpawnPieceView(_boardModel, bottom);
         }
         public  BoardActionResult  HandleCellClick(Pos pos, PlayerTeam turn)
         {
@@ -78,7 +84,8 @@ namespace Yujanggi.Runtime.Board
 
             var otherTeam = turn == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho;
             var isJanggun = IsJanggun(otherTeam);
-            var isEnd     = isJanggun && IsCheckMate(otherTeam);
+            var isEnd     = HasAnyLegalMove(otherTeam);
+
 
             RaiseMove(new (record, capturedView, isJanggun, isEnd));
             ClearSelection();
@@ -129,7 +136,7 @@ namespace Yujanggi.Runtime.Board
 
         private bool IsJanggun(PlayerTeam otherTeam)
             => _janggiRule.IsKingInCheck(_boardModel, otherTeam);
-        private bool IsCheckMate(PlayerTeam otherTeam)
-            => _janggiRule.IsCheckMate(_boardModel, otherTeam);
+        private bool HasAnyLegalMove(PlayerTeam otherTeam)
+            => _janggiRule.HasAnyLegalMove(_boardModel, otherTeam);
     }
 }
