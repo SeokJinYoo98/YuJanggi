@@ -97,12 +97,8 @@ namespace Yujanggi.Runtime.Manager
         {
             JangunCheck(context);
             SaveHistory(context);
-            if (context.IsCapture)
-            {
-                HandleCapture(context);
-                CheckMate(context);
-            }
-
+            HandleCapture(context);
+            CheckMate(context);
         }
 
         private void JangunCheck(in MoveContext context)
@@ -122,6 +118,7 @@ namespace Yujanggi.Runtime.Manager
         }
         private void HandleCapture(in MoveContext context)
         {
+            if (!context.IsCapture) return;
             var team = context.Record.CapturedPiece.Team;
             var type = context.Record.CapturedPiece.Type;
             var value = BoardHelper.GetPieceScore(type);
@@ -176,13 +173,20 @@ namespace Yujanggi.Runtime.Manager
         {
             _score.StartGame();
             _recoder.StartGame();
-            _board.StartGame(BottomPlayer);
             _turn.StartGame(PlayerTeam.Cho);
+            _board.StartGame(BottomPlayer);
+            
         }
 
         public void ResetGame()
         {
+            _resultUI.Hide();
+            _score.StartGame();
+            _recoder.StartGame();
+            _turn.StartGame(PlayerTeam.Cho);
 
+            _board.ResetGame(BottomPlayer);
+            
         }
     }
 }

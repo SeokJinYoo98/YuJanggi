@@ -34,6 +34,12 @@ namespace Yujanggi.Runtime.Board
             _janggiRule  = new(bottom);
             _pieces.SpawnPieces(_boardModel, bottom);
         }
+        public void ResetGame(PlayerTeam bottom)
+        {
+            BoardInitializer.SetUpPieces(_boardModel, bottom);
+            _pieces.ResetViews(_boardModel);
+            ClearSelection();
+        }
         public  BoardActionResult  HandleCellClick(Pos pos, PlayerTeam turn)
         {
             if (!_boardModel.IsInside(pos))
@@ -69,13 +75,16 @@ namespace Yujanggi.Runtime.Board
         }
         private BoardActionResult  ReselectPiece(Pos pos, PlayerTeam turn)
         {
-            // 선택 취소 로직
+            
+
             if (pos == _selection.SelectedPos)
             {
-                ClearSelection();
+                ClearSelection(); 
                 return BoardActionResult.SelectFailed;
             }
                 
+           
+
             SelectPeice(pos);
             FindWays(pos);
             return BoardActionResult.Reselect;
@@ -90,7 +99,7 @@ namespace Yujanggi.Runtime.Board
             var isJanggun = IsJanggun(otherTeam);
             var isEnd     = HasAnyLegalMove(otherTeam);
 
-
+            Debug.Log($"{isJanggun}, {isEnd}");
             RaiseMove(new (record, isJanggun, isEnd));
             ClearSelection();
 
@@ -120,6 +129,7 @@ namespace Yujanggi.Runtime.Board
         }
         private void SelectPeice(Pos pos)
         {
+            ClearSelection();
             var pieceInfo = _boardModel.GetPiece(pos);
             _selection.Select(pieceInfo, pos);
             _pieces.HighlightPiece(pieceInfo.Id);

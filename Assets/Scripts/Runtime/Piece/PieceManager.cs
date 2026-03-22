@@ -26,6 +26,24 @@ namespace Yujanggi.Runtime.Piece
             _currPiece = id;
             _views[_currPiece].Highlight();
         }     
+        public void ResetViews(IBoardModel boardModel)
+        {
+            int width = boardModel.WIDTH;
+            int height = boardModel.HEIGHT;
+
+            for (int x = 0; x < width; ++x)
+            {
+                for (int z = 0; z < height; ++z)
+                {
+                    var pos = new Pos(x, z);
+                    if (!boardModel.HasPiece(pos))
+                        continue;
+
+                    var pieceInfo = boardModel.GetPiece(pos);
+                    _views[pieceInfo.Id].MoveTo(new Pos(x, z));
+                }
+            }
+        }
         public void SpawnPieces(IBoardModel boardModel, PlayerTeam bottom)
         {
             int width = boardModel.WIDTH;

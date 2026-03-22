@@ -217,6 +217,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.UI.ResultUI
   _winner: {fileID: 1154979685}
   _cnt: {fileID: 503004688}
+  _result: {fileID: 943914199}
 --- !u!1 &56062713
 GameObject:
   m_ObjectHideFlags: 0
@@ -1002,7 +1003,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Main
+  m_text: "\uBA54\uC778\uD654\uBA74\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e4c178d748e944449b1eb36fb5be60a5, type: 2}
   m_sharedMaterial: {fileID: 3786226043550964637, guid: e4c178d748e944449b1eb36fb5be60a5, type: 2}
@@ -1118,7 +1119,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 230, y: -300}
+  m_AnchoredPosition: {x: -230, y: -300}
   m_SizeDelta: {x: 200, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &326687929
@@ -1179,7 +1180,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 1678781764}
         m_TargetAssemblyTypeName: Yujanggi.Runtime.Manager.GameManager, Assembly-CSharp
-        m_MethodName: StartGame
+        m_MethodName: ResetGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1668,7 +1669,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -50}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &503004688
@@ -1807,7 +1808,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -230, y: -300}
+  m_AnchoredPosition: {x: 230, y: -300}
   m_SizeDelta: {x: 200, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &507977071
@@ -1967,38 +1968,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.Piece.PieceManager
   _pieceSpawner: {fileID: 509507443}
---- !u!1 &510986753
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 510986754}
-  m_Layer: 2
-  m_Name: Highlighers
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &510986754
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 510986753}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.04076, y: 1.68, z: 0.4737}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1524079746}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &603468295
 GameObject:
   m_ObjectHideFlags: 0
@@ -2398,7 +2367,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: RePlay
+  m_text: "\uAE30\uBCF4\uBCF4\uAE30\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e4c178d748e944449b1eb36fb5be60a5, type: 2}
   m_sharedMaterial: {fileID: 3786226043550964637, guid: e4c178d748e944449b1eb36fb5be60a5, type: 2}
@@ -2513,7 +2482,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 300}
-  m_SizeDelta: {x: 200, y: 50}
+  m_SizeDelta: {x: 500, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &943914199
 MonoBehaviour:
@@ -2535,7 +2504,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uACB0\uACFC"
+  m_text: "[\uAE30\uAD8C\uC2B9]\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e4c178d748e944449b1eb36fb5be60a5, type: 2}
   m_sharedMaterial: {fileID: 3786226043550964637, guid: e4c178d748e944449b1eb36fb5be60a5, type: 2}
@@ -3006,7 +2975,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 180}
+  m_AnchoredPosition: {x: 0, y: 150}
   m_SizeDelta: {x: 250, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1154979685
@@ -4351,12 +4320,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1524079744}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.7546101, y: 2.72, z: 2.87154}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -1, z: -0, w: 0}
+  m_LocalPosition: {x: 2.28615, y: 4.4, z: 1.0497817}
+  m_LocalScale: {x: 1, y: 1, z: 0.9090909}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 510986754}
+  m_Father: {fileID: 2126822362}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1524079747
 MonoBehaviour:
@@ -4442,7 +4411,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -220, y: 0}
+  m_AnchoredPosition: {x: -220, y: -50}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1584744159
@@ -4939,7 +4908,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -220, y: 180}
+  m_AnchoredPosition: {x: -220, y: 150}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1841336931
@@ -5647,6 +5616,7 @@ Transform:
   m_Children:
   - {fileID: 182760224}
   - {fileID: 135010639}
+  - {fileID: 1524079746}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!114 &2126822363
@@ -5661,7 +5631,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d47369a604ff30041b502cf54a5833e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.View.Board.BoardView
-  _pieces: {fileID: 0}
+  _pieces: {fileID: 509507444}
 --- !u!114 &2126822364
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5674,7 +5644,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84dc0e156af284744be51607443fadf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.Board.BoardView
-  _pieceSpawner: {fileID: 0}
   _highlighter: {fileID: 1524079747}
 --- !u!1 &2129848564
 GameObject:
@@ -5733,7 +5702,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: ReMatch
+  m_text: "\uC7AC\uACBD\uAE30"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e4c178d748e944449b1eb36fb5be60a5, type: 2}
   m_sharedMaterial: {fileID: 3786226043550964637, guid: e4c178d748e944449b1eb36fb5be60a5, type: 2}
@@ -5865,7 +5834,6 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 2126822362}
-  - {fileID: 510986754}
   - {fileID: 1678781763}
   - {fileID: 509507442}
   - {fileID: 1424797982}

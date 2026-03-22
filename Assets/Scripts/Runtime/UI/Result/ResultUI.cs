@@ -8,6 +8,7 @@ namespace Yujanggi.Runtime.UI
     {
         [SerializeField] private TMP_Text _winner;
         [SerializeField] private TMP_Text _cnt;
+        [SerializeField] private TMP_Text _result;
         private void Awake()
         {
             Hide();
@@ -28,7 +29,7 @@ namespace Yujanggi.Runtime.UI
                 _winner.color = Color.red;
                 _winner.text = "한";
             }
-
+            _result.text = "[외통수]";
             _cnt.text = result.MoveCnt.ToString();
         }
         public void GiveUp(GameResultInfo result)
@@ -43,6 +44,7 @@ namespace Yujanggi.Runtime.UI
                 _winner.color = Color.green;
                 _winner.text = "초";
             }
+            _result.text = "[기권승]";
             _cnt.text = result.MoveCnt.ToString();
         }
     }

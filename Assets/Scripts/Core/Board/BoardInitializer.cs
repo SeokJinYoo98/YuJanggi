@@ -10,6 +10,7 @@ namespace Yujanggi.Core.Board
         private static int PieceId = 0;
         public static void SetUpPieces(IBoardModel board, PlayerTeam bottomPlayer)
         {
+            PieceId = 0;
             var topPlayer = bottomPlayer == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho;
             SpawnBottom(board, bottomPlayer);
             SpawnTop(board, topPlayer);
