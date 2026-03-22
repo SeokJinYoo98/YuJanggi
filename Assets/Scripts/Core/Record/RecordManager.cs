@@ -8,56 +8,71 @@ namespace Yujanggi.Core.Record
     public class RecordManager
     {
         public event Action<(int, int)> OnRecordChanged; 
-        private readonly Stack<MoveContext> _records = new();
         public int MoveCount => _records.Count;
 
-        private readonly Pos _choOrigin = new Pos(0, -2);
-        private readonly Pos _hanOrigin = new Pos(0, -3);
-        private Pos _garbageChoPos;
-        private Pos _garbagehanPos;
-
+        private readonly List<MoveContext> _records = new(100);
+        private int _currIdx = 0;
+        public void Push(MoveContext context)
+        {
+            _records.Add(context);
+            _currIdx = _records.Count - 1;
+            OnRecordChanged?.Invoke((MoveCount, MoveCount));
+        }
+        public bool TryPop(out MoveContext context)
+        {
+            if (_records.Count == 0)
+            {
+                context = default;
+                return false;
+            }
+            int lastIdx = _records.Count - 1;
+            context = _records[lastIdx];
+            _records.RemoveAt(lastIdx);
+            _currIdx = _records.Count - 1;
+            OnRecordChanged?.Invoke((MoveCount, MoveCount));
+            return true;
+        }
+        public bool TryPeek(out MoveContext context)
+        {
+            if (_records.Count == 0)
+            {
+                context = default;
+                return false;
+            }
+            context = _records[^1];
+            return true;
+        }
         public void StartGame()
         {
             _records.Clear();
-            _garbageChoPos = _choOrigin;
-            _garbagehanPos = _hanOrigin;
-            OnRecordChanged?.Invoke((MoveCount, MoveCount));
-        }
-        public void Push(MoveContext record)
-        {
-            _records.Push(record);
-
-            OnRecordChanged?.Invoke((MoveCount, MoveCount));
+            _currIdx = 0;
+            OnRecordChanged?.Invoke((_records.Count, _records.Count));
         }
 
-        public bool TryPop(out MoveContext record)
+
+        public bool TryReplayNext(out MoveContext context)
         {
-            if (_records.Count == 0)
+            if (_records.Count - 1 == _currIdx)
             {
-                record = default;
+                context = default;
                 return false;
             }
-            record = _records.Pop();
-
-            OnRecordChanged?.Invoke((MoveCount, MoveCount));
+            ++_currIdx;
+            context = _records[_currIdx];
+            OnRecordChanged?.Invoke((_currIdx, _records.Count));
             return true;
         }
-
-        public bool TryPeek(out MoveContext record)
+        public bool TryReplayPrev(out MoveContext context)
         {
-            if (_records.Count == 0)
+            if (_currIdx == 0)
             {
-                record = default;
+                context = default;
                 return false;
             }
-            record = _records.Peek();
+            --_currIdx;
+            context = _records[_currIdx];
+            OnRecordChanged?.Invoke((_currIdx, _records.Count));
             return true;
-        }
-
-
-        public void ResetRecord()
-        {
-
         }
     }
 }

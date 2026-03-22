@@ -25,8 +25,10 @@ namespace Yujanggi.Core.Turn
         }
 
         public void SetTurn(TurnType type)
-            => TurnState = type;
-        
+        {
+            TurnState = type;
+        }
+
         public void NextTurn()
         {
             Current = (Current == PlayerTeam.Cho)
@@ -54,10 +56,9 @@ namespace Yujanggi.Core.Turn
             }
         }
 
-        public void ResetTurn()
+        public void Replay(PlayerTeam attacker)
         {
-            StartGame(PlayerTeam.Cho);
-            _timer = _maxTurnTime;
+            OnTurnChanged?.Invoke(attacker);
         }
     }
 }

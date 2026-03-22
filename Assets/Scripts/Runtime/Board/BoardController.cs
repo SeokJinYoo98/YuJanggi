@@ -3,7 +3,6 @@ namespace Yujanggi.Runtime.Board
 {
     using Core.Board;
     using System;
-    using UnityEditor;
     using Yujanggi.Core.Domain;
     using Yujanggi.Core.Rule;
     using Yujanggi.Runtime.Piece;
@@ -97,9 +96,7 @@ namespace Yujanggi.Runtime.Board
 
             var otherTeam = turn == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho;
             var isJanggun = IsJanggun(otherTeam);
-            var isEnd     = HasAnyLegalMove(otherTeam);
-
-            Debug.Log($"{isJanggun}, {isEnd}");
+            var isEnd     = isJanggun && HasAnyLegalMove(otherTeam);
             RaiseMove(new (record, isJanggun, isEnd));
             ClearSelection();
 

@@ -412,7 +412,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uCC44\uD305\n"
+  m_text: "\uB118\uAE30\uAE30\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f16081ae59e223b4b9bd981048aa68fb, type: 2}
   m_sharedMaterial: {fileID: 3153723500015261431, guid: f16081ae59e223b4b9bd981048aa68fb, type: 2}
@@ -4175,7 +4175,7 @@ GameObject:
   - component: {fileID: 1448290667}
   - component: {fileID: 1448290666}
   m_Layer: 5
-  m_Name: "\uCC44\uD305 \uBC84\uD2BC"
+  m_Name: "\uB118\uAE30\uAE30\uBC84\uD2BC"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4248,6 +4248,18 @@ MonoBehaviour:
       - m_Target: {fileID: 239210209}
         m_TargetAssemblyTypeName: Yujanggi.Runtime.Audio.AudioManager, Assembly-CSharp
         m_MethodName: PlayButton
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1678781764}
+        m_TargetAssemblyTypeName: Yujanggi.Runtime.Manager.GameManager, Assembly-CSharp
+        m_MethodName: Handicap
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

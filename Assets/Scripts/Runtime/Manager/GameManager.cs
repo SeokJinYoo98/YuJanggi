@@ -25,8 +25,13 @@ namespace Yujanggi.Runtime.Manager
         private ScoreManager    _score;
         private TurnManager     _turn;
         private RecordManager   _recoder;
-
-        
+        private void StartGame()
+        {
+            _score.StartGame();
+            _recoder.StartGame();
+            _turn.StartGame(PlayerTeam.Cho);
+            _board.StartGame(BottomPlayer);
+        }
         private void Awake()
         {
             Application.targetFrameRate = 144;
@@ -38,7 +43,6 @@ namespace Yujanggi.Runtime.Manager
         private void Start()
         {
             StartGame();
-
 
             _board.OnMoved           += OnMoved;
             _turn.OnTurnChanged      += _matchUI.UpdateTurn;
@@ -57,6 +61,57 @@ namespace Yujanggi.Runtime.Manager
                 _score.OnScoreChanged    -= _matchUI.UpdateScore;
             }
         }
+        
+
+        private void OnMoved(MoveContext context)
+        {
+            JangunCheck(context);
+            SaveHistory(context);
+            HandleCapture(context);
+            CheckMate(context);
+        }
+        private void JangunCheck(in MoveContext context)
+        {
+            if (context.IsJanggun)
+            {
+                _audio.PlayJanggun();
+                _matchUI.PlayJanggun(context.MoveTeam);
+                return;
+            }
+                
+            
+            if(_recoder.TryPeek(out MoveContext prev) && prev.IsJanggun)
+            {
+                _audio.PlayMunggun();
+            }
+        }
+        private void HandleCapture(in MoveContext context)
+        {
+            if (!context.IsCapture) return;
+            var team = context.Record.CapturedPiece.Team;
+            var type = context.Record.CapturedPiece.Type;
+            var value = BoardHelper.GetPieceScore(type);
+
+            _score.SetScore(team, value);
+        }
+        private void SaveHistory(in MoveContext context)
+        {
+            _recoder.Push(context);
+        }
+        private void CheckMate(in MoveContext context)
+        {
+            if (!context.EndGame) return;
+            _turn.SetTurn(TurnType.End);
+
+            GameResultInfo info;
+            info.MoveCnt = _recoder.MoveCount;
+            info.Type    = GameResult.CheckMate;
+            info.Winner  = _turn.Current;
+
+            _resultUI.Show();
+            _resultUI.EndGame(info);
+        }
+
         public void HandleClick(int x, int z)
         {
             if (_turn.IsEnd)
@@ -92,70 +147,6 @@ namespace Yujanggi.Runtime.Manager
             }
 
         }
-
-        private void OnMoved(MoveContext context)
-        {
-            JangunCheck(context);
-            SaveHistory(context);
-            HandleCapture(context);
-            CheckMate(context);
-        }
-
-        private void JangunCheck(in MoveContext context)
-        {
-            if (context.IsJanggun)
-            {
-                _audio.PlayJanggun();
-                _matchUI.PlayJanggun(context.MoveTeam);
-                return;
-            }
-                
-            
-            if(_recoder.TryPeek(out var record) && record.IsJanggun)
-            {
-                _audio.PlayMunggun();
-            }
-        }
-        private void HandleCapture(in MoveContext context)
-        {
-            if (!context.IsCapture) return;
-            var team = context.Record.CapturedPiece.Team;
-            var type = context.Record.CapturedPiece.Type;
-            var value = BoardHelper.GetPieceScore(type);
-
-            _score.SetScore(team, value);
-        }
-        private void SaveHistory(in MoveContext context)
-        {
-            _recoder.Push(context);
-        }
-        public void Undo()
-        {
-            if (!_recoder.TryPop(out var context))
-                return;
-
-            var team = context.Record.CapturedPiece.Team;
-            var type = context.Record.CapturedPiece.Type;
-            var value = BoardHelper.GetPieceScore(type);
-
-            _score.SetScore(team, -value);
-
-            _board.Undo(context);
-            _turn.NextTurn();
-        }
-        public void CheckMate(in MoveContext context)
-        {
-            if (!context.EndGame) return;
-            _turn.SetTurn(TurnType.End);
-
-            GameResultInfo info;
-            info.MoveCnt = _recoder.MoveCount;
-            info.Type    = GameResult.CheckMate;
-            info.Winner  = _turn.Current;
-
-            _resultUI.Show();
-            _resultUI.EndGame(info);
-        }
         public void GiveUp()
         {
             _turn.SetTurn(TurnType.End);
@@ -168,16 +159,6 @@ namespace Yujanggi.Runtime.Manager
             _resultUI.Show();
             _resultUI.GiveUp(info);
         }
-
-        public void StartGame()
-        {
-            _score.StartGame();
-            _recoder.StartGame();
-            _turn.StartGame(PlayerTeam.Cho);
-            _board.StartGame(BottomPlayer);
-            
-        }
-
         public void ResetGame()
         {
             _resultUI.Hide();
@@ -186,7 +167,36 @@ namespace Yujanggi.Runtime.Manager
             _turn.StartGame(PlayerTeam.Cho);
 
             _board.ResetGame(BottomPlayer);
+        }
+        public void Undo()
+        {
+            if (!_recoder.TryPop(out MoveContext context))
+                return;
+            if (!context.IsHandicap)
+            {
+                var team = context.Record.CapturedPiece.Team;
+                var type = context.Record.CapturedPiece.Type;
+                var value = BoardHelper.GetPieceScore(type);
+
+                _score.SetScore(team, -value);
+
+                _board.Undo(context);
+            }
+            _turn.NextTurn();
+        }
+        public void Handicap()
+        {
+            _recoder.Push(MoveContext.Handicap);
+            _turn.NextTurn();
+        }
+
+        public void ReplayPrev()
+        {
             
+        }
+        public void ReplayNext()
+        {
+
         }
     }
 }

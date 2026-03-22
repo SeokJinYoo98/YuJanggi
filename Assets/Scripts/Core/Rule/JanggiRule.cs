@@ -86,11 +86,7 @@ namespace Yujanggi.Core.Rule
                     FilterLegalMoves(board, _simulation, ways);
                     
                     if (0 < ways.Count)
-                    {
-                        UnityEngine.Debug.Log($"Ways:{ways.Count}");
-                        return false;
-                    }
-                        
+                        return false;      
                 }
             }
             return true;

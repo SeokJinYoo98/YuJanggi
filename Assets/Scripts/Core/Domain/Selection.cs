@@ -54,6 +54,7 @@ namespace Yujanggi.Core.Domain
 
     public readonly struct MoveContext
     {
+        public static MoveContext Handicap => new(MoveRecord.None, false, false);
         public MoveContext(MoveRecord record, bool isJanggun, bool isEnd)
         {
             Record = record;
@@ -67,5 +68,9 @@ namespace Yujanggi.Core.Domain
         public PlayerTeam   MoveTeam { get; }
         public bool         IsJanggun { get; }
         public bool         EndGame { get; }
+
+        public bool IsHandicap
+            => Record.From == Pos.Invalid;
+        
     }
 }
