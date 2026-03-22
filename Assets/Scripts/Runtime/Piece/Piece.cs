@@ -1,5 +1,5 @@
 using UnityEngine;
-namespace Yujanggi.Runtime.Board
+namespace Yujanggi.Runtime.Piece
 {
     using System.Collections;
     using Yujanggi.Core.Domain;
@@ -15,41 +15,49 @@ namespace Yujanggi.Runtime.Board
     public class Piece : MonoBehaviour, IPiece
     {
         private Coroutine _moveRoutine;
-        [SerializeField] private PieceData _data;
+        private bool      _highligt;
         public void Init(PieceData data, Pos pos, PlayerTeam bottom)
         {
-            _data = data;
-            GetComponent<MeshFilter>().sharedMesh = _data.PieceMesh;
-            MaterialCheck();
+            var team = data.Team;
+            var type = data.Type;
+            GetComponent<MeshFilter>().sharedMesh = data.PieceMesh;
+            MaterialCheck(team, type);
             transform.position = BoardHelper.ToVector3(pos, 1);
 
-            if (_data.Team == bottom)
+            if (team == bottom)
                 transform.Rotate(new Vector3(0, 180, 0));
         }
         public void  MoveTo(Pos toPos)
         {
-            if (_moveRoutine != null)
-                StopCoroutine(_moveRoutine);
+            if (_moveRoutine != null) StopCoroutine(_moveRoutine);
             Vector3 targetWorldPos = BoardHelper.ToVector3(toPos, transform.position.y);
             _moveRoutine = StartCoroutine(CoMove(targetWorldPos, 0.16f));
         }
         public void  Highlight()
         {
+            if (_highligt) return;
             SwapMaterial();
+            _highligt = !_highligt;
         }
-        private void MaterialCheck()
+        public void UnHighlight()
         {
-            if (_data.Team == PlayerTeam.Cho)
+            if (!_highligt) return;
+            SwapMaterial();
+            _highligt = !_highligt;
+        }
+        private void MaterialCheck(PlayerTeam team, PieceType type)
+        {
+            if (team == PlayerTeam.Cho)
             {
-                if (_data.Type ==  PieceType.Guard)
+                if (type ==  PieceType.Guard)
                 {
                     SwapMaterial();
                 }
             }
 
-            else if (_data.Team == PlayerTeam.Han)
+            else if (team == PlayerTeam.Han)
             {
-                if (_data.Type == PieceType.Soldier || _data.Type == PieceType.Cannon)
+                if (type == PieceType.Soldier || type == PieceType.Cannon)
                 {
                     SwapMaterial();
                 }

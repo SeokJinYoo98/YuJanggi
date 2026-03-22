@@ -8,13 +8,13 @@ namespace Yujanggi.Core.Domain
 {
     public readonly struct SelectionInfo
     {
-        public SelectionInfo(PieceInfo piece, Pos pos)
+        public SelectionInfo(PieceModel piece, Pos pos)
         {
             Piece = piece;
             Pos = pos;
         }
 
-        public PieceInfo Piece { get; }
+        public PieceModel Piece { get; }
         public Pos Pos { get; }
     }
     public class SelectionState
@@ -28,11 +28,11 @@ namespace Yujanggi.Core.Domain
         public IReadOnlyList<Pos> MovableCells => _movableCells;
         public bool HasSelection => Current.HasValue;
         public bool IsBottom => Current.HasValue && Current.Value.Piece.Team == BottomPlayer;
-        public PieceInfo SelectedPiece => Current!.Value.Piece;
+        public PieceModel SelectedPiece => Current!.Value.Piece;
         public PlayerTeam Turn => Current!.Value.Piece.Team;
         public Pos SelectedPos => Current!.Value.Pos;
 
-        public void Select(PieceInfo piece, Pos pos)
+        public void Select(PieceModel piece, Pos pos)
         {
             Current = new SelectionInfo(piece, pos);
             _movableCells.Clear();
@@ -54,17 +54,16 @@ namespace Yujanggi.Core.Domain
 
     public readonly struct MoveContext
     {
-        public MoveContext(MoveRecord record, IPiece capturedPiece, bool isJanggun, bool isEnd)
+        public MoveContext(MoveRecord record, bool isJanggun, bool isEnd)
         {
             Record = record;
             MoveTeam = record.MovedPiece.Team;
-            CapturedPieceView = capturedPiece;
+
             IsJanggun = isJanggun;
             EndGame = isEnd;
         }
         public MoveRecord   Record { get; }
         public bool         IsCapture => Record.IsCapture;
-        public IPiece       CapturedPieceView { get; }
         public PlayerTeam   MoveTeam { get; }
         public bool         IsJanggun { get; }
         public bool         EndGame { get; }

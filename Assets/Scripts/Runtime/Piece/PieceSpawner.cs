@@ -5,15 +5,13 @@ using Yujanggi.Data.Board;
 
 namespace Yujanggi.Runtime.Piece
 {
-    using Yujanggi.Runtime.Board;
-
     public class PieceSpawner : MonoBehaviour
     {
         [SerializeField] private PieceDataBase _pieceDB;
         [SerializeField] private Transform _cho;
         [SerializeField] private Transform _han;
         
-        public IPiece Spawn(PieceInfo pieceInfo, Pos pos, PlayerTeam bottom)
+        public IPiece Spawn(PieceModel pieceInfo, Pos pos, PlayerTeam bottom)
         {
             var team = pieceInfo.Team;
             var type = pieceInfo.Type;
@@ -29,7 +27,7 @@ namespace Yujanggi.Runtime.Piece
             return piece;
         }
 
-        public Piece SpawnPiece(PieceInfo pieceInfo, Pos pos, PlayerTeam bottom)
+        public Piece SpawnPiece(PieceModel pieceInfo, Pos pos, PlayerTeam bottom)
         {
             var team = pieceInfo.Team;
             var type = pieceInfo.Type;

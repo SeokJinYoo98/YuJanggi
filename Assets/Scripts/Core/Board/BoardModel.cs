@@ -15,11 +15,11 @@ namespace Yujanggi.Core.Board
         public bool         IsInside(Pos pos);
         public bool         IsPalace(Pos pos);
         public bool         HasPiece(Pos pos);
-        public PieceInfo    GetPiece(Pos pos);
-        public void         SetPiece(Pos pos, PieceInfo piece);
+        public PieceModel   GetPiece(Pos pos);
+        public void         SetPiece(Pos pos, PieceModel piece);
 
         public MoveRecord   DoMove(Pos from, Pos to);
-        public void         UndoMove(MoveRecord moveRecord);
+        public void         UndoMove(in MoveRecord moveRecord);
     }
 
     public class BoardModel : IBoardModel
@@ -55,10 +55,10 @@ namespace Yujanggi.Core.Board
         public bool         IsInside(Pos pos)
             => 0 <= pos.X && pos.X < _width && 0 <= pos.Z && pos.Z < _height;
         public bool         HasPiece(Pos pos)
-            => _board[pos.X, pos.Z].Piece != PieceInfo.None;
-        public PieceInfo    GetPiece(Pos pos)
+            => _board[pos.X, pos.Z].Piece != PieceModel.None;
+        public PieceModel    GetPiece(Pos pos)
             => _board[pos.X, pos.Z].Piece;
-        public void         SetPiece(Pos pos, PieceInfo piece)
+        public void         SetPiece(Pos pos, PieceModel piece)
         {
             _board[pos.X, pos.Z].Piece = piece;
         }
@@ -69,14 +69,14 @@ namespace Yujanggi.Core.Board
             var moved       = GetPiece(from);
             var captured    = GetPiece(to);
 
-            SetPiece(from, PieceInfo.None);
+            SetPiece(from, PieceModel.None);
             SetPiece(to, moved);
 
             UpdateKingPos(to, moved);
 
             return new(from, to, moved, captured);
         }
-        public void UndoMove(MoveRecord moveRecord)
+        public void UndoMove(in MoveRecord moveRecord)
         {
             var from = moveRecord.From;
             var to = moveRecord.To;
@@ -84,7 +84,7 @@ namespace Yujanggi.Core.Board
             var moved = moveRecord.MovedPiece;
 
             SetPiece(from, moved);
-            SetPiece(to, moveRecord.IsCapture ? moveRecord.CapturedPiece : PieceInfo.None);
+            SetPiece(to, moveRecord.IsCapture ? moveRecord.CapturedPiece : PieceModel.None);
 
             UpdateKingPos(from, moved);
         }
@@ -99,7 +99,7 @@ namespace Yujanggi.Core.Board
         private Pos _hanKingPos;
        
         // private
-        private void UpdateKingPos(Pos pos, PieceInfo piece)
+        private void UpdateKingPos(Pos pos, PieceModel piece)
         {
             if (piece.Type != PieceType.King)
                 return;
@@ -117,7 +117,7 @@ namespace Yujanggi.Core.Board
                 for (int z = 0; z < _height; ++z)
                 {
                     _board[x, z] = new();
-                    _board[x, z].Piece = PieceInfo.None;
+                    _board[x, z].Piece = PieceModel.None;
                 }
             }
 

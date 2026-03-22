@@ -5,7 +5,7 @@ namespace Yujanggi.Core.Domain
     using Board;
     public readonly struct MoveRecord
     {
-        public MoveRecord(Pos from, Pos to, PieceInfo moved, PieceInfo captured)
+        public MoveRecord(Pos from, Pos to, PieceModel moved, PieceModel captured)
         {
             From = from; To = to;
             MovedPiece      = moved;
@@ -14,9 +14,9 @@ namespace Yujanggi.Core.Domain
 
         public Pos          From { get; }
         public Pos          To { get; }
-        public PieceInfo    MovedPiece { get; }
-        public PieceInfo    CapturedPiece { get; }
+        public PieceModel    MovedPiece { get; }
+        public PieceModel    CapturedPiece { get; }
        
-        public bool IsCapture => CapturedPiece != PieceInfo.None;
+        public bool IsCapture => CapturedPiece != PieceModel.None;
     }
 }

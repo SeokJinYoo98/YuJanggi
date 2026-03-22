@@ -67,7 +67,7 @@ namespace Yujanggi.Core.Board
         }
        
         private static void Spawn(IBoardModel board, PlayerTeam team, PieceType type, int x, int z)
-            => board.SetPiece(new Pos(x, z), new PieceInfo(type, team, PieceId++));
+            => board.SetPiece(new Pos(x, z), new PieceModel(type, team, PieceId++));
  
 
         

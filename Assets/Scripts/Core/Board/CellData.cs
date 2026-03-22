@@ -8,33 +8,33 @@ namespace Yujanggi.Core.Board
         public CellData(bool palace = false, PlayerTeam team=PlayerTeam.None, PieceType type=PieceType.None)
         {
             Palace = palace;
-            Piece  = PieceInfo.None;
+            Piece  = PieceModel.None;
         }
         public bool         Palace;
-        public PieceInfo    Piece;
+        public PieceModel    Piece;
     }
-    public readonly struct PieceInfo
+    public readonly struct PieceModel
     {
-        public static PieceInfo None
+        public static PieceModel None
             => new(PieceType.None, PlayerTeam.None, -1);
-        public static bool operator ==(PieceInfo a, PieceInfo b)
+        public static bool operator ==(PieceModel a, PieceModel b)
             => a.Type == b.Type && a.Team == b.Team;
-        public static bool operator !=(PieceInfo a, PieceInfo b)
+        public static bool operator !=(PieceModel a, PieceModel b)
             => !(a == b);
         public override bool Equals(object obj)
-            => obj is PieceInfo other && this == other;
+            => obj is PieceModel other && this == other;
         public override int GetHashCode()
             => HashCode.Combine(Type, Team);
 
         public readonly PlayerTeam Team;
         public readonly PieceType  Type;
-        public readonly int        PieceId;
+        public readonly int        Id;
         public bool IsNone => this == None;
-        public PieceInfo(PieceType type, PlayerTeam team, int id)
+        public PieceModel(PieceType type, PlayerTeam team, int id)
         {
             Type = type;
             Team = team;
-            PieceId = id;
+            Id = id;
         }
     }
 }

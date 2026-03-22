@@ -9,15 +9,23 @@ namespace Yujanggi.Runtime.Piece
     public class PieceManager : MonoBehaviour
     {
         [SerializeField] private PieceSpawner _pieceSpawner;
+        private readonly Dictionary<int, Piece> _views = new();
 
-        private Pos _garbageChoPos;
-        private readonly Pos _choOrigin = new Pos(0, -2);
-        private Pos _garbagehanPos;
-        private readonly Pos _hanOrigin = new Pos(0, -3);
-        
-        
+        private Pos _garbageChoPos = new Pos(0, -2);
+        private Pos _garbagehanPos = new Pos(0, -3);
 
-        private readonly Dictionary<int, Board.Piece> _views = new();
+        private int _currPiece;
+        public void UnHighlight()
+        {
+            if (_currPiece == -1) return;
+            _views[_currPiece].UnHighlight();
+            _currPiece = -1;
+        }
+        public void HighlightPiece(int id)
+        {
+            _currPiece = id;
+            _views[_currPiece].Highlight();
+        }     
         public void SpawnPieces(IBoardModel boardModel, PlayerTeam bottom)
         {
             int width = boardModel.WIDTH;
@@ -33,8 +41,56 @@ namespace Yujanggi.Runtime.Piece
 
                     var pieceInfo = boardModel.GetPiece(pos);
                     var piece = _pieceSpawner.SpawnPiece(pieceInfo, pos, bottom);
-                    _views[pieceInfo.PieceId] = piece;
+                    _views[pieceInfo.Id] = piece;
                 }
+            }
+        }
+        public void DoMove(in MoveRecord record)
+        {
+            var toPos = record.To;
+            var movedId = record.MovedPiece.Id;
+            _views[movedId].MoveTo(toPos);
+            CaptureCheck(record);
+        }
+        public void UnDoMove(in MoveRecord record)
+        {
+            var fromPos = record.From;
+            var movedId = record.MovedPiece.Id;
+            _views[movedId].MoveTo(fromPos);
+            UndoCapturedCheck(record);
+        }
+        private void UndoCapturedCheck(in MoveRecord record)
+        {
+            if (!record.IsCapture) return;
+            var team        = record.CapturedPiece.Team;
+            var capturedId  = record.CapturedPiece.Id;
+            var toPos = record.To;
+            _views[capturedId].MoveTo(toPos);
+            if (team == PlayerTeam.Cho)
+            {
+                _garbageChoPos += Pos.Left;
+            }
+            else
+            {
+                _garbagehanPos += Pos.Left;
+            }
+        }
+        private void CaptureCheck(in MoveRecord record)
+        {
+            if (!record.IsCapture) return;
+
+            var capturedId  = record.CapturedPiece.Id;
+            var team        = record.CapturedPiece.Team;
+
+            if (team == PlayerTeam.Cho)
+            {
+                _views[capturedId].MoveTo(_garbageChoPos);
+                _garbageChoPos += Pos.Right;
+            }
+            else
+            {
+                _views[capturedId].MoveTo(_garbagehanPos);
+                _garbagehanPos += Pos.Right;
             }
         }
     }

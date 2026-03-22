@@ -33,7 +33,6 @@ namespace Yujanggi.Runtime.Board
             _selection   = new(bottom);
             _janggiRule  = new(bottom);
             _pieces.SpawnPieces(_boardModel, bottom);
-            //_boardView.SpawnPieceView(_boardModel, bottom);
         }
         public  BoardActionResult  HandleCellClick(Pos pos, PlayerTeam turn)
         {
@@ -70,8 +69,13 @@ namespace Yujanggi.Runtime.Board
         }
         private BoardActionResult  ReselectPiece(Pos pos, PlayerTeam turn)
         {
+            // 선택 취소 로직
             if (pos == _selection.SelectedPos)
-                return BoardActionResult.None;
+            {
+                ClearSelection();
+                return BoardActionResult.SelectFailed;
+            }
+                
             SelectPeice(pos);
             FindWays(pos);
             return BoardActionResult.Reselect;
@@ -80,14 +84,14 @@ namespace Yujanggi.Runtime.Board
         {
             var fromPos = _selection.SelectedPos;
             var record = _boardModel.DoMove(fromPos, toPos);
-            _boardView.DoMove(fromPos, toPos, out var capturedView);
+            _pieces.DoMove(in record);
 
             var otherTeam = turn == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho;
             var isJanggun = IsJanggun(otherTeam);
             var isEnd     = HasAnyLegalMove(otherTeam);
 
 
-            RaiseMove(new (record, capturedView, isJanggun, isEnd));
+            RaiseMove(new (record, isJanggun, isEnd));
             ClearSelection();
 
             return record.IsCapture 
@@ -97,27 +101,29 @@ namespace Yujanggi.Runtime.Board
         private void FindWays(Pos pos)
         {
             _janggiRule.FindWays(_boardModel, _selection);
-            _boardView.ShowHighlights(pos, _selection.MovableCells);
+            _boardView.Highlight(_selection.MovableCells);
         }
         private void ClearSelection()
         {
             _selection.Clear();
-            _boardView.HideHighlights();
+            _boardView.UnHighlight();
+            _pieces.UnHighlight();
         }
         private bool CanSelectPiece(Pos pos, PlayerTeam turn)
         {
             if (!_boardModel.HasPiece(pos))
                 return false;
-
+            
             var pieceInfo = _boardModel.GetPiece(pos);
+       
             return pieceInfo.Team == turn;
         }
         private void SelectPeice(Pos pos)
         {
             var pieceInfo = _boardModel.GetPiece(pos);
             _selection.Select(pieceInfo, pos);
+            _pieces.HighlightPiece(pieceInfo.Id);
         }
-
 
         // 이벤트 관련
         private void RaiseMove(in MoveContext context)
@@ -131,7 +137,7 @@ namespace Yujanggi.Runtime.Board
             ClearSelection();
             var record = context.Record;
             _boardModel.UndoMove(record);
-            _boardView.UndoMove(in context);
+            _pieces.UnDoMove(record);
         }
 
         private bool IsJanggun(PlayerTeam otherTeam)

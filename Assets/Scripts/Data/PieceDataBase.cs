@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Yujanggi.Core.Domain;
-using Yujanggi.Runtime.Board;
+using Yujanggi.Runtime.Piece;
 
 namespace Yujanggi.Data.Board
 {
