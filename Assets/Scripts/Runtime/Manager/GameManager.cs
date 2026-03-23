@@ -36,8 +36,8 @@ namespace Yujanggi.Runtime.Manager
         private void Awake()
         {
             Application.targetFrameRate = 144;
-
-            _turn       = new();
+            float maxTurnTime = 30;
+            _turn       = new(maxTurnTime);
             _score      = new();
             _recoder    = new();
         }
@@ -48,8 +48,10 @@ namespace Yujanggi.Runtime.Manager
             _board.OnMoved           += OnMoved;
             _turn.OnTurnChanged      += _matchUI.UpdateTurn;
             _turn.OnTimeChanged      += _matchUI.UpdateTimer;
+            _turn.OnTurnEnd          += Handicap;
             _recoder.OnRecordChanged += _matchUI.UpdateRecord;
             _score.OnScoreChanged    += _matchUI.UpdateScore;
+            
 
         }
         private void OnDestroy()
@@ -62,6 +64,7 @@ namespace Yujanggi.Runtime.Manager
                 _turn.OnTurnChanged      -= _matchUI.UpdateTurn;
                 _recoder.OnRecordChanged -= _matchUI.UpdateRecord;
                 _turn.OnTimeChanged      -= _matchUI.UpdateTimer;
+                _turn.OnTurnEnd          -= Handicap;
                 _score.OnScoreChanged    -= _matchUI.UpdateScore;
             }
         }

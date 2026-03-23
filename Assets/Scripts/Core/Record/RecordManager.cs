@@ -16,7 +16,7 @@ namespace Yujanggi.Core.Record
         {
             _records.Add(context);
             _currIdx = _records.Count;
-            OnRecordChanged?.Invoke((_currIdx, MoveCount));
+            OnRecordChanged?.Invoke((MoveCount, MoveCount));
         }
         public bool TryPop(out MoveContext context)
         {
@@ -29,7 +29,7 @@ namespace Yujanggi.Core.Record
             context = _records[lastIdx];
             _records.RemoveAt(lastIdx);
             _currIdx = _records.Count - 1;
-            OnRecordChanged?.Invoke((_currIdx, MoveCount));
+            OnRecordChanged?.Invoke((MoveCount, MoveCount));
             return true;
         }
         public bool TryPeek(out MoveContext context)

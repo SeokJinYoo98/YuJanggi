@@ -151,12 +151,5 @@ namespace Yujanggi.Runtime.Board
         {
             ClearSelection();
         }
-
-        public void PlayReplay(in MoveContext context)
-        {
-            // 보드와 피스를 이전 상태로 움직인다.
-
-            // 코루틴이 실행된다.
-        }
     }
 }
