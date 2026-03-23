@@ -10,7 +10,8 @@ namespace Yujanggi.Core.Turn
         Select,
         Attack,
         Update,
-        End
+        End,
+        Replay
     }
     public class TurnManager
     {
@@ -22,6 +23,7 @@ namespace Yujanggi.Core.Turn
         {
             Current = player;
             TurnState = TurnType.Select;
+            OnTurnChanged?.Invoke(Current);
         }
 
         public void SetTurn(TurnType type)
@@ -31,34 +33,34 @@ namespace Yujanggi.Core.Turn
 
         public void NextTurn()
         {
+            _turnTime = _maxTurnTime;
+            OnTimeChanged?.Invoke((Current, (int)_turnTime));
+
             Current = (Current == PlayerTeam.Cho)
                 ? PlayerTeam.Han
                 : PlayerTeam.Cho;
 
+            OnTimeChanged?.Invoke((Current, (int)_turnTime));
             TurnState = TurnType.Select;
-
             OnTurnChanged?.Invoke(Current);
         }
-
-        private float _timer = 0.0f;
+        private float       _timer = 0;
+        private float       _turnTime = 30.0f;
         private const float _maxTurnTime = 30.0f;
-
+        public event Action<(PlayerTeam team, int time)> OnTimeChanged;
         public void Update(float deltaTime)
         {
-            if (TurnState == TurnType.Update)
+            if (TurnState != TurnType.Select && TurnState != TurnType.Attack)
                 return;
 
             _timer += deltaTime;
-            if (_timer > _maxTurnTime)
+            if (1 <= _timer)
             {
-                _timer -= _maxTurnTime;
-                // 턴 옮김 처리
+                _turnTime -= _timer;
+                _timer = 0;
+                int remainingTime = Math.Max(0, (int)Math.Ceiling(_turnTime));
+                OnTimeChanged?.Invoke((Current, remainingTime));
             }
-        }
-
-        public void Replay(PlayerTeam attacker)
-        {
-            OnTurnChanged?.Invoke(attacker);
         }
     }
 }

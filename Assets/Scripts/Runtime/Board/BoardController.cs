@@ -19,8 +19,6 @@ namespace Yujanggi.Runtime.Board
         private JanggiRule          _janggiRule;
         private SelectionState      _selection;
 
-
-
         private void Awake()
         {
             _boardView = GetComponent<BoardView>();
@@ -35,6 +33,7 @@ namespace Yujanggi.Runtime.Board
         }
         public void ResetGame(PlayerTeam bottom)
         {
+            _boardModel.ResetBoard();
             BoardInitializer.SetUpPieces(_boardModel, bottom);
             _pieces.ResetViews(_boardModel);
             ClearSelection();
@@ -74,15 +73,11 @@ namespace Yujanggi.Runtime.Board
         }
         private BoardActionResult  ReselectPiece(Pos pos, PlayerTeam turn)
         {
-            
-
             if (pos == _selection.SelectedPos)
             {
                 ClearSelection(); 
                 return BoardActionResult.SelectFailed;
             }
-                
-           
 
             SelectPeice(pos);
             FindWays(pos);
@@ -151,5 +146,17 @@ namespace Yujanggi.Runtime.Board
             => _janggiRule.IsKingInCheck(_boardModel, otherTeam);
         private bool HasAnyLegalMove(PlayerTeam otherTeam)
             => _janggiRule.HasAnyLegalMove(_boardModel, otherTeam);
+
+        public void HandiCap()
+        {
+            ClearSelection();
+        }
+
+        public void PlayReplay(in MoveContext context)
+        {
+            // 보드와 피스를 이전 상태로 움직인다.
+
+            // 코루틴이 실행된다.
+        }
     }
 }

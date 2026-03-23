@@ -7,7 +7,6 @@ namespace Yujanggi.Runtime.Manager
     using Core.Domain;
     using Core.Score;
     using Core.Turn;
-    using System;
     using Yujanggi.Core.Record;
     using Yujanggi.Runtime.UI;
     using Yujanggi.Utills.Board;
@@ -25,6 +24,8 @@ namespace Yujanggi.Runtime.Manager
         private ScoreManager    _score;
         private TurnManager     _turn;
         private RecordManager   _recoder;
+
+        private bool _replay = false;
         private void StartGame()
         {
             _score.StartGame();
@@ -46,8 +47,10 @@ namespace Yujanggi.Runtime.Manager
 
             _board.OnMoved           += OnMoved;
             _turn.OnTurnChanged      += _matchUI.UpdateTurn;
+            _turn.OnTimeChanged      += _matchUI.UpdateTimer;
             _recoder.OnRecordChanged += _matchUI.UpdateRecord;
             _score.OnScoreChanged    += _matchUI.UpdateScore;
+
         }
         private void OnDestroy()
         {
@@ -58,11 +61,15 @@ namespace Yujanggi.Runtime.Manager
             {
                 _turn.OnTurnChanged      -= _matchUI.UpdateTurn;
                 _recoder.OnRecordChanged -= _matchUI.UpdateRecord;
+                _turn.OnTimeChanged      -= _matchUI.UpdateTimer;
                 _score.OnScoreChanged    -= _matchUI.UpdateScore;
             }
         }
-        
 
+        private void Update()
+        {
+            _turn.Update(Time.deltaTime);
+        }
         private void OnMoved(MoveContext context)
         {
             JangunCheck(context);
@@ -114,7 +121,7 @@ namespace Yujanggi.Runtime.Manager
 
         public void HandleClick(int x, int z)
         {
-            if (_turn.IsEnd)
+            if (_turn.IsEnd || _replay)
                 return;
 
             var result = _board.HandleCellClick(new Pos(x, z), _turn.Current);
@@ -186,6 +193,7 @@ namespace Yujanggi.Runtime.Manager
         }
         public void Handicap()
         {
+            _board.HandiCap();
             _recoder.Push(MoveContext.Handicap);
             _turn.NextTurn();
         }
@@ -196,7 +204,16 @@ namespace Yujanggi.Runtime.Manager
         }
         public void ReplayNext()
         {
+            if(!_recoder.TryReplayNext(out var context))
+            {
+                _replay = false;
+                return;
+            }
+        }
 
+        public void ReplayMode()
+        {
+            _replay = true;
         }
     }
 }

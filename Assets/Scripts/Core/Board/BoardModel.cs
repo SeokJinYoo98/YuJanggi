@@ -8,7 +8,7 @@ namespace Yujanggi.Core.Board
 {
     public interface IBoardModel
     {
-        public Pos GetKingPos(PlayerTeam team);
+        public Pos          GetKingPos(PlayerTeam team);
         public int          WIDTH { get; }
         public int          HEIGHT { get; }
 
@@ -45,7 +45,16 @@ namespace Yujanggi.Core.Board
             }
 
         }
-
+        public void ResetBoard()
+        {
+            for (int x = 0; x < _width; ++x)
+            {
+                for (int z = 0; z < _height; ++z)
+                {
+                    _board[x, z].Piece = PieceModel.None;
+                }
+            }
+        }
         // 공개 API Set은 공개인가?
         public bool         IsPalace(Pos pos)
         {
@@ -131,5 +140,6 @@ namespace Yujanggi.Core.Board
                 }
             }
         }
+
     }
 }
