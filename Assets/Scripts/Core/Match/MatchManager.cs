@@ -14,6 +14,8 @@ namespace Yujanggi.Core.Match
         public event Action<PlayerTeam>               OnCheck;
         public event Action                           OnMunggun;
         public event Action<PieceType>                OnPieceCaptured;
+        public event Action<GameResultInfo>           GameEnded;
+
         public void SeletionChanged(int? id, IReadOnlyList<Pos> pos)
             => OnSelectionChanged?.Invoke(id, pos);
         public void PieceMoved(MoveRecord record)
@@ -24,6 +26,8 @@ namespace Yujanggi.Core.Match
             => OnMunggun?.Invoke();
         public void PieceCaptured(PieceType type)
             => OnPieceCaptured?.Invoke(type);
+        public void GameEnd(GameResultInfo info)
+            => GameEnded?.Invoke(info);
     }
     public interface IMatchManager
     {
@@ -226,6 +230,19 @@ namespace Yujanggi.Core.Match
                 MatchEvent.MunggunOccured();
         }
         private bool HasAnyLegalMove(PlayerTeam otherTeam)
-            => Rule.HasAnyLegalMove(Board, otherTeam);
+        {
+            var result = Rule.HasAnyLegalMove(Board, otherTeam);
+            if (!result)
+            {
+                GameResultInfo info;
+                info.MoveCnt = Record.MoveCount;
+                info.Type = GameResult.CheckMate;
+                info.Winner = Turn.Current;
+                MatchEvent.GameEnd(info);
+            }
+                
+
+            return result;
+        }
     }
 }

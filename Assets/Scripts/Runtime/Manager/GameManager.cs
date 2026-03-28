@@ -68,6 +68,8 @@ namespace Yujanggi.Runtime.Manager
             _matchUI.BindEvents(_match);
 
             var matchEvents = _match.MatchEvent;
+            matchEvents.GameEnded += EndGame;
+
             _audio.BindEvents(matchEvents);
             _board.BindEvents(matchEvents);
 
@@ -88,6 +90,7 @@ namespace Yujanggi.Runtime.Manager
                 _match.UnBindEvents();
                 _matchUI.UnBindEvents(_match);
                 var matchEvents = _match.MatchEvent;
+                matchEvents.GameEnded -= EndGame;
                 _audio.UnBindEvents(matchEvents);
                 _board.UnBindEvents(matchEvents);
 
@@ -180,6 +183,16 @@ namespace Yujanggi.Runtime.Manager
             yield return new WaitForSeconds(0.2f);
             if (!ai.TrySelectCell())
                 yield break;
+        }
+        private void EndGame(GameResultInfo info)
+        {
+            _resultUI.Show();
+            _resultUI.EndGame(info);
+            var winner = GetParticipant(info.Winner);
+            if (winner.Controller is LocalPlayerController)
+                _audio.PlayWin();
+            else
+                _audio.PlayLose();
         }
     }
 }

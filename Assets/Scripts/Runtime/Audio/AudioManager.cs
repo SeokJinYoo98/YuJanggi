@@ -17,6 +17,9 @@ namespace Yujanggi.Runtime.Audio
         [SerializeField] private AudioClip _janggunClip;
         [SerializeField] private AudioClip _munggunClip;
         [SerializeField] private AudioClip _checkmateClip;
+
+        [SerializeField] private AudioClip _winClip;
+        [SerializeField] private AudioClip _loseClip;
         private void Awake()
         {
             
@@ -64,7 +67,10 @@ namespace Yujanggi.Runtime.Audio
         {
             _sfxSource.PlayOneShot(_buttonClip);
         }
-
+        public void PlayWin()
+            => _sfxSource.PlayOneShot(_winClip, 1.2f);
+        public void PlayLose()
+            => _sfxSource.PlayOneShot(_loseClip, 1.2f);
     }
 
 }

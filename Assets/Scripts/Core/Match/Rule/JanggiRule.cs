@@ -90,10 +90,10 @@ namespace Yujanggi.Core.Rule
                     FilterLegalMoves(board, _simulation, ways);
                     
                     if (0 < ways.Count)
-                        return false;      
+                        return true;      
                 }
             }
-            return true;
+            return false;
         }
 
 
