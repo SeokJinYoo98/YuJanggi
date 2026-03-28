@@ -13,14 +13,17 @@ namespace Yujanggi.Core.Match
         public event Action<MoveRecord>               OnPieceMoved;
         public event Action<PlayerTeam>               OnCheck;
         public event Action                           OnMunggun;
+        public event Action<PieceType>                OnPieceCaptured;
         public void SeletionChanged(int? id, IReadOnlyList<Pos> pos)
             => OnSelectionChanged?.Invoke(id, pos);
         public void PieceMoved(MoveRecord record)
             => OnPieceMoved?.Invoke(record);
-        public void OnCheckOccured(PlayerTeam team)
+        public void CheckOccured(PlayerTeam team)
             => OnCheck?.Invoke(team);
-        public void OnMunggunOccured()
+        public void MunggunOccured()
             => OnMunggun?.Invoke();
+        public void PieceCaptured(PieceType type)
+            => OnPieceCaptured?.Invoke(type);
     }
     public interface IMatchManager
     {
@@ -28,31 +31,53 @@ namespace Yujanggi.Core.Match
         public Record       Record { get; }
         public Score        Score { get; }
         public BoardModel   Board { get; }
-
+        public MatchEvents  MatchEvent { get; }
+        public PlayerTeam   Bottom { get; }
     }
     public class MatchManager : IMatchManager
     {
-        public MatchEvents MatchEvent { get; } = new();
-        public Turn         Turn { get; }
-        public Record       Record { get; }
-        public Score        Score { get; }
-        public BoardModel   Board { get; }
-
+        public  MatchEvents  MatchEvent { get; } = new();
+        public  Turn         Turn { get; }
+        public  Record       Record { get; }
+        public  Score        Score { get; }
+        public  BoardModel   Board { get; }
+        public  JanggiRule   Rule { get; }
+        public PlayerTeam    Bottom => _bottom;
         private readonly SelectionState _selection;
-        private readonly JanggiRule _rule;
+
         private readonly PlayerTeam _bottom;
 
         public MatchManager(PlayerTeam bottom = PlayerTeam.Cho, float maxTime=30f)
         {
+            _selection  = new SelectionState(_bottom);
             _bottom     = bottom;
+
             Turn        = new Turn(maxTime);
             Record      = new Record();
             Score       = new Score();
             Board       = new BoardModel(_bottom);
-            _selection  = new SelectionState(_bottom);
-            _rule       = new JanggiRule(_bottom);
+            Rule        = new JanggiRule(_bottom);
 
             BoardInitializer.SetUpPieces(Board, _bottom);
+        }
+        public void ResetGame()
+        {
+            ClearSelection();
+
+            Turn.StartGame(PlayerTeam.Cho);
+            Record.StartGame();
+            Score.StartGame();
+            Board.ResetBoard();
+            BoardInitializer.SetUpPieces(Board, _bottom);
+        }
+        public void BindEvents()
+        {
+            Turn.OnTurnEnd += Handicap;
+        }
+        public void UnBindEvents()
+        {
+            Turn.OnTurnEnd -= Handicap;
+
         }
         public bool TryUnDo(out MoveContext ctx)
         {
@@ -80,6 +105,7 @@ namespace Yujanggi.Core.Match
             Record.Push(MoveContext.Handicap);
             Turn.NextTurn();
         }
+ 
         public GameResultInfo GiveUp()
         {
             Turn.SetTurn(TurnType.End);
@@ -147,7 +173,7 @@ namespace Yujanggi.Core.Match
         {
             var fromPos = _selection.SelectedPos;
             var record = Board.DoMove(fromPos, toPos);
-
+            if (record.IsCapture) MatchEvent.PieceCaptured(record.CapturedPiece.Type);
             var otherTeam = turn == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho;
             var isJanggun = IsJanggun(otherTeam);
             var isEnd = isJanggun && HasAnyLegalMove(otherTeam);
@@ -185,21 +211,21 @@ namespace Yujanggi.Core.Match
         }
         private void FindWays()
         {
-            _rule.FindWays(Board, _selection);
+            Rule.FindWays(Board, _selection);
             MatchEvent.SeletionChanged(_selection.SelectedPiece.Id, _selection.MovableCells);
         }
         private bool IsJanggun(PlayerTeam otherTeam)
         {
-            var result = _rule.IsKingInCheck(Board, otherTeam);
-            if (result) MatchEvent.OnCheckOccured(otherTeam);
+            var result = Rule.IsKingInCheck(Board, otherTeam);
+            if (result) MatchEvent.CheckOccured(otherTeam);
             return result;
         }
         private void MunggunCheck()
         {
             if (Record.TryPeek(out var ctx) && ctx.IsJanggun)
-                MatchEvent.OnMunggunOccured();
+                MatchEvent.MunggunOccured();
         }
         private bool HasAnyLegalMove(PlayerTeam otherTeam)
-            => _rule.HasAnyLegalMove(Board, otherTeam);
+            => Rule.HasAnyLegalMove(Board, otherTeam);
     }
 }

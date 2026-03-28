@@ -1,8 +1,12 @@
 using UnityEngine;
 using UnityEngine.Audio;
+using Yujanggi.Core.Domain;
 
 namespace Yujanggi.Runtime.Audio
 {
+    using Core.Match;
+    using System.Collections.Generic;
+
     public class AudioManager : MonoBehaviour
     {
         [SerializeField] private AudioSource _sfxSource;
@@ -17,23 +21,41 @@ namespace Yujanggi.Runtime.Audio
         {
             
         }
-        public void PlayJanggun()
+
+        public void BindEvents(MatchEvents events)
+        {
+            events.OnPieceMoved         += PlayMove;
+            events.OnSelectionChanged   += PlaySelect;
+            events.OnMunggun            += PlayMunggun;
+            events.OnCheck              += PlayJanggun;
+            events.OnPieceCaptured      += PlayCapture;
+        }
+        public void UnBindEvents(MatchEvents events)
+        {
+            events.OnPieceMoved         -= PlayMove;
+            events.OnSelectionChanged   -= PlaySelect;
+            events.OnMunggun            -= PlayMunggun;
+            events.OnCheck              -= PlayJanggun;
+            events.OnPieceCaptured      -= PlayCapture;
+        }
+        private void PlayJanggun(PlayerTeam team)
         {
             _sfxSource.PlayOneShot(_janggunClip, 1.5f);
         }
-        public void PlayMunggun()
+        private void PlayMunggun()
         {
             _sfxSource.PlayOneShot(_munggunClip, 1.5f);
         }
-        public void PlayMove()
+        private void PlayMove(MoveRecord _)
         {
             _sfxSource.PlayOneShot(_moveClip, 0.6f);
         }
-        public void PlaySelect()
+        private void PlaySelect(int? idx, IReadOnlyList<Pos> _)
         {
-            _sfxSource.PlayOneShot(_selectClip);
+            if (idx.HasValue)
+                _sfxSource.PlayOneShot(_selectClip);
         }
-        public void PlayCapture()
+        private void PlayCapture(PieceType _)
         {
             _sfxSource.PlayOneShot(_captureClip, 0.8f);
         }

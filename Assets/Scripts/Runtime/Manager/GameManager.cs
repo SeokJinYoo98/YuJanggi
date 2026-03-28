@@ -5,30 +5,35 @@ namespace Yujanggi.Runtime.Manager
     using Audio;
     using Board;
     using Core.Domain;
-    using System.Collections.Generic;
-    using Yujanggi.Core.Match;
-    using Yujanggi.Runtime.Player.Yujanggi.Runtime.Controller;
-    using Yujanggi.Runtime.UI;
-    using Yujanggi.Utills.Board;
+    using Core.AI;
+    using Core.Match;
+    using Core.Participant;
+    using Input;
+    using UI;
+    using System.Collections;
 
     public class GameManager : MonoBehaviour
     {
+        [SerializeField] private BoardPresenter _board;
+
         [SerializeField] private ResultUI        _resultUI;
         [SerializeField] private MatchUI         _matchUI;
         [SerializeField] private AudioManager    _audio;
 
-        [SerializeField] private JanggiController _player;
-
-        [SerializeField] private BoardPresenter _board;
+        [SerializeField] private LocalPlayerController _localPlayer;
 
         private MatchManager _match;
+
+        private Participant _cho;
+        private Participant _han;
 
         //private bool _replay = false;
 
         private void Awake()
         {
             Application.targetFrameRate = 144;
-
+            _cho = new(PlayerTeam.Cho);
+            _han = new(PlayerTeam.Han);
         }
         private void Start()
         {
@@ -43,112 +48,85 @@ namespace Yujanggi.Runtime.Manager
         {
             _match.Update(Time.deltaTime);
         }
-
+        
         private void StartGame()
         {
-            var bottom = PlayerTeam.Cho;
+            var bottom  = PlayerTeam.Cho;
             var maxTime = 30f;
+            _match      = new(bottom, maxTime);
 
-            _match          = new(bottom, maxTime);
+            _cho.Bind(_localPlayer);
+            _han.Bind(new AIController(_match.Rule, _match.Board, bottom));
 
             BindEvents();
             _board.StartGame(bottom, _match.Board);
         }
 
-        private void    BindEvents()
-        {   
-            var turn = _match.Turn;
-            turn.OnTurnEnd             += _match.Handicap;
-            turn.OnTurnChanged         += _matchUI.UpdateTurn;
-            turn.OnTimeChanged         += _matchUI.UpdateTimer;
-
-            var record = _match.Record;
-            record.OnRecordChanged     += _matchUI.UpdateRecord;
-
-            var score = _match.Score;
-            score.OnScoreChanged       += _matchUI.UpdateScore;
+        private void BindEvents()
+        {
+            _match.BindEvents();
+            _matchUI.BindEvents(_match);
 
             var matchEvents = _match.MatchEvent;
-            matchEvents.OnSelectionChanged  += HandleSelectionChanged;
-            matchEvents.OnPieceMoved        += HandlePieceMove;
-            matchEvents.OnCheck             += HandleCheck;
-            matchEvents.OnMunggun           += _audio.PlayMunggun;
+            _audio.BindEvents(matchEvents);
+            _board.BindEvents(matchEvents);
 
-            _player.OnBoardClicked     += HandleClick;
+            if (_cho.Controller != null)
+                _cho.Controller.OnBoardClicked += HandleClick;
 
+            if (_han.Controller != null)
+                _han.Controller.OnBoardClicked += HandleClick;
+
+            var turn = _match.Turn;
+            turn.OnTurnChanged += HandleTurnChanged;
         }
-        private void    UnBindEvents()
+        private void UnBindEvents()
         {
-        
+            
             if (_matchUI != null && _match != null)
             {
-                var turn = _match.Turn;
-                turn.OnTurnEnd             -= _match.Handicap;
-                turn.OnTurnChanged         -= _matchUI.UpdateTurn;
-                turn.OnTimeChanged         -= _matchUI.UpdateTimer;
-
-                var record = _match.Record;
-                record.OnRecordChanged     -= _matchUI.UpdateRecord;
-
-                var score = _match.Score;
-                score.OnScoreChanged       -= _matchUI.UpdateScore;
-
+                _match.UnBindEvents();
+                _matchUI.UnBindEvents(_match);
                 var matchEvents = _match.MatchEvent;
-                matchEvents.OnSelectionChanged  -= HandleSelectionChanged;
-                matchEvents.OnPieceMoved        -= HandlePieceMove;
-                matchEvents.OnCheck             -= HandleCheck;
-                matchEvents.OnMunggun           -= _audio.PlayMunggun;
+                _audio.UnBindEvents(matchEvents);
+                _board.UnBindEvents(matchEvents);
 
+                if (_cho.Controller != null)
+                    _cho.Controller.OnBoardClicked -= HandleClick;
+
+                if (_han.Controller != null)
+                    _han.Controller.OnBoardClicked -= HandleClick;
+                var turn = _match.Turn;
+                turn.OnTurnChanged -= HandleTurnChanged;
             }
-            if (_player != null)
-                _player.OnBoardClicked -= HandleClick;
-            
-            
         }
-        public void     HandleClick(Pos pos)
+        public void HandleClick(Pos pos)
         {
-            Debug.Log($"{pos.X}, {pos.Z}");
-
             var result = _match.HandleCellClick(pos);
-            switch (result)
-            {
-                case BoardActionResult.SelectSuccess:
-                case BoardActionResult.Reselect:
-                    _audio.PlaySelect();
-                    break;
-
-                case BoardActionResult.MoveSuccess:
-                    _audio.PlayMove();
-                    break;
-
-                case BoardActionResult.CaptureSuccess:
-                    _audio.PlayCapture();
-                    break;
-
-                case BoardActionResult.SelectFailed:
-                case BoardActionResult.None:
-                default:
-                    break;
-            }
         }
         
-        private void    JangunCheck(in MoveContext context)
+        private void HandleTurnChanged(PlayerTeam turn)
         {
-            //if (context.IsJanggun)
-            //{
-            //    _audio.PlayJanggun();
-            //    _matchUI.PlayJanggun(context.MoveTeam);
-            //    return;
-            //}
-                
-            
-            //if(_recoder.TryPeek(out MoveContext prev) && prev.IsJanggun)
-            //{
-            //    _audio.PlayMunggun();
-            //}
-        }
+            if (turn == PlayerTeam.Cho)
+            {
+                _cho.Controller.SetInputEnabled(true);
+                _han.Controller.SetInputEnabled(false);
+            }
+            else
+            {
+                _cho.Controller.SetInputEnabled(false);
+                _han.Controller.SetInputEnabled(true);
+            }
+            var participant = GetParticipant(turn);
 
-        public void     GiveUp()
+            if (participant.Controller is AIController ai)
+            {
+                StartCoroutine(ProcessAiTurn(ai, turn));
+            }
+        }
+        private Participant GetParticipant(PlayerTeam team)
+            => team == PlayerTeam.Cho ? _cho : _han;
+        public void  GiveUp()
         {
             var info = _match.GiveUp();
 
@@ -156,20 +134,19 @@ namespace Yujanggi.Runtime.Manager
             _resultUI.GiveUp(info);
 
         }
-        public void     ResetGame()
+        public void  ResetGame()
         {
-            //_resultUI.Hide();
-            //_score.StartGame();
-            //_recoder.StartGame();
-            //_turn.StartGame(PlayerTeam.Cho);
-
-            //_board.ResetGame(BottomPlayer);
+            _resultUI.Hide();
+            _match.ResetGame();
+            _cho.Controller?.SetInputEnabled(true);
+            _han.Controller?.SetInputEnabled(false);
+            _board.ResetGame(_match.Board);
         }
-        public void Handicap()
+        public void  Handicap()
         {
             _match.Handicap();
         }
-        public void Undo()
+        public void  Undo()
         {
             if (!_match.TryUnDo(out var ctx))
                 return;
@@ -190,33 +167,19 @@ namespace Yujanggi.Runtime.Manager
                 _board.RestoreCapturedPiece(captured.Id, captured.Team, to);
             }
         }
-        private void HandlePieceMove(MoveRecord record)
-        {
-            var id = record.MovedPiece.Id;
-            var to = record.To;
-            _board.MovePiece(id, to);
-            
-            if(record.IsCapture)
-            {
-                var captured = record.CapturedPiece;
-                _board.PlaceCapturedPiece(captured.Id, captured.Team);
-            }
-            _board.UnHighlight();
-        }
-        private void HandleSelectionChanged(int? id, IReadOnlyList<Pos> pos)
-        {
-            if (id == null)
-            {
-                _board.UnHighlight();
-                return;
-            }
 
-            _board.Highlight(id.Value, pos);
-        }
-        private void HandleCheck(PlayerTeam team)
+        private IEnumerator ProcessAiTurn(AIController ai, PlayerTeam team)
         {
-            _audio.PlayJanggun();
-            _matchUI.PlayJanggun(team);
+            if (!ai.TryThink(team))
+                yield break;
+
+            yield return new WaitForSeconds(0.3f);
+
+            if (!ai.TrySelectPiece())
+                yield break;
+            yield return new WaitForSeconds(0.2f);
+            if (!ai.TrySelectCell())
+                yield break;
         }
     }
 }

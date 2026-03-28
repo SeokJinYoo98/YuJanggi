@@ -2,6 +2,7 @@
 using TMPro;
 using UnityEngine;
 using Yujanggi.Core.Domain;
+using Yujanggi.Core.Match;
 
 namespace Yujanggi.Runtime.UI
 {
@@ -22,7 +23,32 @@ namespace Yujanggi.Runtime.UI
         private bool _janggunAnim = false;
         private float _speed = 10;
 
+        public void BindEvents(IMatchManager match)
+        {
+            var turn = match.Turn;
+            var record = match.Record;
+            var score = match.Score;
 
+            turn.OnTurnChanged         += UpdateTurn;
+            turn.OnTimeChanged         += UpdateTimer; 
+            record.OnRecordChanged     += UpdateRecord;
+            score.OnScoreChanged       += UpdateScore;
+
+            match.MatchEvent.OnCheck   += PlayJanggun;
+        }
+        public void UnBindEvents(IMatchManager match)
+        {
+            var turn = match.Turn;
+            var record = match.Record;
+            var score = match.Score;
+
+            turn.OnTurnChanged         -= UpdateTurn;
+            turn.OnTimeChanged         -= UpdateTimer;
+            record.OnRecordChanged     -= UpdateRecord;
+            score.OnScoreChanged       -= UpdateScore;
+
+            match.MatchEvent.OnCheck   -= PlayJanggun;
+        }
         public void Start()
         {
             _turnText.color = Color.green;

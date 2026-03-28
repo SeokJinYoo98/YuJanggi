@@ -1,6 +1,7 @@
 using System;
 namespace Yujanggi.Core.Domain
 {
+
     public enum BoardActionResult
     {
         None,
@@ -24,11 +25,7 @@ namespace Yujanggi.Core.Domain
         Soldier,    // 졸/병
         None
     }
-    public interface        IPlayerController
-    {
-        PlayerTeam Type { get; }
-        public event Action<Pos> OnBoardClicked;
-    }
+
 
     public readonly struct Pos : IEquatable<Pos>
     {

@@ -5,6 +5,7 @@ namespace Yujanggi.Runtime.Board
     using System.Collections.Generic;
     using Unity.VisualScripting;
     using Yujanggi.Core.Domain;
+    using Yujanggi.Core.Match;
     using Yujanggi.Runtime.Piece;
 
     public class BoardPresenter : MonoBehaviour
@@ -18,6 +19,17 @@ namespace Yujanggi.Runtime.Board
         private void Awake()
         {
             _boardView = GetComponent<BoardView>();   
+        }
+        
+        public void BindEvents(MatchEvents matchEvents)
+        {
+            matchEvents.OnSelectionChanged  += HandleSelectionChanged;
+            matchEvents.OnPieceMoved        += HandlePieceMove;
+        }
+        public void UnBindEvents(MatchEvents matchEvents)
+        {
+            matchEvents.OnSelectionChanged  -= HandleSelectionChanged;
+            matchEvents.OnPieceMoved        -= HandlePieceMove;
         }
         private ref Pos GetGarbagePos(PlayerTeam team)
         {
@@ -56,14 +68,35 @@ namespace Yujanggi.Runtime.Board
             _pieces.HighlightPiece(id);
             _boardView.Highlight(ways);
         }
-        public void ResetGame(PlayerTeam bottom)
+        public void ResetGame(IBoardModel model)
         {
-            //_boardModel.ResetBoard();
-            //BoardInitializer.SetUpPieces(_boardModel, bottom);
-            //_pieces.ResetViews(_boardModel);
-            //ClearSelection();
-        }
+            UnHighlight();
+            _pieces.ResetViews(model);
 
+        }
+        private void HandlePieceMove(MoveRecord record)
+        {
+            var id = record.MovedPiece.Id;
+            var to = record.To;
+            MovePiece(id, to);
+
+            if (record.IsCapture)
+            {
+                var captured = record.CapturedPiece;
+                PlaceCapturedPiece(captured.Id, captured.Team);
+            }
+            UnHighlight();
+        }
+        private void HandleSelectionChanged(int? id, IReadOnlyList<Pos> pos)
+        {
+            if (id == null)
+            {
+                UnHighlight();
+                return;
+            }
+
+            Highlight(id.Value, pos);
+        }
 
     }
 }

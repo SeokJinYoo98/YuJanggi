@@ -4,8 +4,13 @@ namespace Yujanggi.Core.Rule
     using System;
     using Yujanggi.Core.Board;
     using System.Collections.Generic;
-   
-    public class JanggiRule
+    public interface IJanggiRule
+    {
+        public void FindWays(
+           IBoardModel board,
+           SelectionState selectionState);
+    }
+    public class JanggiRule : IJanggiRule
     {
         private readonly MovementRule _movementRule;
         private readonly PalaceRule   _palaceRule;
@@ -13,10 +18,9 @@ namespace Yujanggi.Core.Rule
 
         private readonly List<Pos>  _legalMoveBuffer = new(35);
         private SelectionState      _simulation;
-        private SelectionState      _checkMate;
+
         public JanggiRule(PlayerTeam bottomPlayer)
         {
-            _checkMate    = new (bottomPlayer);
             _simulation   = new(bottomPlayer);
             _movementRule = new();
             _palaceRule   = new();
