@@ -27,6 +27,7 @@ namespace Yujanggi.Core.Domain
     public interface        IPlayerController
     {
         PlayerTeam Type { get; }
+        public event Action<Pos> OnBoardClicked;
     }
 
     public readonly struct Pos : IEquatable<Pos>

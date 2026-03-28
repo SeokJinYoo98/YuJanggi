@@ -13,6 +13,7 @@ namespace Yujanggi.Runtime.Piece
         
         public Piece SpawnPiece(PieceModel pieceInfo, Pos pos, PlayerTeam bottom)
         {
+            Debug.Log("Spawn Piece");
             var team = pieceInfo.Team;
             var type = pieceInfo.Type;
 

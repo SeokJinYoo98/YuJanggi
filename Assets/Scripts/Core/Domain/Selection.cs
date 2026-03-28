@@ -23,14 +23,14 @@ namespace Yujanggi.Core.Domain
         public SelectionState(PlayerTeam bottomPlayer)
             => BottomPlayer = bottomPlayer;
 
-        public PlayerTeam BottomPlayer { get; }
-        public SelectionInfo? Current { get; private set; }
-        public IReadOnlyList<Pos> MovableCells => _movableCells;
-        public bool HasSelection => Current.HasValue;
-        public bool IsBottom => Current.HasValue && Current.Value.Piece.Team == BottomPlayer;
-        public PieceModel SelectedPiece => Current!.Value.Piece;
-        public PlayerTeam Turn => Current!.Value.Piece.Team;
-        public Pos SelectedPos => Current!.Value.Pos;
+        public PlayerTeam           BottomPlayer { get; }
+        public SelectionInfo?       Current { get; private set; }
+        public IReadOnlyList<Pos>   MovableCells => _movableCells;
+        public bool                 HasSelection => Current.HasValue;
+        public bool                 IsBottom => Current.HasValue && Current.Value.Piece.Team == BottomPlayer;
+        public PieceModel           SelectedPiece => Current!.Value.Piece;
+        public PlayerTeam           Turn => Current!.Value.Piece.Team;
+        public Pos                  SelectedPos => Current!.Value.Pos;
 
         public void Select(PieceModel piece, Pos pos)
         {
@@ -70,7 +70,7 @@ namespace Yujanggi.Core.Domain
         public bool         EndGame { get; }
 
         public bool IsHandicap
-            => Record.From == Pos.Invalid;
-        
+            => Record.Equals(MoveRecord.None);
+
     }
 }

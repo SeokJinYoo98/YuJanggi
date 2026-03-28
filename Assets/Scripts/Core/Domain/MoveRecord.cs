@@ -17,8 +17,8 @@ namespace Yujanggi.Core.Domain
         public Pos           To { get; }
         public PieceModel    MovedPiece { get; }
         public PieceModel    CapturedPiece { get; }
-       
-        public bool IsCapture => CapturedPiece != PieceModel.None;
+
+        public bool IsCapture => !CapturedPiece.IsNone;
        
     }
 }

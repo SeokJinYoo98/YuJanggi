@@ -10,17 +10,19 @@ namespace Yujanggi.Runtime.Player
     {
         using Board;
         using Manager;
+        using System;
 
         public class JanggiController : MonoBehaviour, IPlayerController
         {
             [SerializeField] private Camera     _camera;
-            [SerializeField] private GameManager _gm;
 
             private PlayerInputs               _input;
             private PlayerInputs.PlayerActions _actions;
 
-            private PlayerTeam _type = PlayerTeam.Cho;
+            private PlayerTeam   _type = PlayerTeam.Cho;
             public  PlayerTeam   Type => _type;
+
+            private bool _isTurn = true;
             public void Init(PlayerTeam type)
                 => _type = type;
             private void Awake()
@@ -28,7 +30,6 @@ namespace Yujanggi.Runtime.Player
                 _input = new PlayerInputs();
                 _actions = _input.Player;
             }
-
 
             // 인풋
             private void OnEnable()
@@ -52,12 +53,15 @@ namespace Yujanggi.Runtime.Player
 
                 _actions.MousePos.Disable();
             }
+
+
+            public event Action<Pos> OnBoardClicked;
             private void OnPressPerformed(InputAction.CallbackContext context)
             {
-                var pos = Clicked();
-                _gm.HandleClick(pos.x, pos.z);
+                if (!_isTurn) return;
+                OnBoardClicked?.Invoke(Clicked());
             }
-            private (int x, int z) Clicked()
+            private Pos Clicked()
             {
                 int x = -10, z = -10;
                 var mousePos = _actions.MousePos.ReadValue<Vector2>();
@@ -69,7 +73,7 @@ namespace Yujanggi.Runtime.Player
                     x = Mathf.RoundToInt(pos.x);
                     z = Mathf.RoundToInt(pos.z);
                 }
-                return (x, z);
+                return new Pos(x, z);
             }
         }
     }

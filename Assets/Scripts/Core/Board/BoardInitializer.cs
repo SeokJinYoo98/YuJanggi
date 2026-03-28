@@ -8,7 +8,7 @@ namespace Yujanggi.Core.Board
     internal class BoardInitializer
     {
         private static int PieceId = 0;
-        public static void SetUpPieces(IBoardModel board, PlayerTeam bottomPlayer)
+        public  static void SetUpPieces(IBoardModel board, PlayerTeam bottomPlayer)
         {
             PieceId = 0;
             var topPlayer = bottomPlayer == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho;
@@ -69,10 +69,5 @@ namespace Yujanggi.Core.Board
        
         private static void Spawn(IBoardModel board, PlayerTeam team, PieceType type, int x, int z)
             => board.SetPiece(new Pos(x, z), new PieceModel(type, team, PieceId++));
- 
-
-        
-        
-
     }
 }

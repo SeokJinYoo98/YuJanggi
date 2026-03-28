@@ -31,8 +31,10 @@ namespace Yujanggi.Runtime.Board
         }
         public void ShowHighlight(IReadOnlyList<Pos> cells)
         {
-            foreach (var pos in cells)
+            int length = cells.Count;
+            for (int i = 0; i < length; ++i)
             {
+                var pos = cells[i];
                 var highlight = _pool.Get();
                 highlight.MoveTo(BoardHelper.ToVector3(pos, transform.position.y));
                 _active.Add(highlight);

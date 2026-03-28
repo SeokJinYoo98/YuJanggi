@@ -5,9 +5,9 @@ namespace Yujanggi.Runtime.Manager
     using Audio;
     using Board;
     using Core.Domain;
-    using Core.Score;
-    using Core.Turn;
-    using Yujanggi.Core.Record;
+    using System.Collections.Generic;
+    using Yujanggi.Core.Match;
+    using Yujanggi.Runtime.Player.Yujanggi.Runtime.Controller;
     using Yujanggi.Runtime.UI;
     using Yujanggi.Utills.Board;
 
@@ -15,139 +15,114 @@ namespace Yujanggi.Runtime.Manager
     {
         [SerializeField] private ResultUI        _resultUI;
         [SerializeField] private MatchUI         _matchUI;
-
-        [SerializeField] private BoardController _board;
         [SerializeField] private AudioManager    _audio;
 
-        private readonly PlayerTeam BottomPlayer = PlayerTeam.Cho;
+        [SerializeField] private JanggiController _player;
 
-        private ScoreManager    _score;
-        private TurnManager     _turn;
-        private RecordManager   _recoder;
+        [SerializeField] private BoardPresenter _board;
 
-        private bool _replay = false;
-        private void StartGame()
-        {
-            _score.StartGame();
-            _recoder.StartGame();
-            _turn.StartGame(PlayerTeam.Cho);
-            _board.StartGame(BottomPlayer);
-        }
+        private MatchManager _match;
+
+        //private bool _replay = false;
+
         private void Awake()
         {
             Application.targetFrameRate = 144;
-            float maxTurnTime = 30;
-            _turn       = new(maxTurnTime);
-            _score      = new();
-            _recoder    = new();
+
         }
         private void Start()
         {
             StartGame();
 
-            _board.OnMoved           += OnMoved;
-            _turn.OnTurnChanged      += _matchUI.UpdateTurn;
-            _turn.OnTimeChanged      += _matchUI.UpdateTimer;
-            _turn.OnTurnEnd          += Handicap;
-            _recoder.OnRecordChanged += _matchUI.UpdateRecord;
-            _score.OnScoreChanged    += _matchUI.UpdateScore;
-            
-
         }
         private void OnDestroy()
         {
-            if (_board != null)
-                _board.OnMoved -= OnMoved;
-
-            if (_matchUI != null && _turn != null)
-            {
-                _turn.OnTurnChanged      -= _matchUI.UpdateTurn;
-                _recoder.OnRecordChanged -= _matchUI.UpdateRecord;
-                _turn.OnTimeChanged      -= _matchUI.UpdateTimer;
-                _turn.OnTurnEnd          -= Handicap;
-                _score.OnScoreChanged    -= _matchUI.UpdateScore;
-            }
+            UnBindEvents();
         }
-
         private void Update()
         {
-            _turn.Update(Time.deltaTime);
+            _match.Update(Time.deltaTime);
         }
-        private void OnMoved(MoveContext context)
+
+        private void StartGame()
         {
-            JangunCheck(context);
-            SaveHistory(context);
-            HandleCapture(context);
-            CheckMate(context);
+            var bottom = PlayerTeam.Cho;
+            var maxTime = 30f;
+
+            _match          = new(bottom, maxTime);
+
+            BindEvents();
+            _board.StartGame(bottom, _match.Board);
         }
-        private void JangunCheck(in MoveContext context)
+
+        private void    BindEvents()
+        {   
+            var turn = _match.Turn;
+            turn.OnTurnEnd             += _match.Handicap;
+            turn.OnTurnChanged         += _matchUI.UpdateTurn;
+            turn.OnTimeChanged         += _matchUI.UpdateTimer;
+
+            var record = _match.Record;
+            record.OnRecordChanged     += _matchUI.UpdateRecord;
+
+            var score = _match.Score;
+            score.OnScoreChanged       += _matchUI.UpdateScore;
+
+            var matchEvents = _match.MatchEvent;
+            matchEvents.OnSelectionChanged  += HandleSelectionChanged;
+            matchEvents.OnPieceMoved        += HandlePieceMove;
+            matchEvents.OnCheck             += HandleCheck;
+            matchEvents.OnMunggun           += _audio.PlayMunggun;
+
+            _player.OnBoardClicked     += HandleClick;
+
+        }
+        private void    UnBindEvents()
         {
-            if (context.IsJanggun)
+        
+            if (_matchUI != null && _match != null)
             {
-                _audio.PlayJanggun();
-                _matchUI.PlayJanggun(context.MoveTeam);
-                return;
+                var turn = _match.Turn;
+                turn.OnTurnEnd             -= _match.Handicap;
+                turn.OnTurnChanged         -= _matchUI.UpdateTurn;
+                turn.OnTimeChanged         -= _matchUI.UpdateTimer;
+
+                var record = _match.Record;
+                record.OnRecordChanged     -= _matchUI.UpdateRecord;
+
+                var score = _match.Score;
+                score.OnScoreChanged       -= _matchUI.UpdateScore;
+
+                var matchEvents = _match.MatchEvent;
+                matchEvents.OnSelectionChanged  -= HandleSelectionChanged;
+                matchEvents.OnPieceMoved        -= HandlePieceMove;
+                matchEvents.OnCheck             -= HandleCheck;
+                matchEvents.OnMunggun           -= _audio.PlayMunggun;
+
             }
-                
+            if (_player != null)
+                _player.OnBoardClicked -= HandleClick;
             
-            if(_recoder.TryPeek(out MoveContext prev) && prev.IsJanggun)
-            {
-                _audio.PlayMunggun();
-            }
+            
         }
-        private void HandleCapture(in MoveContext context)
+        public void     HandleClick(Pos pos)
         {
-            if (!context.IsCapture) return;
-            var team = context.Record.CapturedPiece.Team;
-            var type = context.Record.CapturedPiece.Type;
-            var value = BoardHelper.GetPieceScore(type);
+            Debug.Log($"{pos.X}, {pos.Z}");
 
-            _score.SetScore(team, value);
-        }
-        private void SaveHistory(in MoveContext context)
-        {
-            _recoder.Push(context);
-        }
-        private void CheckMate(in MoveContext context)
-        {
-            if (!context.EndGame) return;
-            _turn.SetTurn(TurnType.End);
-
-            GameResultInfo info;
-            info.MoveCnt = _recoder.MoveCount;
-            info.Type    = GameResult.CheckMate;
-            info.Winner  = _turn.Current;
-
-            _resultUI.Show();
-            _resultUI.EndGame(info);
-        }
-
-        public void HandleClick(int x, int z)
-        {
-            if (_turn.IsEnd || _replay)
-                return;
-
-            var result = _board.HandleCellClick(new Pos(x, z), _turn.Current);
+            var result = _match.HandleCellClick(pos);
             switch (result)
             {
                 case BoardActionResult.SelectSuccess:
-                    _turn.SetTurn(TurnType.Attack);
+                case BoardActionResult.Reselect:
                     _audio.PlaySelect();
                     break;
 
                 case BoardActionResult.MoveSuccess:
-                    _turn.NextTurn();
                     _audio.PlayMove();
                     break;
 
                 case BoardActionResult.CaptureSuccess:
-                    _turn.NextTurn();
                     _audio.PlayCapture();
-                    break;
-
-                case BoardActionResult.Reselect:
-                    _turn.SetTurn(TurnType.Select);
-                    _audio.PlaySelect();
                     break;
 
                 case BoardActionResult.SelectFailed:
@@ -155,68 +130,93 @@ namespace Yujanggi.Runtime.Manager
                 default:
                     break;
             }
-
         }
-        public void GiveUp()
+        
+        private void    JangunCheck(in MoveContext context)
         {
-            _turn.SetTurn(TurnType.End);
+            //if (context.IsJanggun)
+            //{
+            //    _audio.PlayJanggun();
+            //    _matchUI.PlayJanggun(context.MoveTeam);
+            //    return;
+            //}
+                
+            
+            //if(_recoder.TryPeek(out MoveContext prev) && prev.IsJanggun)
+            //{
+            //    _audio.PlayMunggun();
+            //}
+        }
 
-            GameResultInfo info;
-            info.MoveCnt = _recoder.MoveCount;
-            info.Type    = GameResult.GiveUp;
-            info.Winner  = _turn.Current;
+        public void     GiveUp()
+        {
+            var info = _match.GiveUp();
 
             _resultUI.Show();
             _resultUI.GiveUp(info);
+
         }
-        public void ResetGame()
+        public void     ResetGame()
         {
-            _resultUI.Hide();
-            _score.StartGame();
-            _recoder.StartGame();
-            _turn.StartGame(PlayerTeam.Cho);
+            //_resultUI.Hide();
+            //_score.StartGame();
+            //_recoder.StartGame();
+            //_turn.StartGame(PlayerTeam.Cho);
 
-            _board.ResetGame(BottomPlayer);
-        }
-        public void Undo()
-        {
-            if (!_recoder.TryPop(out MoveContext context))
-                return;
-            if (!context.IsHandicap)
-            {
-                var team = context.Record.CapturedPiece.Team;
-                var type = context.Record.CapturedPiece.Type;
-                var value = BoardHelper.GetPieceScore(type);
-
-                _score.SetScore(team, -value);
-
-                _board.Undo(context);
-            }
-            _turn.NextTurn();
+            //_board.ResetGame(BottomPlayer);
         }
         public void Handicap()
         {
-            _board.HandiCap();
-            _recoder.Push(MoveContext.Handicap);
-            _turn.NextTurn();
+            _match.Handicap();
         }
-
-        public void ReplayPrev()
+        public void Undo()
         {
-            
-        }
-        public void ReplayNext()
-        {
-            if(!_recoder.TryReplayNext(out var context))
-            {
-                _replay = false;
+            if (!_match.TryUnDo(out var ctx))
                 return;
+
+            if (ctx.IsHandicap)
+                return;
+
+            var movedPiece = ctx.Record.MovedPiece;
+
+            var movedId = movedPiece.Id;
+            var to = ctx.Record.From;
+            _board.MovePiece(movedId, to);
+
+            if (ctx.IsCapture)
+            {
+                to = ctx.Record.To;
+                var captured = ctx.Record.CapturedPiece;
+                _board.RestoreCapturedPiece(captured.Id, captured.Team, to);
             }
         }
-
-        public void ReplayMode()
+        private void HandlePieceMove(MoveRecord record)
         {
-            _replay = true;
+            var id = record.MovedPiece.Id;
+            var to = record.To;
+            _board.MovePiece(id, to);
+            
+            if(record.IsCapture)
+            {
+                var captured = record.CapturedPiece;
+                _board.PlaceCapturedPiece(captured.Id, captured.Team);
+            }
+            _board.UnHighlight();
+        }
+        private void HandleSelectionChanged(int? id, IReadOnlyList<Pos> pos)
+        {
+            if (id == null)
+            {
+                _board.UnHighlight();
+                return;
+            }
+
+            _board.Highlight(id.Value, pos);
+        }
+        private void HandleCheck(PlayerTeam team)
+        {
+            _audio.PlayJanggun();
+            _matchUI.PlayJanggun(team);
         }
     }
 }

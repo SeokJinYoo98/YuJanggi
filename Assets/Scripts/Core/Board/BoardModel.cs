@@ -1,8 +1,4 @@
-using System.Collections.Generic;
-using UnityEngine;
 using Yujanggi.Core.Domain;
-using Yujanggi.Runtime.Board;
-using static UnityEngine.Audio.ProcessorInstance;
 
 namespace Yujanggi.Core.Board
 {
@@ -64,7 +60,7 @@ namespace Yujanggi.Core.Board
         public bool         IsInside(Pos pos)
             => 0 <= pos.X && pos.X < _width && 0 <= pos.Z && pos.Z < _height;
         public bool         HasPiece(Pos pos)
-            => _board[pos.X, pos.Z].Piece != PieceModel.None;
+            => !_board[pos.X, pos.Z].Piece.IsNone;
         public PieceModel    GetPiece(Pos pos)
             => _board[pos.X, pos.Z].Piece;
         public void         SetPiece(Pos pos, PieceModel piece)

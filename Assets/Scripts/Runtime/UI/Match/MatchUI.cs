@@ -83,9 +83,9 @@ namespace Yujanggi.Runtime.UI
         public void PlayJanggun(PlayerTeam team)
         {
             if (team == PlayerTeam.Cho)
-                _janggunText.color = Color.red;
-            else
                 _janggunText.color = Color.green;
+            else
+                _janggunText.color = Color.red;
 
             _janggunText.transform.localPosition = new Vector2(-700, 0);
             _janggunAnim = true;
