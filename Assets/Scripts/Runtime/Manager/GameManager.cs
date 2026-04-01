@@ -27,13 +27,10 @@ namespace Yujanggi.Runtime.Manager
         private Participant _cho;
         private Participant _han;
 
-        //private bool _replay = false;
-
         private void Awake()
         {
             Application.targetFrameRate = 144;
-            _cho = new(PlayerTeam.Cho);
-            _han = new(PlayerTeam.Han);
+
         }
         private void Start()
         {
@@ -55,8 +52,10 @@ namespace Yujanggi.Runtime.Manager
             var maxTime = 30f;
             _match      = new(bottom, maxTime);
 
-            _cho.Bind(_localPlayer);
-            _han.Bind(new AIController(_match.Rule, _match.Board, bottom));
+            _cho = new(PlayerTeam.Cho, PlayerType.Local);
+            _han = new(PlayerTeam.Han, PlayerType.AI);
+            _cho.Init(_localPlayer);
+            _han.Init(new AIController(_match, bottom));
 
             BindEvents();
             _board.StartGame(bottom, _match.Board);
@@ -73,11 +72,8 @@ namespace Yujanggi.Runtime.Manager
             _audio.BindEvents(matchEvents);
             _board.BindEvents(matchEvents);
 
-            if (_cho.Controller != null)
-                _cho.Controller.OnBoardClicked += HandleClick;
-
-            if (_han.Controller != null)
-                _han.Controller.OnBoardClicked += HandleClick;
+            _cho.BindEvents(this);
+            _han.BindEvents(this);
 
             var turn = _match.Turn;
             turn.OnTurnChanged += HandleTurnChanged;
@@ -94,18 +90,23 @@ namespace Yujanggi.Runtime.Manager
                 _audio.UnBindEvents(matchEvents);
                 _board.UnBindEvents(matchEvents);
 
-                if (_cho.Controller != null)
-                    _cho.Controller.OnBoardClicked -= HandleClick;
+                _cho.UnBindEvents(this);
+                _han.UnBindEvents(this);
 
-                if (_han.Controller != null)
-                    _han.Controller.OnBoardClicked -= HandleClick;
                 var turn = _match.Turn;
                 turn.OnTurnChanged -= HandleTurnChanged;
             }
         }
+        public void HandleMove(Pos from, Pos to)
+        {
+            _match.TryMove(from, to);
+        }
         public void HandleClick(Pos pos)
         {
-            var result = _match.HandleCellClick(pos);
+            if (_match.HasSelection)
+                _match.TryMoveSelected(pos);
+            else
+                _match.TrySelect(pos);
         }
         
         private void HandleTurnChanged(PlayerTeam turn)
@@ -125,6 +126,7 @@ namespace Yujanggi.Runtime.Manager
             if (participant.Controller is AIController ai)
             {
                 StartCoroutine(ProcessAiTurn(ai, turn));
+                
             }
         }
         private Participant GetParticipant(PlayerTeam team)
@@ -140,7 +142,7 @@ namespace Yujanggi.Runtime.Manager
         public void  ResetGame()
         {
             _resultUI.Hide();
-            _match.ResetGame();
+            _match.ResetGame(_cho.Team, _cho.Type);
             _cho.Controller?.SetInputEnabled(true);
             _han.Controller?.SetInputEnabled(false);
             _board.ResetGame(_match.Board);
@@ -157,6 +159,7 @@ namespace Yujanggi.Runtime.Manager
             if (ctx.IsHandicap)
                 return;
 
+            _board.UnHighlight();
             var movedPiece = ctx.Record.MovedPiece;
 
             var movedId = movedPiece.Id;
@@ -171,19 +174,6 @@ namespace Yujanggi.Runtime.Manager
             }
         }
 
-        private IEnumerator ProcessAiTurn(AIController ai, PlayerTeam team)
-        {
-            if (!ai.TryThink(team))
-                yield break;
-
-            yield return new WaitForSeconds(0.3f);
-
-            if (!ai.TrySelectPiece())
-                yield break;
-            yield return new WaitForSeconds(0.2f);
-            if (!ai.TrySelectCell())
-                yield break;
-        }
         private void EndGame(GameResultInfo info)
         {
             _resultUI.Show();
@@ -193,6 +183,17 @@ namespace Yujanggi.Runtime.Manager
                 _audio.PlayWin();
             else
                 _audio.PlayLose();
+        }
+        private IEnumerator ProcessAiTurn(AIController ai, PlayerTeam team)
+        {
+            if (!ai.TryThink(team))
+                yield break;
+
+            yield return new WaitForSeconds(0.4f);
+
+            if (!ai.TryGetSelectedMove())
+                yield break;
+
         }
     }
 }

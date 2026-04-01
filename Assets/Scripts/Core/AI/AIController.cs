@@ -12,14 +12,16 @@ namespace Yujanggi.Core.AI
 {
 
     using Participant;
+    using Yujanggi.Core.Match;
+
     public class AIPolicy
     {
 
     }
-    public class AIController : IParticipantController
+    public class AIController : IParticipantController, IAIController
     {
         private bool _canInput = false;
-        public event Action<Pos> OnBoardClicked;
+        public event Action<Pos, Pos> OnMoveRequest;
 
         private readonly IJanggiRule _rule;
         private readonly IBoardModel _boardModel;
@@ -34,10 +36,10 @@ namespace Yujanggi.Core.AI
         public void SetInputEnabled(bool enabled)
             => _canInput = enabled;
 
-        public AIController(IJanggiRule rule, IBoardModel model, PlayerTeam bottom)
+        public AIController(IMatchManager manager, PlayerTeam bottom)
         {
-            _rule = rule;
-            _boardModel = model;
+            _rule = manager.Rule;
+            _boardModel = manager.Board;
             _selection = new SelectionState(bottom);
         }
         
@@ -77,44 +79,34 @@ namespace Yujanggi.Core.AI
                     _candidates.Add(new MoveCandidate(piece, from, ways));
                 }
             }
-
-            Debug.Log("Think");
-            return _candidates.Count > 0;
-        }
-
-        public bool TrySelectPiece()
-        {
-            if (!_canInput)
-                return false;
-
             if (_candidates.Count == 0)
                 return false;
 
             _selectedCandidateIndex = _rand.Next(0, _candidates.Count);
-
-            var selected = _candidates[_selectedCandidateIndex];
-            OnBoardClicked?.Invoke(selected.From);
-            Debug.Log("Select Piece");
             return true;
         }
-
-        public bool TrySelectCell()
+        public bool TryGetSelectedMove()
         {
-            if (!_canInput)
-                return false;
-
             if (_selectedCandidateIndex < 0 || _selectedCandidateIndex >= _candidates.Count)
                 return false;
 
-            var selected = _candidates[_selectedCandidateIndex];
-            if (selected.Ways == null || selected.Ways.Count == 0)
-                return false;
-
-            int random = _rand.Next(0, selected.Ways.Count);
-            OnBoardClicked?.Invoke(selected.Ways[random]);
-
-            Debug.Log("Select Cell");
+            Pos from = SelectPiece();
+            Pos to   = SelectCell();
+            OnMoveRequest?.Invoke(from, to);
             return true;
+        }
+
+        private Pos SelectPiece()
+        {  
+            var selected = _candidates[_selectedCandidateIndex];
+            return selected.From;
+        }
+
+        private Pos SelectCell() 
+        {
+            var selected = _candidates[_selectedCandidateIndex];
+            int random = _rand.Next(0, selected.Ways.Count);
+            return selected.Ways[random];
         }
 
         private readonly struct MoveCandidate

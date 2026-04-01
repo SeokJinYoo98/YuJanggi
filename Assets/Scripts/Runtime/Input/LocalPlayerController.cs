@@ -4,9 +4,9 @@ using UnityEngine.InputSystem;
 
 namespace Yujanggi.Runtime.Input
 {
-
     using System;
     using Yujanggi.Core.Domain;
+    using Yujanggi.Core.Match;
 
     public class LocalPlayerController : MonoBehaviour, IParticipantController
     {
@@ -15,17 +15,13 @@ namespace Yujanggi.Runtime.Input
         private PlayerInputs _input;
         private PlayerInputs.PlayerActions _actions;
 
-        private PlayerTeam _type = PlayerTeam.Cho;
-        public PlayerTeam Type => _type;
-
         public bool CanInput => _canInput;
         private bool _canInput = true;
+
 
         public void SetInputEnabled(bool enabled)
             => _canInput = enabled;
        
-        public void Init(PlayerTeam type)
-            => _type = type;
         private void Awake()
         {
             _input = new PlayerInputs();
@@ -35,23 +31,14 @@ namespace Yujanggi.Runtime.Input
         // 인풋
         private void OnEnable()
         {
-            //_actions.Mouse.started   += OnPressStarted;
             _actions.Mouse.performed += OnPressPerformed;
-            // _actions.Mouse.canceled  += OnPressCanceled;
-
             _actions.Mouse.Enable();
-
-
             _actions.MousePos.Enable();
         }
         private void OnDisable()
         {
             _actions.Mouse.Disable();
-
-            //_actions.Mouse.started   -= OnPressStarted;
             _actions.Mouse.performed -= OnPressPerformed;
-            //_actions.Mouse.canceled  -= OnPressCanceled;
-
             _actions.MousePos.Disable();
         }
 
@@ -76,6 +63,7 @@ namespace Yujanggi.Runtime.Input
             }
             return new Pos(x, z);
         }
+
     }
 }
 

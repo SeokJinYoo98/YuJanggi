@@ -2,16 +2,20 @@ using Yujanggi.Core.Domain;
 
 namespace Yujanggi.Core.Board
 {
-    public interface IBoardModel
+    public interface IReadOnlyBoard
+    {
+        bool IsInside(Pos pos);
+        bool HasPiece(Pos pos);
+        PieceModel GetPiece(Pos pos);
+    }
+    public interface IBoardModel : IReadOnlyBoard
     {
         public Pos          GetKingPos(PlayerTeam team);
         public int          WIDTH { get; }
         public int          HEIGHT { get; }
 
-        public bool         IsInside(Pos pos);
         public bool         IsPalace(Pos pos);
-        public bool         HasPiece(Pos pos);
-        public PieceModel   GetPiece(Pos pos);
+
         public void         SetPiece(Pos pos, PieceModel piece);
 
         public MoveRecord   DoMove(Pos from, Pos to);
@@ -22,14 +26,14 @@ namespace Yujanggi.Core.Board
     {
         public int WIDTH  => _width;
         public int HEIGHT => _height;
-
+        public readonly PlayerTeam Bottom;
 
         public BoardModel(PlayerTeam bottom, int width = 9, int height = 10)
         {
             _width = width; _height = height;
             CreateBoard();
-
-            if (bottom == PlayerTeam.Cho)
+            Bottom = bottom;
+            if (Bottom == PlayerTeam.Cho)
             {
                 _choKingPos = new Pos(4, 1);
                 _hanKingPos = new Pos(4, 8);

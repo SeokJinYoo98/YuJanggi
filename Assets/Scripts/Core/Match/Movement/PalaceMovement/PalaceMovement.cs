@@ -29,7 +29,9 @@ namespace Yujanggi.Core.Match.Movement
                 { new Pos (5, 2+top), new[] { Step.LeftDown }}
             };
         }
-        public override List<Pos> FindWays(IBoardModel board, SelectionState selectInfo)
+        public override List<Pos> FindWays(
+            IBoardModel board, 
+            SelectionState selectInfo)
         {
             List<Pos> ways = new(); 
             var selectedPiece   = selectInfo.SelectedPiece;

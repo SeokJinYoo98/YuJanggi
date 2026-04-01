@@ -3,12 +3,14 @@ namespace Yujanggi.Runtime.Board
 {
     using Core.Board;
     using System.Collections.Generic;
-    using Unity.VisualScripting;
     using Yujanggi.Core.Domain;
     using Yujanggi.Core.Match;
     using Yujanggi.Runtime.Piece;
+    public interface IBoardPresenter
+    {
 
-    public class BoardPresenter : MonoBehaviour
+    }
+    public class BoardPresenter : MonoBehaviour, IBoardPresenter
     {
         private BoardView _boardView;
         [SerializeField] private PieceManager _pieces;
@@ -44,14 +46,14 @@ namespace Yujanggi.Runtime.Board
         public void RestoreCapturedPiece(int id, PlayerTeam team, Pos to)
         {
             ref var garbagePos = ref GetGarbagePos(team);
-            garbagePos += Pos.Right;
+            garbagePos += Pos.Left;
             _pieces.DoMove(id, to);
         }
         public void PlaceCapturedPiece(int id, PlayerTeam team)
         {
             ref var garbagePos = ref GetGarbagePos(team);
             var to = garbagePos;
-            garbagePos += Pos.Left;
+            garbagePos += Pos.Right;
             _pieces.DoMove(id, to);
         }
         public void MovePiece(int id, Pos to)

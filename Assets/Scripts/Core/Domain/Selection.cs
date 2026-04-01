@@ -1,8 +1,5 @@
-
-
 using System.Collections.Generic;
 using Yujanggi.Core.Board;
-using Yujanggi.Runtime.Board;
 
 namespace Yujanggi.Core.Domain
 {
@@ -16,6 +13,16 @@ namespace Yujanggi.Core.Domain
 
         public PieceModel Piece { get; }
         public Pos Pos { get; }
+    }
+
+    public class Selection
+    {
+        private readonly List<Pos> _illLegalCells = new(20);
+        private readonly List<Pos> _legalCells    = new(20);
+
+        public bool HasSelection => 0 < _legalCells.Count;
+        public Pos FromPos;
+        public Pos ToPos;
     }
     public class SelectionState
     {
@@ -71,6 +78,5 @@ namespace Yujanggi.Core.Domain
 
         public bool IsHandicap
             => Record.Equals(MoveRecord.None);
-
     }
 }

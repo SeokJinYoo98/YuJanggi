@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Rule;
+using Yujanggi.Runtime.Piece;
 
 
 namespace Yujanggi.Core.Match
 {
     public class MatchEvents
     {
+        // Local AI Network 분리
         public event Action<int?, IReadOnlyList<Pos>> OnSelectionChanged;
         public event Action<MoveRecord>               OnPieceMoved;
         public event Action<PlayerTeam>               OnCheck;
@@ -32,6 +34,7 @@ namespace Yujanggi.Core.Match
     public interface IMatchManager
     {
         public Turn         Turn { get; }
+        public JanggiRule   Rule { get; }
         public Record       Record { get; }
         public Score        Score { get; }
         public BoardModel   Board { get; }
@@ -47,10 +50,90 @@ namespace Yujanggi.Core.Match
         public  BoardModel   Board { get; }
         public  JanggiRule   Rule { get; }
         public PlayerTeam    Bottom => _bottom;
+
+        public bool HasSelection => _selection.HasSelection;
+        public Pos  SelectedPos  => _selection.SelectedPos;
+
         private readonly SelectionState _selection;
 
         private readonly PlayerTeam _bottom;
+        public bool TrySelect(Pos pos)
+        {
+            ClearSelection();
 
+            if (!Board.IsInside(pos) || !Board.HasPiece(pos))
+                return false;
+            
+
+            var piece = Board.GetPiece(pos);
+            if (piece.Team != Turn.CurrentTeam)
+                return false;
+            
+            _selection.Select(piece, pos);
+            Rule.FindWays(Board, _selection);
+            MatchEvent.SeletionChanged(_selection.SelectedPiece.Id, _selection.MovableCells);
+
+            return true;
+        }
+        public bool TryMoveSelected(Pos to)
+        {
+            if (!Board.IsInside(to))
+            {
+                ClearSelection();
+                return false;
+            }
+
+            if (_selection.SelectedPos == to)
+            {
+                ClearSelection();
+                return false;
+            }
+
+            if (!_selection.IsMovable(to))
+            {
+                ClearSelection();
+                return false;
+            }
+
+            var from = _selection.SelectedPos;
+            ExecuteMove(from, to);
+            ClearSelection();
+            return true;
+        }
+        public bool TryMove(Pos from, Pos to)
+        {
+            if (!Board.IsInside(from) || !Board.IsInside(to))
+                return false;
+
+            if (!Board.HasPiece(from))
+                return false;
+            if (!Rule.CanMove(Board, from, to))
+                return false;
+
+            ExecuteMove(from, to);
+            return true;
+        }
+        private void ExecuteMove(Pos from, Pos to)
+        {
+            var record = Board.DoMove(from, to);
+
+            if (record.IsCapture)
+                MatchEvent.PieceCaptured(record.CapturedPiece.Type);
+
+            var otherTeam = Turn.CurrentTeam == PlayerTeam.Cho
+                ? PlayerTeam.Han
+                : PlayerTeam.Cho;
+
+            var isJanggun = IsJanggun(otherTeam);
+            var isEnd = isJanggun && !HasAnyLegalMove(otherTeam);
+
+            var ctx = new MoveContext(record, isJanggun, isEnd);
+
+            Record.Push(ctx);
+            MunggunCheck();
+            MatchEvent.PieceMoved(record);
+            Turn.NextTurn();
+        }
         public MatchManager(PlayerTeam bottom = PlayerTeam.Cho, float maxTime=30f)
         {
             _selection  = new SelectionState(_bottom);
@@ -64,11 +147,11 @@ namespace Yujanggi.Core.Match
 
             BoardInitializer.SetUpPieces(Board, _bottom);
         }
-        public void ResetGame()
+        public void ResetGame(PlayerTeam team, PlayerType type)
         {
             ClearSelection();
 
-            Turn.StartGame(PlayerTeam.Cho);
+            Turn.StartGame(team, type);
             Record.StartGame();
             Score.StartGame();
             Board.ResetBoard();
@@ -81,7 +164,6 @@ namespace Yujanggi.Core.Match
         public void UnBindEvents()
         {
             Turn.OnTurnEnd -= Handicap;
-
         }
         public bool TryUnDo(out MoveContext ctx)
         {
@@ -114,7 +196,7 @@ namespace Yujanggi.Core.Match
         {
             Turn.SetTurn(TurnType.End);
             GameResultInfo info;
-            info.Winner = Turn.Current;
+            info.Winner = Turn.CurrentTeam;
             info.MoveCnt = Record.MoveCount;
             info.Type = GameResult.GiveUp;
             return info;
@@ -123,100 +205,10 @@ namespace Yujanggi.Core.Match
         {
             Turn.Update(deltaTime);
         }
-        public BoardActionResult  HandleCellClick(Pos pos)
-        {
-            if (Turn.IsEnd)
-                return BoardActionResult.None;
-
-            if (!Board.IsInside(pos))
-                return BoardActionResult.None;
-
-            if (!_selection.HasSelection)
-                return HandleSelectPiece(pos, Turn.Current);
-
-            return HandleSelectedClick(pos, Turn.Current);
-        }
-
-
-        private BoardActionResult HandleSelectPiece(Pos pos, PlayerTeam turn)
-        {
-            if (!CanSelectPiece(pos, turn))
-                return BoardActionResult.SelectFailed;
-
-            SelectPeice(pos);
-            FindWays();
-            
-            return BoardActionResult.SelectSuccess;
-        }
-        private BoardActionResult HandleSelectedClick(Pos pos, PlayerTeam turn)
-        {
-            if (CanSelectPiece(pos, turn))
-                return ReselectPiece(pos, turn);
-
-            if (!_selection.IsMovable(pos))
-            {
-                ClearSelection();
-                return BoardActionResult.MoveFailed;
-            }
-
-            return MoveSelectedPiece(pos, turn);
-        }
-        private BoardActionResult ReselectPiece(Pos pos, PlayerTeam turn)
-        {
-            if (pos == _selection.SelectedPos)
-            {
-                ClearSelection();
-                return BoardActionResult.SelectFailed;
-            }
-
-            SelectPeice(pos);
-            FindWays();
-            return BoardActionResult.Reselect;
-        }
-        private BoardActionResult MoveSelectedPiece(Pos toPos, PlayerTeam turn)
-        {
-            var fromPos = _selection.SelectedPos;
-            var record = Board.DoMove(fromPos, toPos);
-            if (record.IsCapture) MatchEvent.PieceCaptured(record.CapturedPiece.Type);
-            var otherTeam = turn == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho;
-            var isJanggun = IsJanggun(otherTeam);
-            var isEnd = isJanggun && HasAnyLegalMove(otherTeam);
-
-            MunggunCheck();
-            MatchEvent.PieceMoved(record);
-            Turn.NextTurn();
-            Record.Push(new(record, isJanggun, isEnd));
-            ClearSelection();
-  
-            return record.IsCapture
-                ? BoardActionResult.CaptureSuccess
-                : BoardActionResult.MoveSuccess;
-        }
-        private bool CanSelectPiece(Pos pos, PlayerTeam turn)
-        {
-            if (!Board.HasPiece(pos))
-                return false;
-
-            var pieceInfo = Board.GetPiece(pos);
-
-            return pieceInfo.Team == turn;
-        }
-        private void SelectPeice(Pos pos)
-        {
-            ClearSelection();
-            var pieceInfo = Board.GetPiece(pos);
-            _selection.Select(pieceInfo, pos);
-        }
         private void ClearSelection()
         {
             _selection.Clear();
-            // Array.Empty - 싱글톤 (재사용)
             MatchEvent.SeletionChanged(null, Array.Empty<Pos>());
-        }
-        private void FindWays()
-        {
-            Rule.FindWays(Board, _selection);
-            MatchEvent.SeletionChanged(_selection.SelectedPiece.Id, _selection.MovableCells);
         }
         private bool IsJanggun(PlayerTeam otherTeam)
         {
@@ -237,12 +229,12 @@ namespace Yujanggi.Core.Match
                 GameResultInfo info;
                 info.MoveCnt = Record.MoveCount;
                 info.Type = GameResult.CheckMate;
-                info.Winner = Turn.Current;
+                info.Winner = Turn.CurrentTeam;
                 MatchEvent.GameEnd(info);
             }
                 
 
-            return result;
+            return !result;
         }
     }
 }

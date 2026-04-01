@@ -25,6 +25,18 @@ namespace Yujanggi.Core.Rule
             _movementRule = new();
             _palaceRule   = new();
         }
+        public bool CanMove(IBoardModel board, Pos from, Pos to)
+        {
+            if (!board.HasPiece(from))
+                return false;
+
+            _simulation.Clear();
+            return IsLegalMove(board, from, to);
+        }
+        private bool IsLegalMove(IBoardModel board, Pos from, Pos to)
+        {
+            return true;
+        }
 
         public void FindWays(
             IBoardModel board,

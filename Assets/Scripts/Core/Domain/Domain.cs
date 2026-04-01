@@ -1,7 +1,12 @@
 using System;
 namespace Yujanggi.Core.Domain
 {
-
+    public enum PlayerType
+    {
+        Local,
+        AI,
+        Network
+    }
     public enum BoardActionResult
     {
         None,

@@ -1,10 +1,12 @@
 
 
 using System;
+using Unity.Multiplayer.PlayMode;
 using Yujanggi.Core.Domain;
 
 namespace Yujanggi.Core.Match
 {
+
     public enum TurnType
     {
         Select,
@@ -16,17 +18,20 @@ namespace Yujanggi.Core.Match
     public class Turn
     {
         public event Action<PlayerTeam> OnTurnChanged;
-        public PlayerTeam Current { get; private set; }
+        public PlayerTeam CurrentTeam { get; private set; }
+        public PlayerType CurrentPlayer { get; private set; }
         public TurnType   TurnState { get; private set; }
         public bool IsEnd => TurnState == TurnType.End;
 
+        
         public Turn(float maxTime)
             => _maxTurnTime = maxTime;
-        public void StartGame(PlayerTeam player)
+        public void StartGame(PlayerTeam player, PlayerType playerType)
         {
-            Current = player;
+            CurrentTeam = player;
+            CurrentPlayer = playerType;
             TurnState = TurnType.Select;
-            OnTurnChanged?.Invoke(Current);
+            OnTurnChanged?.Invoke(CurrentTeam);
             _turnTime = _maxTurnTime;
         }
 
@@ -38,15 +43,15 @@ namespace Yujanggi.Core.Match
         public void NextTurn()
         {
             _turnTime = _maxTurnTime;
-            OnTimeChanged?.Invoke((Current, (int)_turnTime));
+            OnTimeChanged?.Invoke((CurrentTeam, (int)_turnTime));
 
-            Current = (Current == PlayerTeam.Cho)
+            CurrentTeam = (CurrentTeam == PlayerTeam.Cho)
                 ? PlayerTeam.Han
                 : PlayerTeam.Cho;
 
-            OnTimeChanged?.Invoke((Current, (int)_turnTime));
+            OnTimeChanged?.Invoke((CurrentTeam, (int)_turnTime));
             TurnState = TurnType.Select;
-            OnTurnChanged?.Invoke(Current);
+            OnTurnChanged?.Invoke(CurrentTeam);
         }
         private float           _timer = 0;
         private float           _turnTime = 30;
@@ -63,7 +68,7 @@ namespace Yujanggi.Core.Match
             {
                 _turnTime -= _timer; _timer = 0;
                 int remainingTime = Math.Max(0, (int)Math.Ceiling(_turnTime));
-                OnTimeChanged?.Invoke((Current, remainingTime));
+                OnTimeChanged?.Invoke((CurrentTeam, remainingTime));
                 if (_turnTime <= 0) OnTurnEnd?.Invoke(); 
             }
         }
