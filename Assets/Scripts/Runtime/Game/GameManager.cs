@@ -7,12 +7,11 @@ namespace Yujanggi.Runtime.Game
     using Core.Controller;
     using Core.Domain;
     using Core.Match;
-    using Participant;
     using Input;
     using UI;
     using System.Collections;
 
-    public class GameManager : MonoBehaviour
+    public class GameManager : MonoBehaviour, IGameManager
     {
         [SerializeField] private BoardPresenter _board;
 
@@ -20,13 +19,13 @@ namespace Yujanggi.Runtime.Game
         [SerializeField] private MatchUI         _matchUI;
         [SerializeField] private AudioManager    _audio;
 
-        [SerializeField] private LocalPlayerController _localPlayer;
+        [SerializeField] private PcInputHandler  _localInput;
 
         private MatchManager _match;
+        private IPlayerController _cho;
+        private IPlayerController _han;
 
-        private Participant _cho;
-        private Participant _han;
-
+        private Coroutine _aiRoutine;
         private void Awake()
         {
             Application.targetFrameRate = 144;
@@ -49,15 +48,9 @@ namespace Yujanggi.Runtime.Game
         private void StartGame()
         {
             var maxTime = 30f;
-            _match      = new(maxTime);
-
-            _cho = new Participant(PlayerTeam.Cho, PlayerType.AI);
-            _han = new Participant(PlayerTeam.Han, PlayerType.Local);
-            _cho.Init(new AIController(_match));
-            _han.Init(_localPlayer);
-
-            if (_han.Controller is LocalPlayerController player)
-                player.RotateCamera(PlayerTeam.Han);
+            _match  = new(maxTime);
+            _cho    = new LocalController(_localInput, PlayerTeam.Cho);
+            _han    = new AIController(_match, PlayerTeam.Han);
 
             BindEvents();
             _board.StartGame(_match.Board);
@@ -114,24 +107,22 @@ namespace Yujanggi.Runtime.Game
         
         private void HandleTurnChanged(PlayerTeam turn)
         {
+            
             if (turn == PlayerTeam.Cho)
             {
-                _cho.Controller.SetInputEnabled(true);
-                _han.Controller.SetInputEnabled(false);
+                _cho.SetInputEnabled(true);
+                _han.SetInputEnabled(false);
             }
             else
             {
-                _cho.Controller.SetInputEnabled(false);
-                _han.Controller.SetInputEnabled(true);
+                _cho.SetInputEnabled(false);
+                _han.SetInputEnabled(true);
             }
-            var participant = GetParticipant(turn);
-
-            if (participant.Controller is AIController ai)
-            {
-                StartCoroutine(ProcessAiTurn(ai, turn));
-            }
+            var participant = GetPlayer(turn);
+            if (participant is AIController ai)
+                StartAiTurn(ai);
         }
-        private Participant GetParticipant(PlayerTeam team)
+        private IPlayerController GetPlayer(PlayerTeam team)
             => team == PlayerTeam.Cho ? _cho : _han;
         public void  GiveUp()
         {
@@ -145,8 +136,8 @@ namespace Yujanggi.Runtime.Game
         {
             _resultUI.Hide();
             _match.StartGame();
-            _cho.Controller?.SetInputEnabled(true);
-            _han.Controller?.SetInputEnabled(false);
+            _cho?.SetInputEnabled(true);
+            _han?.SetInputEnabled(false);
             _board.ResetGame(_match.Board);
         }
         public void  Handicap()
@@ -155,12 +146,14 @@ namespace Yujanggi.Runtime.Game
         }
         public void  Undo()
         {
+            StopAiTurn();
             if (!_match.TryUnDo(out var ctx))
                 return;
 
             if (ctx.IsHandicap)
                 return;
 
+            
             _board.UnHighlight();
             var movedPiece = ctx.Record.MovedPiece;
 
@@ -178,24 +171,38 @@ namespace Yujanggi.Runtime.Game
 
         private void EndGame(GameResultInfo info)
         {
+            StopAiTurn();
             _resultUI.Show();
             _resultUI.EndGame(info);
-            var winner = GetParticipant(info.Winner);
-            if (winner.Controller is LocalPlayerController)
+            if (GetPlayer(info.Winner) is LocalController)
                 _audio.PlayWin();
             else
                 _audio.PlayLose();
         }
-        private IEnumerator ProcessAiTurn(AIController ai, PlayerTeam team)
+        private IEnumerator ProcessAiTurn(AIController ai)
         {
-            if (!ai.TryThink(team))
+            if (!ai.TryThink())
                 yield break;
 
             yield return new WaitForSeconds(1f);
 
             if (!ai.TryGetSelectedMove())
                 yield break;
+        }
 
+        private void StartAiTurn(AIController ai)
+        {
+            StopAiTurn();
+
+            _aiRoutine = StartCoroutine(ProcessAiTurn(ai));
+        }
+        private void StopAiTurn()
+        {
+            if (_aiRoutine != null)
+            {
+                StopCoroutine(_aiRoutine);
+                _aiRoutine = null;
+            }
         }
     }
 }

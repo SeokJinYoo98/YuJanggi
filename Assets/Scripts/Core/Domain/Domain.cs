@@ -1,6 +1,16 @@
 using System;
 namespace Yujanggi.Core.Domain
 {
+    public interface IGameManager
+    {
+        public void HandleClick(Pos pos);
+        public void HandleMove(Pos from, Pos to);
+    }
+    public interface IInputHandler
+    {
+        public event Action<Pos> OnBoardClicked;
+        public void SetInputEnabled(bool enabled);
+    }
     public interface IAIController
     {
         public event Action<Pos, Pos> OnMoveRequest;
@@ -10,10 +20,12 @@ namespace Yujanggi.Core.Domain
 
     }
 
-    public interface IParticipantController
+    public interface IPlayerController
     {
-        public bool CanInput { get; }
+        public PlayerTeam Team { get; }
         public void SetInputEnabled(bool enabled);
+        public void BindEvents(IGameManager manager);
+        public void UnBindEvents(IGameManager manager);
     }
     public enum PlayerType
     {

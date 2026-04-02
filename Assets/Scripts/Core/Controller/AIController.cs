@@ -12,8 +12,9 @@ namespace Yujanggi.Core.Controller
     {
 
     }
-    public class AIController : IParticipantController, IAIController
+    public class AIController : IPlayerController, IAIController
     {
+        public PlayerTeam Team { get; }
         private bool _canInput = false;
         public event Action<Pos, Pos> OnMoveRequest;
 
@@ -30,14 +31,15 @@ namespace Yujanggi.Core.Controller
         public void SetInputEnabled(bool enabled)
             => _canInput = enabled;
 
-        public AIController(IMatchManager manager)
+        public AIController(IMatchManager manager, PlayerTeam team)
         {
-            _rule = manager.Rule;
+            Team        = team;
+            _rule       = manager.Rule;
             _boardModel = manager.Board;
-            _selection = new SelectionState();
+            _selection  = new SelectionState();
         }
         
-        public bool TryThink(PlayerTeam team)
+        public bool TryThink()
         {
             _candidates.Clear();
             _selectedCandidateIndex = -1;
@@ -55,7 +57,7 @@ namespace Yujanggi.Core.Controller
                         continue;
 
                     var piece = _boardModel.GetPiece(from);
-                    if (piece.Team != team)
+                    if (piece.Team != Team)
                         continue;
 
                     _selection.Clear();
@@ -101,6 +103,16 @@ namespace Yujanggi.Core.Controller
             var selected = _candidates[_selectedCandidateIndex];
             int random = _rand.Next(0, selected.Ways.Count);
             return selected.Ways[random];
+        }
+
+        public void BindEvents(IGameManager manager)
+        {
+            OnMoveRequest += manager.HandleMove;
+        }
+
+        public void UnBindEvents(IGameManager manager)
+        {
+            OnMoveRequest -= manager.HandleMove;
         }
 
         private readonly struct MoveCandidate
