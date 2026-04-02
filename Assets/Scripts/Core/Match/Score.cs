@@ -1,4 +1,3 @@
-using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 
 namespace Yujanggi.Core.Match

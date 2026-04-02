@@ -1,5 +1,4 @@
 using UnityEngine;
-using Yujanggi.Core.Participant;
 using UnityEngine.InputSystem;
 
 namespace Yujanggi.Runtime.Input
@@ -8,7 +7,7 @@ namespace Yujanggi.Runtime.Input
     using Yujanggi.Core.Domain;
     using Yujanggi.Core.Match;
 
-    public class LocalPlayerController : MonoBehaviour, IParticipantController
+    public class LocalPlayerController : MonoBehaviour, IParticipantController, ILocalPlayer
     {
         [SerializeField] private Camera _camera;
 
@@ -64,6 +63,21 @@ namespace Yujanggi.Runtime.Input
             return new Pos(x, z);
         }
 
+        public void RotateCamera(PlayerTeam team)
+        {
+            if (team == PlayerTeam.Han)
+            {
+                // z 6
+                // y 180
+                _camera.transform.position = new Vector3(4, 9, 6);
+                _camera.transform.eulerAngles = new Vector3(90, 0, 180);
+            }
+            else
+            {
+                _camera.transform.position = new Vector3(4, 9, 3);
+                _camera.transform.eulerAngles = new Vector3(90, 0, 0);
+            }
+        }
     }
 }
 

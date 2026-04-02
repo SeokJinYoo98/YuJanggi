@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Rule;
-using Yujanggi.Runtime.Piece;
-
 
 namespace Yujanggi.Core.Match
 {
@@ -39,7 +37,6 @@ namespace Yujanggi.Core.Match
         public Score        Score { get; }
         public BoardModel   Board { get; }
         public MatchEvents  MatchEvent { get; }
-        public PlayerTeam   Bottom { get; }
     }
     public class MatchManager : IMatchManager
     {
@@ -49,14 +46,12 @@ namespace Yujanggi.Core.Match
         public  Score        Score { get; }
         public  BoardModel   Board { get; }
         public  JanggiRule   Rule { get; }
-        public PlayerTeam    Bottom => _bottom;
 
         public bool HasSelection => _selection.HasSelection;
         public Pos  SelectedPos  => _selection.SelectedPos;
 
         private readonly SelectionState _selection;
-
-        private readonly PlayerTeam _bottom;
+        
         public bool TrySelect(Pos pos)
         {
             ClearSelection();
@@ -134,28 +129,27 @@ namespace Yujanggi.Core.Match
             MatchEvent.PieceMoved(record);
             Turn.NextTurn();
         }
-        public MatchManager(PlayerTeam bottom = PlayerTeam.Cho, float maxTime=30f)
+        public MatchManager(float maxTime=30f)
         {
-            _selection  = new SelectionState(_bottom);
-            _bottom     = bottom;
+            _selection  = new SelectionState();
 
             Turn        = new Turn(maxTime);
             Record      = new Record();
             Score       = new Score();
-            Board       = new BoardModel(_bottom);
-            Rule        = new JanggiRule(_bottom);
+            Board       = new BoardModel();
+            Rule        = new JanggiRule();
 
-            BoardInitializer.SetUpPieces(Board, _bottom);
+            BoardInitializer.SetUpPieces(Board);
         }
-        public void ResetGame(PlayerTeam team, PlayerType type)
+        public void StartGame()
         {
             ClearSelection();
 
-            Turn.StartGame(team, type);
+            Turn.StartGame(PlayerTeam.Cho);
             Record.StartGame();
             Score.StartGame();
             Board.ResetBoard();
-            BoardInitializer.SetUpPieces(Board, _bottom);
+            BoardInitializer.SetUpPieces(Board);
         }
         public void BindEvents()
         {

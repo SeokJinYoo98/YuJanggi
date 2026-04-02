@@ -40,7 +40,7 @@ namespace Yujanggi.Runtime.Piece
                 }
             }
         }
-        public void SpawnPieces(IBoardModel boardModel, PlayerTeam bottom)
+        public void SpawnPieces(IBoardModel boardModel)
         {
             int width = boardModel.WIDTH;
             int height = boardModel.HEIGHT;
@@ -54,7 +54,7 @@ namespace Yujanggi.Runtime.Piece
                         continue;
 
                     var pieceInfo = boardModel.GetPiece(pos);
-                    var piece = _pieceSpawner.SpawnPiece(pieceInfo, pos, bottom);
+                    var piece = _pieceSpawner.SpawnPiece(pieceInfo, pos);
                     _views[pieceInfo.Id] = piece;
                 }
             }

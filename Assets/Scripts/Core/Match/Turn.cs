@@ -1,7 +1,4 @@
-
-
 using System;
-using Unity.Multiplayer.PlayMode;
 using Yujanggi.Core.Domain;
 
 namespace Yujanggi.Core.Match
@@ -19,17 +16,15 @@ namespace Yujanggi.Core.Match
     {
         public event Action<PlayerTeam> OnTurnChanged;
         public PlayerTeam CurrentTeam { get; private set; }
-        public PlayerType CurrentPlayer { get; private set; }
         public TurnType   TurnState { get; private set; }
         public bool IsEnd => TurnState == TurnType.End;
 
         
         public Turn(float maxTime)
             => _maxTurnTime = maxTime;
-        public void StartGame(PlayerTeam player, PlayerType playerType)
+        public void StartGame(PlayerTeam player)
         {
             CurrentTeam = player;
-            CurrentPlayer = playerType;
             TurnState = TurnType.Select;
             OnTurnChanged?.Invoke(CurrentTeam);
             _turnTime = _maxTurnTime;

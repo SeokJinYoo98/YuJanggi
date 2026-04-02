@@ -16,21 +16,19 @@ namespace Yujanggi.Runtime.Piece
     {
         private Coroutine _moveRoutine;
         private bool      _highligt;
-        public void Init(PieceData data, Pos pos, PlayerTeam bottom)
+        public void Init(PieceData data, Pos pos)
         {
             var team = data.Team;
             var type = data.Type;
             GetComponent<MeshFilter>().sharedMesh = data.PieceMesh;
             MaterialCheck(team, type);
-            transform.position = BoardHelper.ToVector3(pos, 1);
-
-            if (team == bottom)
-                transform.Rotate(new Vector3(0, 180, 0));
+            transform.position = new Vector3(pos.X, 1, pos.Z);
+            transform.Rotate(new Vector3(0, 180, 0));
         }
         public void  MoveTo(Pos toPos)
         {
             if (_moveRoutine != null) StopCoroutine(_moveRoutine);
-            Vector3 targetWorldPos = BoardHelper.ToVector3(toPos, transform.position.y);
+            Vector3 targetWorldPos = new Vector3(toPos.X, transform.position.y, toPos.Z);
             _moveRoutine = StartCoroutine(CoMove(targetWorldPos, 0.16f));
         }
         public void  Highlight()

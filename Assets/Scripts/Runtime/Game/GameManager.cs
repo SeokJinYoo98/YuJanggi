@@ -1,13 +1,13 @@
 using UnityEngine;
 
-namespace Yujanggi.Runtime.Manager
+namespace Yujanggi.Runtime.Game
 {
     using Audio;
     using Board;
+    using Core.Controller;
     using Core.Domain;
-    using Core.AI;
     using Core.Match;
-    using Core.Participant;
+    using Participant;
     using Input;
     using UI;
     using System.Collections;
@@ -48,17 +48,20 @@ namespace Yujanggi.Runtime.Manager
         
         private void StartGame()
         {
-            var bottom  = PlayerTeam.Cho;
             var maxTime = 30f;
-            _match      = new(bottom, maxTime);
+            _match      = new(maxTime);
 
-            _cho = new(PlayerTeam.Cho, PlayerType.Local);
-            _han = new(PlayerTeam.Han, PlayerType.AI);
-            _cho.Init(_localPlayer);
-            _han.Init(new AIController(_match, bottom));
+            _cho = new Participant(PlayerTeam.Cho, PlayerType.AI);
+            _han = new Participant(PlayerTeam.Han, PlayerType.Local);
+            _cho.Init(new AIController(_match));
+            _han.Init(_localPlayer);
+
+            if (_han.Controller is LocalPlayerController player)
+                player.RotateCamera(PlayerTeam.Han);
 
             BindEvents();
-            _board.StartGame(bottom, _match.Board);
+            _board.StartGame(_match.Board);
+            _match.StartGame();
         }
 
         private void BindEvents()
@@ -126,7 +129,6 @@ namespace Yujanggi.Runtime.Manager
             if (participant.Controller is AIController ai)
             {
                 StartCoroutine(ProcessAiTurn(ai, turn));
-                
             }
         }
         private Participant GetParticipant(PlayerTeam team)
@@ -142,7 +144,7 @@ namespace Yujanggi.Runtime.Manager
         public void  ResetGame()
         {
             _resultUI.Hide();
-            _match.ResetGame(_cho.Team, _cho.Type);
+            _match.StartGame();
             _cho.Controller?.SetInputEnabled(true);
             _han.Controller?.SetInputEnabled(false);
             _board.ResetGame(_match.Board);
@@ -189,7 +191,7 @@ namespace Yujanggi.Runtime.Manager
             if (!ai.TryThink(team))
                 yield break;
 
-            yield return new WaitForSeconds(0.4f);
+            yield return new WaitForSeconds(1f);
 
             if (!ai.TryGetSelectedMove())
                 yield break;

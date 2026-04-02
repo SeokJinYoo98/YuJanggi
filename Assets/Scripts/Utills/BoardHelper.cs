@@ -1,4 +1,3 @@
-using UnityEngine;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Match.Movement;
@@ -23,8 +22,5 @@ namespace Yujanggi.Utills.Board
 
             return StepResult.Enemy;
         }
-
-        public static Vector3 ToVector3(Pos pos, float y)
-            => new Vector3(pos.X, y, pos.Z);
     }
 }

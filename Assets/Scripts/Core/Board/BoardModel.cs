@@ -26,24 +26,14 @@ namespace Yujanggi.Core.Board
     {
         public int WIDTH  => _width;
         public int HEIGHT => _height;
-        public readonly PlayerTeam Bottom;
 
-        public BoardModel(PlayerTeam bottom, int width = 9, int height = 10)
+        public BoardModel(int width = 9, int height = 10)
         {
             _width = width; _height = height;
             CreateBoard();
-            Bottom = bottom;
-            if (Bottom == PlayerTeam.Cho)
-            {
-                _choKingPos = new Pos(4, 1);
-                _hanKingPos = new Pos(4, 8);
-            }
-            else
-            {
-                _hanKingPos = new Pos(4, 1);
-                _choKingPos = new Pos(4, 8);
-            }
 
+            _choKingPos = new Pos(4, 1);
+            _hanKingPos = new Pos(4, 8);
         }
         public void ResetBoard()
         {

@@ -1,6 +1,20 @@
 using System;
 namespace Yujanggi.Core.Domain
 {
+    public interface IAIController
+    {
+        public event Action<Pos, Pos> OnMoveRequest;
+    }
+    public interface ILocalPlayer
+    {
+
+    }
+
+    public interface IParticipantController
+    {
+        public bool CanInput { get; }
+        public void SetInputEnabled(bool enabled);
+    }
     public enum PlayerType
     {
         Local,

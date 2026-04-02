@@ -26,17 +26,12 @@ namespace Yujanggi.Core.Domain
     }
     public class SelectionState
     {
-        private readonly List<Pos> _movableCells = new(35);
-        public SelectionState(PlayerTeam bottomPlayer)
-            => BottomPlayer = bottomPlayer;
-
-        public PlayerTeam           BottomPlayer { get; }
+        private readonly List<Pos> _movableCells = new(20);
         public SelectionInfo?       Current { get; private set; }
         public IReadOnlyList<Pos>   MovableCells => _movableCells;
         public bool                 HasSelection => Current.HasValue;
-        public bool                 IsBottom => Current.HasValue && Current.Value.Piece.Team == BottomPlayer;
         public PieceModel           SelectedPiece => Current!.Value.Piece;
-        public PlayerTeam           Turn => Current!.Value.Piece.Team;
+        public PlayerTeam           Team => Current!.Value.Piece.Team;
         public Pos                  SelectedPos => Current!.Value.Pos;
 
         public void Select(PieceModel piece, Pos pos)

@@ -39,9 +39,9 @@ namespace Yujanggi.Runtime.Board
                 return ref _garbageChoPos;
             return ref _garbagehanPos;
         }
-        public void StartGame(PlayerTeam bottom, IBoardModel model)
+        public void StartGame(IBoardModel model)
         {
-            _pieces.SpawnPieces(model, bottom);
+            _pieces.SpawnPieces(model);
         }
         public void RestoreCapturedPiece(int id, PlayerTeam team, Pos to)
         {

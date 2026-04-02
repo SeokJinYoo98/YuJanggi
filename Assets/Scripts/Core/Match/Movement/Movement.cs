@@ -12,10 +12,10 @@ namespace Yujanggi.Core.Match.Movement
     public abstract class Movement
     {
         // 나중에 누가 플레이언지 체크
-        private int Forward(PlayerTeam team, PlayerTeam bottom)
+        private int Forward(PlayerTeam team)
         {
 
-            return team == bottom ? 1 : -1;
+            return team == PlayerTeam.Cho ? 1 : -1;
         }
         protected static readonly Pos[] Dirs =
         {
@@ -39,13 +39,12 @@ namespace Yujanggi.Core.Match.Movement
         protected Pos ApplyStep(
             Step step,
             PlayerTeam team,
-            PlayerTeam bottom,
             Pos pos)
-            => pos += GetDir(step, team, bottom);
-        protected Pos GetDir(Step step, PlayerTeam team, PlayerTeam bottom)
+            => pos += GetDir(step, team);
+        protected Pos GetDir(Step step, PlayerTeam team)
         {
             var dir = Dirs[(int)step];
-            return new Pos(dir.X, dir.Z * Forward(team, bottom));
+            return new Pos(dir.X, dir.Z * Forward(team));
         }
 
 

@@ -56,8 +56,8 @@ namespace Yujanggi.Core.Rule
         {
 
             int z = selectInfo.SelectedPos.Z;
-         
-            if (selectInfo.IsBottom)
+
+            if (selectInfo.Team == PlayerTeam.Cho)
                 ways.RemoveAll(pos => pos.Z < z);
             else
                 ways.RemoveAll(pos => pos.Z > z);

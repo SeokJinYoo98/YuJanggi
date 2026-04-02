@@ -8,12 +8,11 @@ namespace Yujanggi.Core.Board
     internal class BoardInitializer
     {
         private static int PieceId = 0;
-        public  static void SetUpPieces(IBoardModel board, PlayerTeam bottomPlayer)
+        public  static void SetUpPieces(IBoardModel board)
         {
             PieceId = 0;
-            var topPlayer = bottomPlayer == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho;
-            SpawnBottom(board, bottomPlayer);
-            SpawnTop(board, topPlayer);
+            SpawnBottom(board, PlayerTeam.Cho);
+            SpawnTop(board, PlayerTeam.Han);
         }
         private static void SpawnBottom(IBoardModel board, PlayerTeam bottom)
         {

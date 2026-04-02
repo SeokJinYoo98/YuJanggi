@@ -19,9 +19,9 @@ namespace Yujanggi.Core.Rule
         private readonly List<Pos>  _legalMoveBuffer = new(35);
         private SelectionState      _simulation;
 
-        public JanggiRule(PlayerTeam bottomPlayer)
+        public JanggiRule()
         {
-            _simulation   = new(bottomPlayer);
+            _simulation   = new();
             _movementRule = new();
             _palaceRule   = new();
         }

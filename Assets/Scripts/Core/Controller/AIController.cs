@@ -1,19 +1,13 @@
 
-
-
-
 using System;
 using System.Collections.Generic;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Rule;
-using UnityEngine;
-namespace Yujanggi.Core.AI
+
+namespace Yujanggi.Core.Controller
 {
-
-    using Participant;
     using Yujanggi.Core.Match;
-
     public class AIPolicy
     {
 
@@ -36,11 +30,11 @@ namespace Yujanggi.Core.AI
         public void SetInputEnabled(bool enabled)
             => _canInput = enabled;
 
-        public AIController(IMatchManager manager, PlayerTeam bottom)
+        public AIController(IMatchManager manager)
         {
             _rule = manager.Rule;
             _boardModel = manager.Board;
-            _selection = new SelectionState(bottom);
+            _selection = new SelectionState();
         }
         
         public bool TryThink(PlayerTeam team)

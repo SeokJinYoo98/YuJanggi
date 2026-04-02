@@ -13,8 +13,6 @@ namespace Yujanggi.Core.Match.Movement
             SelectionState selectPiece)
         {
             List<Pos> ways = new();
-
-            var bottom  = selectPiece.BottomPlayer;
             var team    = selectPiece.SelectedPiece.Team;
             var start   = selectPiece.SelectedPos;
 
@@ -25,7 +23,7 @@ namespace Yujanggi.Core.Match.Movement
 
                 while (true)
                 {
-                    dPos = ApplyStep(step, team, bottom, dPos);
+                    dPos = ApplyStep(step, team, dPos);
 
                     var result = CheckCell(board, team, dPos);
 

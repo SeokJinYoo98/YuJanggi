@@ -1,32 +1,15 @@
 
 
-namespace Yujanggi.Core.Participant
+namespace Yujanggi.Runtime.Participant
 {
-    using Domain;
-    using System;
-
-    using Match;
-    using Yujanggi.Core.AI;
-    using Yujanggi.Runtime.Manager;
+    using Core.Domain;
+    using Yujanggi.Core.Controller;
+    using Yujanggi.Runtime.Game;
     using Yujanggi.Runtime.Input;
 
-    public interface IAIController
-    {
-        public event Action<Pos, Pos> OnMoveRequest;
-    }
 
-    public interface IParticipantController
-    {
-        public bool CanInput { get; }
-        public void SetInputEnabled(bool enabled);
-    }
 
-    public interface IParticipant
-    {
-        public PlayerTeam Team { get; }
-        public PlayerType Type { get; }
-    }
-    public class Participant : IParticipant
+    public class Participant
     {
         public PlayerTeam               Team { get; }
         public PlayerType               Type { get; }

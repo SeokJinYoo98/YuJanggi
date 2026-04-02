@@ -14,7 +14,7 @@ namespace Yujanggi.Core.Match.Movement
             List<Pos> ways = new();
 
             foreach (var steps in _steps)
-                ProcessDirection(ways, board, selectPiece.SelectedPiece.Team, selectPiece.BottomPlayer, selectPiece.SelectedPos, steps);
+                ProcessDirection(ways, board, selectPiece.SelectedPiece.Team, selectPiece.SelectedPos, steps);
 
             return ways;
         }
@@ -22,7 +22,6 @@ namespace Yujanggi.Core.Match.Movement
             List<Pos> ways,
             IBoardModel board,
             PlayerTeam team,
-            PlayerTeam bottom,
             Pos pos,
             Step[] steps)
         {
@@ -30,7 +29,7 @@ namespace Yujanggi.Core.Match.Movement
             var dPos = pos;
             for (int j = 0; j < len; ++j)
             {
-                dPos = ApplyStep(steps[j], team, bottom, dPos);
+                dPos = ApplyStep(steps[j], team, dPos);
 
                 if (j < len - 1)
                 {
