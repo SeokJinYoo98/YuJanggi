@@ -6,7 +6,6 @@ using Yujanggi.Core.Domain;
 namespace Yujanggi.Core.Rule
 {
     using Match.Movement;
-    using Utills.Board;
     public class PalaceRule
     {
         private PalaceMovement _palaceMovement;

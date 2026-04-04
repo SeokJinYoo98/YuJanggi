@@ -26,8 +26,8 @@ namespace Yujanggi.Core.Match
         {
             CurrentTeam = player;
             TurnState = TurnType.Select;
-            OnTurnChanged?.Invoke(CurrentTeam);
             _turnTime = _maxTurnTime;
+            OnTurnChanged?.Invoke(CurrentTeam);
         }
 
         public void SetTurn(TurnType type)

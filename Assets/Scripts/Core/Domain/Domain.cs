@@ -1,15 +1,17 @@
 using System;
 namespace Yujanggi.Core.Domain
 {
-    public interface IGameManager
+    public interface IGameInputHandler
     {
-        public void HandleClick(Pos pos);
-        public void HandleMove(Pos from, Pos to);
+        public void HandleClickRequest(Pos pos);
+        public void HandleMoveRequest(Pos from, Pos to);
+
     }
     public interface IInputHandler
     {
         public event Action<Pos> OnBoardClicked;
         public void SetInputEnabled(bool enabled);
+        public void RotateCamera(PlayerTeam team);
     }
     public interface IAIController
     {
@@ -24,15 +26,10 @@ namespace Yujanggi.Core.Domain
     {
         public PlayerTeam Team { get; }
         public void SetInputEnabled(bool enabled);
-        public void BindEvents(IGameManager manager);
-        public void UnBindEvents(IGameManager manager);
+        public void BindEvents(IGameInputHandler manager);
+        public void UnBindEvents(IGameInputHandler manager);
     }
-    public enum PlayerType
-    {
-        Local,
-        AI,
-        Network
-    }
+
     public enum BoardActionResult
     {
         None,

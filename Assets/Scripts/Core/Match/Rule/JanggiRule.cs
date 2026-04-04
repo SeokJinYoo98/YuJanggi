@@ -83,7 +83,7 @@ namespace Yujanggi.Core.Rule
 
             return false;
         }
-        public bool HasAnyLegalMove(IBoardModel board, PlayerTeam defence)
+        public int CntAnyLegalMove(IBoardModel board, PlayerTeam defence)
         {
             for (int x = 0; x < board.WIDTH; ++x)
             {
@@ -102,10 +102,10 @@ namespace Yujanggi.Core.Rule
                     FilterLegalMoves(board, _simulation, ways);
                     
                     if (0 < ways.Count)
-                        return true;      
+                        return ways.Count;      
                 }
             }
-            return false;
+            return 0;
         }
 
 

@@ -17,48 +17,31 @@ namespace Yujanggi.Runtime.Audio
         [SerializeField] private AudioClip _janggunClip;
         [SerializeField] private AudioClip _munggunClip;
         [SerializeField] private AudioClip _checkmateClip;
-
+        [SerializeField] private AudioClip _turnClip;
         [SerializeField] private AudioClip _winClip;
         [SerializeField] private AudioClip _loseClip;
-        private void Awake()
-        {
-            
-        }
 
-        public void BindEvents(MatchEvents events)
+        public void PlayTurn()
         {
-            events.OnPieceMoved         += PlayMove;
-            events.OnSelectionChanged   += PlaySelect;
-            events.OnMunggun            += PlayMunggun;
-            events.OnCheck              += PlayJanggun;
-            events.OnPieceCaptured      += PlayCapture;
+            _sfxSource.PlayOneShot(_turnClip);
         }
-        public void UnBindEvents(MatchEvents events)
-        {
-            events.OnPieceMoved         -= PlayMove;
-            events.OnSelectionChanged   -= PlaySelect;
-            events.OnMunggun            -= PlayMunggun;
-            events.OnCheck              -= PlayJanggun;
-            events.OnPieceCaptured      -= PlayCapture;
-        }
-        private void PlayJanggun(PlayerTeam team)
+        public void PlayJanggun()
         {
             _sfxSource.PlayOneShot(_janggunClip, 1.5f);
         }
-        private void PlayMunggun()
+        public void PlayMunggun()
         {
             _sfxSource.PlayOneShot(_munggunClip, 1.5f);
         }
-        private void PlayMove(MoveRecord _)
+        public void PlayMove()
         {
             _sfxSource.PlayOneShot(_moveClip, 0.6f);
         }
-        private void PlaySelect(int? idx, IReadOnlyList<Pos> _)
+        public void PlaySelect()
         {
-            if (idx.HasValue)
-                _sfxSource.PlayOneShot(_selectClip);
+            _sfxSource.PlayOneShot(_selectClip);
         }
-        private void PlayCapture(PieceType _)
+        public void PlayCapture()
         {
             _sfxSource.PlayOneShot(_captureClip, 0.8f);
         }

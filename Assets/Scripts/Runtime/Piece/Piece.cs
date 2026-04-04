@@ -4,8 +4,6 @@ namespace Yujanggi.Runtime.Piece
     using System.Collections;
     using Yujanggi.Core.Domain;
     using Yujanggi.Data.Board;
-    using Yujanggi.Utills.Board;
-    
     public interface IPiece
     {
         public void Highlight();

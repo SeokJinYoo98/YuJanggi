@@ -60,8 +60,6 @@ namespace Yujanggi.Runtime.Input
         {
             if (team == PlayerTeam.Han)
             {
-                // z 6
-                // y 180
                 _camera.transform.position = new Vector3(4, 9, 6);
                 _camera.transform.eulerAngles = new Vector3(90, 0, 180);
             }

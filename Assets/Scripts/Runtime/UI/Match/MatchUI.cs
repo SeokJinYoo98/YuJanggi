@@ -29,12 +29,9 @@ namespace Yujanggi.Runtime.UI
             var record = match.Record;
             var score = match.Score;
 
-            turn.OnTurnChanged         += UpdateTurn;
             turn.OnTimeChanged         += UpdateTimer; 
             record.OnRecordChanged     += UpdateRecord;
             score.OnScoreChanged       += UpdateScore;
-
-            match.MatchEvent.OnCheck   += PlayJanggun;
         }
         public void UnBindEvents(IMatchManager match)
         {
@@ -42,12 +39,9 @@ namespace Yujanggi.Runtime.UI
             var record = match.Record;
             var score = match.Score;
 
-            turn.OnTurnChanged         -= UpdateTurn;
             turn.OnTimeChanged         -= UpdateTimer;
             record.OnRecordChanged     -= UpdateRecord;
             score.OnScoreChanged       -= UpdateScore;
-
-            match.MatchEvent.OnCheck   -= PlayJanggun;
         }
         public void Start()
         {

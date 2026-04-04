@@ -4,7 +4,6 @@ using Yujanggi.Core.Domain;
 
 namespace Yujanggi.Core.Match.Movement
 {
-    using Utills.Board;
     public enum Step
     { Right, Left, Up, Down, RightUp, RightDown, LeftUp, LeftDown }
     public enum StepResult
@@ -13,10 +12,8 @@ namespace Yujanggi.Core.Match.Movement
     {
         // 나중에 누가 플레이언지 체크
         private int Forward(PlayerTeam team)
-        {
-
-            return team == PlayerTeam.Cho ? 1 : -1;
-        }
+            => team == PlayerTeam.Cho ? 1 : -1;
+        
         protected static readonly Pos[] Dirs =
         {
             Pos.Right,
@@ -51,10 +48,21 @@ namespace Yujanggi.Core.Match.Movement
         public abstract List<Pos> FindWays(
                 IBoardModel board,
                 SelectionState selectPiece);
-        protected StepResult CheckCell(
-                IBoardModel board, 
-                PlayerTeam team, 
-                Pos pos)
-            => BoardHelper.CheckCell(board, team, pos);
+        protected static StepResult CheckCell(
+            IBoardModel board,
+            PlayerTeam team,
+            Pos pos)
+        {
+            if (!board.IsInside(pos))
+                return StepResult.Block;
+
+            if (!board.HasPiece(pos))
+                return StepResult.Empty;
+
+            if (board.GetPiece(pos).Team == team)
+                return StepResult.Team;
+
+            return StepResult.Enemy;
+        }
     }
 }

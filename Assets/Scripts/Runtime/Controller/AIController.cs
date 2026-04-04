@@ -5,9 +5,8 @@ using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Rule;
 
-namespace Yujanggi.Core.Controller
+namespace Yujanggi.Runtime.Controller
 {
-    using Yujanggi.Core.Match;
     public class AIPolicy
     {
 
@@ -31,11 +30,11 @@ namespace Yujanggi.Core.Controller
         public void SetInputEnabled(bool enabled)
             => _canInput = enabled;
 
-        public AIController(IMatchManager manager, PlayerTeam team)
+        public AIController(IJanggiRule rule, IBoardModel board, PlayerTeam team)
         {
             Team        = team;
-            _rule       = manager.Rule;
-            _boardModel = manager.Board;
+            _rule       = rule;
+            _boardModel = board;
             _selection  = new SelectionState();
         }
         
@@ -105,14 +104,14 @@ namespace Yujanggi.Core.Controller
             return selected.Ways[random];
         }
 
-        public void BindEvents(IGameManager manager)
+        public void BindEvents(IGameInputHandler manager)
         {
-            OnMoveRequest += manager.HandleMove;
+            OnMoveRequest += manager.HandleMoveRequest;
         }
 
-        public void UnBindEvents(IGameManager manager)
+        public void UnBindEvents(IGameInputHandler manager)
         {
-            OnMoveRequest -= manager.HandleMove;
+            OnMoveRequest -= manager.HandleMoveRequest;
         }
 
         private readonly struct MoveCandidate
