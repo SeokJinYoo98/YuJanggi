@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace Yujanggi.Runtime.Game
 {
+    using GameSession;
     using Audio;
     using Board;
     using Controller;
@@ -11,6 +12,8 @@ namespace Yujanggi.Runtime.Game
     using System.Collections;
     using UI;
     using GameMode;
+    using UnityEngine.SceneManagement;
+
     public class GameManager : MonoBehaviour, IGameInputHandler
     {
         [SerializeField] private BoardPresenter _boardPresenter;
@@ -21,15 +24,11 @@ namespace Yujanggi.Runtime.Game
 
         [SerializeField] private PcInputHandler  _localInput;
 
-        MatchOptions _gameOption;
+        private GameSession _session;
 
         private void Awake()
         {
             Application.targetFrameRate = 144;
-            _gameOption = new(
-                PlayerType.AI, Formation.HEHE,
-                PlayerType.Local, Formation.HEEH,
-                30f);
         }
 
         private void Start()
@@ -42,42 +41,25 @@ namespace Yujanggi.Runtime.Game
         }
         private void Update()
         {
-            _match.Update(Time.deltaTime);
+            _session.Match.Update(Time.deltaTime);
         }
         
         private void StartGame()
         {
-            var maxTime = 30f;
-            _match  = new(maxTime);
-            _han    = new LocalController(_localInput, PlayerTeam.Han);
-            _cho    = new AIController(_match.Rule, _match.Board, PlayerTeam.Cho);
-
+            _session = new(GameSessionStore.Current, _localInput);
             BindEvents();
-            _match.StartGame(_gameOption.Cho, _gameOption.Han);
-            _boardPresenter.StartGame(_match.Board);
+            _session.StartGame();
+            _boardPresenter.StartGame(_session.Match.Board);
 
-            if (_cho is AIController ai)
-                StartAiTurn(ai);
         }
-
-        #region Session
-        private MatchManager _match;
-        private IPlayerController _cho;
-        private IPlayerController _han; 
-        private IPlayerController GetPlayer(PlayerTeam team)
-            => team == PlayerTeam.Cho ? _cho : _han;
-
         public void GiveUp()
         {
-            _cho?.SetInputEnabled(false);
-            _han?.SetInputEnabled(false);
+            var info = _session.GiveUp();
             StopAiTurn();
-            var info = _match.GiveUp();
-
             _resultUI.Show();
             _resultUI.GiveUp(info);
         }
-        #endregion
+
         #region AI
         private Coroutine _aiRoutine;
         private IEnumerator ProcessAiTurn(AIController ai)
@@ -109,19 +91,17 @@ namespace Yujanggi.Runtime.Game
         public void ResetGame()
         {
             _resultUI.Hide();
-            _cho?.SetInputEnabled(true);
-            _han?.SetInputEnabled(false);
-            _match.ResetGame(_gameOption.Cho, _gameOption.Han);
-            _boardPresenter.ResetGame(_match.Board);
+            _session.ResetGame();
+            _boardPresenter.ResetGame(_session.Match.Board);
         }
         public void HandleHandicap()
         {
-            _match.Handicap();
+            _session.Match.Handicap();
         }
         public void HandleUndo()
         {
             StopAiTurn();
-            if (!_match.TryUnDo(out var ctx))
+            if (!_session.Match.TryUnDo(out var ctx))
                 return;
 
             if (ctx.IsHandicap)
@@ -140,16 +120,21 @@ namespace Yujanggi.Runtime.Game
                 _boardPresenter.RestoreCapturedPiece(captured.Id, captured.Team, to);
             }
         }
+        public void HandleMainLobby()
+        {
+            UnBindEvents();
+            StopAiTurn();
+            SceneManager.LoadScene("LobbyScene");
+        }
         #endregion
         #region MatchEventHandlers
         public void HandleGameEnded(GameResultInfo info)
         {
             StopAiTurn();
-            _cho?.SetInputEnabled(false);
-            _han?.SetInputEnabled(false);
+            _session.DisableAllControllers();
             _resultUI.Show();
             _resultUI.EndGame(info);
-            if (GetPlayer(info.Winner) is LocalController)
+            if (_session.GetPlayer(info.Winner) is LocalController)
                 _audio.PlayWin();
             else
                 _audio.PlayLose();
@@ -191,17 +176,8 @@ namespace Yujanggi.Runtime.Game
         public void HandleTurnChanged(PlayerTeam turn)
         {
             _matchUI.UpdateTurn(turn);
-            if (turn == PlayerTeam.Cho)
-            {
-                _cho.SetInputEnabled(true);
-                _han.SetInputEnabled(false);
-            }
-            else
-            {
-                _cho.SetInputEnabled(false);
-                _han.SetInputEnabled(true);
-            }
-            var participant = GetPlayer(turn);
+
+            var participant = _session.BeginNextTurn(turn);
             if (participant is LocalController local)
                 _audio.PlayTurn();
             else if (participant is AIController ai)
@@ -211,69 +187,31 @@ namespace Yujanggi.Runtime.Game
         #region ControllerRequestHandlers
         public void HandleMoveRequest(Pos from, Pos to)
         {
-            _match.TryMove(from, to);
+            _session.Match.TryMove(from, to);
         }
         public void HandleClickRequest(Pos pos)
         {
-            if (_match.HasSelection)
-                _match.TryMoveSelected(pos);
+            Debug.Log($"{pos.X}, {pos.Z}");
+            var match = _session.Match;
+            if (match.HasSelection)
+                match.TryMoveSelected(pos);
             else
-                _match.TrySelect(pos);
+                match.TrySelect(pos);
         }
+
         #endregion
         #region BindingEvents
         private void BindEvents()
         {
-            BindMatchEvents();
-            BindControllerEvents();
+            _session.BindEvents(this);  
+            _matchUI.BindEvents(_session.Match);
+            _localInput.OnBoardClicked += HandleClickRequest;
         }
-        private void BindControllerEvents()
-        {
-            _cho.BindEvents(this);
-            _han.BindEvents(this);
-        }
-        private void BindMatchEvents()
-        {
-            _match.BindEvents();
-
-            var turn = _match.Turn;
-            turn.OnTurnChanged += HandleTurnChanged;
-
-            var events = _match.MatchEvent;
-            events.OnSelectionChanged += HandleSelectionChanged;
-            events.OnCheckOccurred            += HandleCheckOccured;
-            events.OnCheckReleased          += HandleCheckReleased;
-            events.OnPieceMoved       += HandlePieceMoved;
-            events.OnGameEnded          += HandleGameEnded;
-
-            _matchUI.BindEvents(_match);
-        }
-        // UnBind
         private void UnBindEvents()
         {
-            UnBindControllerEvents();
-            UnBindMatchEvents();
-        }
-        private void UnBindMatchEvents()
-        {
-            _match.UnBindEvents();
-
-            var turn = _match.Turn;
-            turn.OnTurnChanged -= HandleTurnChanged;
-
-            var events = _match.MatchEvent;
-            events.OnSelectionChanged -= HandleSelectionChanged;
-            events.OnCheckOccurred            -= HandleCheckOccured;
-            events.OnCheckReleased          -= HandleCheckReleased;
-            events.OnPieceMoved       -= HandlePieceMoved;
-            events.OnGameEnded          -= HandleGameEnded;
-
-            _matchUI.UnBindEvents(_match);
-        }
-        private void UnBindControllerEvents()
-        {
-            _cho.UnBindEvents(this);
-            _han.UnBindEvents(this);
+            _session.UnBindEvents(this);
+            _matchUI.UnBindEvents(_session.Match);
+            _localInput.OnBoardClicked -= HandleClickRequest;
         }
         #endregion
     }

@@ -136,7 +136,7 @@ namespace Yujanggi.Core.Match
             Board       = new BoardModel();
             Rule        = new JanggiRule(); 
         }
-        public void StartGame(PlayerInfo cho, PlayerInfo han)
+        public void StartGame(Formation cho, Formation han)
         {
             Record.StartGame();
             Score.StartGame();
@@ -144,7 +144,7 @@ namespace Yujanggi.Core.Match
             BoardInitializer.SetUpPieces(Board, cho, han);
             Turn.StartGame(PlayerTeam.Cho);
         }
-        public void ResetGame(PlayerInfo cho, PlayerInfo han)
+        public void ResetGame(Formation cho, Formation han)
         {
             ClearSelection();
             StartGame(cho, han);

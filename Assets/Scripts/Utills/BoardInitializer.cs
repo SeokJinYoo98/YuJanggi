@@ -6,7 +6,7 @@ namespace Yujanggi.Core.Board
 {
     internal class BoardInitializer
     {
-        public  static void SetUpPieces(IBoardModel board, PlayerInfo cho, PlayerInfo han)
+        public  static void SetUpPieces(IBoardModel board, Formation cho, Formation han)
         {
             int pieceId = 0;
             SpawnCho(board, PlayerTeam.Cho, ref pieceId);
@@ -67,23 +67,23 @@ namespace Yujanggi.Core.Board
         }  
         private static void Spawn(IBoardModel board, PlayerTeam team, PieceType type, int x, int z, ref int pieceId)
             => board.SetPiece(new Pos(x, z), new PieceModel(type, team, pieceId++));
-        private static void ApplyFormationCho(IBoardModel board, PlayerInfo cho)
+        private static void ApplyFormationCho(IBoardModel board, Formation cho)
         {
-            if (cho.Formation == Formation.EHHE) return;
+            if (cho == Formation.EHHE) return;
 
             Pos left_1  = new Pos(1, 0);
             Pos left_2  = new Pos(2, 0);
             Pos right_1 = new Pos(6, 0);
             Pos right_2 = new Pos(7, 0);
 
-            if (cho.Formation == Formation.EHEH)
+            if (cho == Formation.EHEH)
             {
                 var sawp1 = board.GetPiece(right_1);
                 var swap2 = board.GetPiece(right_2);
                 board.SetPiece(right_1, swap2);
                 board.SetPiece(right_2, sawp1);
             }
-            else if (cho.Formation == Formation.HEEH)
+            else if (cho == Formation.HEEH)
             {
                 var sawp1 = board.GetPiece(right_1);
                 var swap2 = board.GetPiece(right_2);
@@ -95,7 +95,7 @@ namespace Yujanggi.Core.Board
                 board.SetPiece(left_1, swap2);
                 board.SetPiece(left_2, sawp1);
             }
-            else if (cho.Formation == Formation.HEHE)
+            else if (cho == Formation.HEHE)
             {
                 var swap1 = board.GetPiece(left_1);
                 var swap2 = board.GetPiece(left_2);
@@ -103,23 +103,23 @@ namespace Yujanggi.Core.Board
                 board.SetPiece(left_2, swap1);
             }
         }
-        private static void ApplyFormationHan(IBoardModel board, PlayerInfo han)
+        private static void ApplyFormationHan(IBoardModel board, Formation han)
         {
-            if (han.Formation == Formation.EHHE) return;
+            if (han == Formation.EHHE) return;
 
             Pos left_1  = new Pos(1, 9);
             Pos left_2  = new Pos(2, 9);
             Pos right_1 = new Pos(6, 9);
             Pos right_2 = new Pos(7, 9);
 
-            if (han.Formation == Formation.EHEH)
+            if (han == Formation.EHEH)
             {
                 var sawp1 = board.GetPiece(left_1);
                 var swap2 = board.GetPiece(left_2);
                 board.SetPiece(left_1, swap2);
                 board.SetPiece(left_2, sawp1);
             }
-            else if (han.Formation == Formation.HEEH)
+            else if (han == Formation.HEEH)
             {
                 var sawp1 = board.GetPiece(left_1);
                 var swap2 = board.GetPiece(left_2);
@@ -131,7 +131,7 @@ namespace Yujanggi.Core.Board
                 board.SetPiece(right_1, swap2);
                 board.SetPiece(right_2, sawp1);
             }
-            else if (han.Formation == Formation.HEHE)
+            else if (han == Formation.HEHE)
             {
                 var swap1 = board.GetPiece(right_1);
                 var swap2 = board.GetPiece(right_2);

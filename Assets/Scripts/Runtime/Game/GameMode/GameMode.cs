@@ -31,19 +31,19 @@ namespace Yujanggi.Runtime.GameMode
     }
     public interface IGameMode
     {
-        public void SetUpGame(MatchOptions info);
+        public void SetUpGame();
     }
     public class LocalVsLocalMode : IGameMode
     {
         IPlayerController player;
-        public void SetUpGame(MatchOptions info)
+        public void SetUpGame()
         {
 
         }
     }
     public class LocalVsAiMode : IGameMode
     {
-        public void SetUpGame(MatchOptions info)
+        public void SetUpGame()
         {
 
         }
@@ -51,7 +51,7 @@ namespace Yujanggi.Runtime.GameMode
 
     public class LocalVsNetworkMode : IGameMode
     {
-        public void SetUpGame(MatchOptions info)
+        public void SetUpGame()
         {
 
         }

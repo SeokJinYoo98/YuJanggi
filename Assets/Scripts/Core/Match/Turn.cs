@@ -19,15 +19,23 @@ namespace Yujanggi.Core.Match
         public TurnType   TurnState { get; private set; }
         public bool IsEnd => TurnState == TurnType.End;
 
+        private bool NoTime = false;
         
         public Turn(float maxTime)
-            => _maxTurnTime = maxTime;
+        {
+            _maxTurnTime = maxTime;
+            NoTime = (int)_maxTurnTime == 0;
+        }
         public void StartGame(PlayerTeam player)
         {
             CurrentTeam = player;
             TurnState = TurnType.Select;
             _turnTime = _maxTurnTime;
             OnTurnChanged?.Invoke(CurrentTeam);
+
+            OnTimeChanged?.Invoke((PlayerTeam.Cho, (int)_turnTime));
+
+            OnTimeChanged?.Invoke((PlayerTeam.Han, (int)_turnTime));
         }
 
         public void SetTurn(TurnType type)
@@ -57,7 +65,8 @@ namespace Yujanggi.Core.Match
         {
             if (TurnState != TurnType.Select && TurnState != TurnType.Attack)
                 return;
-
+            if (NoTime)
+                return;
             _timer += deltaTime;
             if (1 <= _timer)
             {

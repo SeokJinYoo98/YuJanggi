@@ -6,27 +6,26 @@ namespace Yujanggi.Runtime.Controller
 {
     public class LocalController : IPlayerController, ILocalPlayer
     {
-        public  PlayerTeam Team { get; }
-        private IInputHandler _input;
-
+        public  PlayerTeam     Team { get; }
+        private IInputHandler  _input;
+        private bool _connected = false;
         public void SetInputEnabled(bool enabled)
             => _input.SetInputEnabled(enabled);
 
         public void BindEvents(IGameInputHandler manager)
         {
-            _input.OnBoardClicked += manager.HandleClickRequest;
+            //_input.OnBoardClicked += manager.HandleClickRequest;
         }
 
         public void UnBindEvents(IGameInputHandler manager)
         {
-            _input.OnBoardClicked -= manager.HandleClickRequest;
+            //_input.OnBoardClicked -= manager.HandleClickRequest;
         }
 
         public LocalController(IInputHandler input, PlayerTeam team)
         {
             Team = team;
             _input = input;
-            _input.RotateCamera(team);
         }
     }
 }

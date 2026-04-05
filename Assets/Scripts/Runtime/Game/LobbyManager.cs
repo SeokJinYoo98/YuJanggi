@@ -53,7 +53,7 @@ namespace Yujanggi.Runtime.Game
 
             GameSessionStore.Current = info;
             _curr = null;
-            SceneManager.LoadScene("Janggi");
+            SceneManager.LoadScene("JanggiScene");
         }
         public void HandleQuitGame()
             => Application.Quit();
@@ -61,6 +61,7 @@ namespace Yujanggi.Runtime.Game
         {
             return new GameSessionInfo
             {
+                Mode            = GameModeType.Local,
                 Cho             = PlayerType.Local,
                 Han             = PlayerType.Local,
                 ChoFormation    = choFormation,
@@ -72,6 +73,7 @@ namespace Yujanggi.Runtime.Game
         public GameSessionInfo HandleCreateAISession(PlayerTeam localTeam, Formation localFormation, int time)
         {
             GameSessionInfo info = new();
+            info.Mode = GameModeType.AI;
             if (localTeam == PlayerTeam.Cho)
             {
                 info.Cho                = PlayerType.Local;
