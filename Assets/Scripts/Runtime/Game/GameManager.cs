@@ -7,11 +7,9 @@ namespace Yujanggi.Runtime.Game
     using Board;
     using Controller;
     using Core.Domain;
-    using Core.Match;
     using Input;
     using System.Collections;
     using UI;
-    using GameMode;
     using UnityEngine.SceneManagement;
 
     public class GameManager : MonoBehaviour, IGameInputHandler
@@ -106,6 +104,8 @@ namespace Yujanggi.Runtime.Game
 
             if (ctx.IsHandicap)
                 return;
+
+            // BoardPresenter도 UnDo만
             _boardPresenter.UnHighlight();
             var movedPiece = ctx.Record.MovedPiece;
 
@@ -135,17 +135,15 @@ namespace Yujanggi.Runtime.Game
             _resultUI.Show();
             _resultUI.EndGame(info);
             if (_session.GetPlayer(info.Winner) is LocalController)
-                _audio.PlayWin();
+                _audio.PlaySfxOneShot(JanggiSfx.Win);
             else
-                _audio.PlayLose();
+                _audio.PlaySfxOneShot(JanggiSfx.Lose);
         }
         public void HandleCheckReleased()
-        {
-            _audio.PlayMunggun();
-        }
+            => _audio.PlaySfxOneShot(JanggiSfx.UnCheck);
         public void HandleCheckOccured(PlayerTeam team)
         {
-            _audio.PlayJanggun();
+            _audio.PlaySfxOneShot(JanggiSfx.Check);
             _matchUI.PlayJanggun(team);
         }
         public void HandlePieceMoved(MoveRecord record)
@@ -155,13 +153,13 @@ namespace Yujanggi.Runtime.Game
             _boardPresenter.MovePiece(moveId, to);
             if (record.IsCapture)
             {
-                _audio.PlayCapture();
+                _audio.PlaySfxOneShot(JanggiSfx.Capture);
                 var id   = record.CapturedPiece.Id;
                 var team = record.CapturedPiece.Team;
                 _boardPresenter.PlaceCapturedPiece(id, team);
                 return;
             }
-            _audio.PlayMove();    
+            _audio.PlaySfxOneShot(JanggiSfx.Move);
         }
         public void HandleSelectionChanged(int? id, IReadOnlyList<Pos> ways)
         {
@@ -170,7 +168,7 @@ namespace Yujanggi.Runtime.Game
                 _boardPresenter.UnHighlight();
                 return;
             }
-            _audio.PlaySelect();
+            _audio.PlaySfxOneShot(JanggiSfx.Select);
             _boardPresenter.Highlight(id.Value, ways);
         }
         public void HandleTurnChanged(PlayerTeam turn)
@@ -179,7 +177,7 @@ namespace Yujanggi.Runtime.Game
 
             var participant = _session.BeginNextTurn(turn);
             if (participant is LocalController local)
-                _audio.PlayTurn();
+                _audio.PlaySfxOneShot(JanggiSfx.TurnAlert);
             else if (participant is AIController ai)
                 StartAiTurn(ai);
         }

@@ -1,6 +1,4 @@
 using Yujanggi.Core.Domain;
-using Yujanggi.Runtime.GameMode;
-using Yujanggi.Runtime.Piece;
 
 namespace Yujanggi.Core.Board
 {

@@ -1,6 +1,9 @@
 using System;
 namespace Yujanggi.Core.Domain
 {
+    public enum Formation { HEHE, EHEH, EHHE, HEEH }
+    public enum PlayerType { Local, AI, Network }
+    public enum GameModeType { Local, AI, Network }
     public interface IGameInputHandler
     {
         public void HandleClickRequest(Pos pos);

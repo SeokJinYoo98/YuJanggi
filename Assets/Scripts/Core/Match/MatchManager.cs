@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Rule;
-using Yujanggi.Runtime.GameMode;
 
 namespace Yujanggi.Core.Match
 {

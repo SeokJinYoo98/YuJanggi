@@ -3,16 +3,12 @@ using System;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Match;
 using Yujanggi.Runtime.Controller;
-using Yujanggi.Runtime.GameMode;
 using Yujanggi.Runtime.Input;
 
 namespace Yujanggi.Runtime.GameSession
 {
     using Game;
-    public enum GameModeType
-    {
-        Local, AI, Network
-    }
+
     public struct GameSessionInfo
     {
         public GameModeType     Mode;

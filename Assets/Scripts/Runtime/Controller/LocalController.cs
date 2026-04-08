@@ -7,8 +7,8 @@ namespace Yujanggi.Runtime.Controller
     public class LocalController : IPlayerController, ILocalPlayer
     {
         public  PlayerTeam     Team { get; }
-        private IInputHandler  _input;
-        private bool _connected = false;
+        private readonly IInputHandler  _input;
+
         public void SetInputEnabled(bool enabled)
             => _input.SetInputEnabled(enabled);
 

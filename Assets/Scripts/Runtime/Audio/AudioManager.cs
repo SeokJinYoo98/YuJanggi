@@ -9,51 +9,17 @@ namespace Yujanggi.Runtime.Audio
 
     public class AudioManager : MonoBehaviour
     {
-        [SerializeField] private AudioSource _sfxSource;
-        [SerializeField] private AudioClip _selectClip;
-        [SerializeField] private AudioClip _moveClip;
-        [SerializeField] private AudioClip _captureClip;
-        [SerializeField] private AudioClip _buttonClip;
-        [SerializeField] private AudioClip _janggunClip;
-        [SerializeField] private AudioClip _munggunClip;
-        [SerializeField] private AudioClip _checkmateClip;
-        [SerializeField] private AudioClip _turnClip;
-        [SerializeField] private AudioClip _winClip;
-        [SerializeField] private AudioClip _loseClip;
+        [SerializeField] private SfxAudios  _sfx;
+        [SerializeField] private UIAudio    _ui;
 
-        public void PlayTurn()
-        {
-            _sfxSource.PlayOneShot(_turnClip);
-        }
-        public void PlayJanggun()
-        {
-            _sfxSource.PlayOneShot(_janggunClip, 1.5f);
-        }
-        public void PlayMunggun()
-        {
-            _sfxSource.PlayOneShot(_munggunClip, 1.5f);
-        }
-        public void PlayMove()
-        {
-            _sfxSource.PlayOneShot(_moveClip, 0.6f);
-        }
-        public void PlaySelect()
-        {
-            _sfxSource.PlayOneShot(_selectClip);
-        }
-        public void PlayCapture()
-        {
-            _sfxSource.PlayOneShot(_captureClip, 0.8f);
-        }
-
+        private float _sfxVolume = 1.0f;
+        private float _uiVolume  = 1.0f;
+        public void PlaySfxOneShot(JanggiSfx type)
+            => _sfx.PlaySfx(type, _sfxVolume);
+        public void PlayUI(UISfx type)
+            => _ui.PlayUI(type, _uiVolume);
         public void PlayButton()
-        {
-            _sfxSource.PlayOneShot(_buttonClip);
-        }
-        public void PlayWin()
-            => _sfxSource.PlayOneShot(_winClip, 1.2f);
-        public void PlayLose()
-            => _sfxSource.PlayOneShot(_loseClip, 1.2f);
+            => PlayUI(UISfx.Button);
     }
 
 }

@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using Yujanggi.Core.Domain;
-using Yujanggi.Runtime.GameMode;
 using Yujanggi.Runtime.UI;
 
 namespace Yujanggi.Runtime.Game
@@ -38,13 +37,13 @@ namespace Yujanggi.Runtime.Game
             if (_curr == null) return;
             GameSessionInfo info;
             if (_curr is LocalPanelView local)
-                info = HandleCreateLocalSession(
+                info = CreateLocalSession(
                     (Formation)local.ChoFormation,
                     (Formation)local.HanFormation,
                     local.TurnTime);
 
             else if (_curr is AIPanelView ai)
-                info = HandleCreateAISession(
+                info = CreateAISession(
                     (PlayerTeam)ai.LocalPlayer,
                     (Formation)ai.LocalPlayerFormation,
                     ai.TurnTime);
@@ -57,7 +56,7 @@ namespace Yujanggi.Runtime.Game
         }
         public void HandleQuitGame()
             => Application.Quit();
-        public GameSessionInfo HandleCreateLocalSession(Formation choFormation, Formation hanFormation, int time)
+        private GameSessionInfo CreateLocalSession(Formation choFormation, Formation hanFormation, int time)
         {
             return new GameSessionInfo
             {
@@ -69,8 +68,7 @@ namespace Yujanggi.Runtime.Game
                 TurnTime        = ConvertTime(time)
             };
         }
-
-        public GameSessionInfo HandleCreateAISession(PlayerTeam localTeam, Formation localFormation, int time)
+        private GameSessionInfo CreateAISession(PlayerTeam localTeam, Formation localFormation, int time)
         {
             GameSessionInfo info = new();
             info.Mode = GameModeType.AI;
@@ -92,7 +90,7 @@ namespace Yujanggi.Runtime.Game
             info.TurnTime = ConvertTime(time);
             return info;
         }
-        private int ConvertTime(int value)
+        private int             ConvertTime(int value)
         {
             return value switch
             {
@@ -106,7 +104,7 @@ namespace Yujanggi.Runtime.Game
                 _ => 30
             };
         }
-        private Formation GetRandomFormation()
+        private Formation       GetRandomFormation()
         {
             int count = Enum.GetValues(typeof(Formation)).Length;
             return (Formation)UnityEngine.Random.Range(0, count);

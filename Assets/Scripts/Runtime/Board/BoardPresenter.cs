@@ -22,83 +22,50 @@ namespace Yujanggi.Runtime.Board
         {
             _boardView = GetComponent<BoardView>();   
         }
-        
-        public void BindEvents(MatchEvents matchEvents)
-        {
-            matchEvents.OnSelectionChanged  += HandleSelectionChanged;
-            matchEvents.OnPieceMoved        += HandlePieceMove;
-        }
-        public void UnBindEvents(MatchEvents matchEvents)
-        {
-            matchEvents.OnSelectionChanged  -= HandleSelectionChanged;
-            matchEvents.OnPieceMoved        -= HandlePieceMove;
-        }
+       
         private ref Pos GetGarbagePos(PlayerTeam team)
         {
             if (team == PlayerTeam.Cho)
                 return ref _garbageChoPos;
             return ref _garbagehanPos;
         }
-        public void StartGame(IBoardModel model)
+        public void  StartGame(IBoardModel model)
         {
             _pieces.SpawnPieces(model);
         }
-        public void RestoreCapturedPiece(int id, PlayerTeam team, Pos to)
+        public void  RestoreCapturedPiece(int id, PlayerTeam team, Pos to)
         {
             ref var garbagePos = ref GetGarbagePos(team);
             garbagePos += Pos.Left;
             _pieces.DoMove(id, to);
         }
-        public void PlaceCapturedPiece(int id, PlayerTeam team)
+        public void  PlaceCapturedPiece(int id, PlayerTeam team)
         {
             ref var garbagePos = ref GetGarbagePos(team);
             var to = garbagePos;
             garbagePos += Pos.Right;
             _pieces.DoMove(id, to);
         }
-        public void MovePiece(int id, Pos to)
+        public void  MovePiece(int id, Pos to)
         {
             _pieces.DoMove(id, to);
         }
-        public void UnHighlight()
+        public void  UnHighlight()
         {
             _pieces.UnHighlight();
             _boardView.UnHighlight();
         }
-        public void Highlight(int id, in IReadOnlyList<Pos> ways)
+        public void  Highlight(int id, in IReadOnlyList<Pos> ways)
         {
             _pieces.HighlightPiece(id);
             _boardView.Highlight(ways);
         }
-        public void ResetGame(IBoardModel model)
+        public void  ResetGame(IBoardModel model)
         {
             UnHighlight();
             _pieces.ResetViews(model);
-
+            _garbageChoPos = new Pos(0, -1);
+            _garbagehanPos = new Pos(0, -2);
         }
-        private void HandlePieceMove(MoveRecord record)
-        {
-            var id = record.MovedPiece.Id;
-            var to = record.To;
-            MovePiece(id, to);
-
-            if (record.IsCapture)
-            {
-                var captured = record.CapturedPiece;
-                PlaceCapturedPiece(captured.Id, captured.Team);
-            }
-            UnHighlight();
-        }
-        private void HandleSelectionChanged(int? id, IReadOnlyList<Pos> pos)
-        {
-            if (id == null)
-            {
-                UnHighlight();
-                return;
-            }
-
-            Highlight(id.Value, pos);
-        }
-
     }
 }
