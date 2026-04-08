@@ -14,19 +14,14 @@ namespace Yujanggi.Runtime.Game
 
     public class GameManager : MonoBehaviour, IGameInputHandler
     {
-        [SerializeField] private BoardPresenter _boardPresenter;
-
+        [SerializeField] private BoardPresenter  _boardPresenter;
+        [SerializeField] private CoroutineRunner _runner;
         [SerializeField] private ResultUI        _resultUI;
         [SerializeField] private MatchUI         _matchUI;
         [SerializeField] private PcInputHandler  _localInput;
 
         private GameSession _session;
         private AudioManager _audio;
-        private void Awake()
-        {
-            Application.targetFrameRate = 144;
-        }
-
         private void Start()
         {
             _audio = AudioManager.Instance;
@@ -43,49 +38,21 @@ namespace Yujanggi.Runtime.Game
         
         private void StartGame()
         {
-            _session = new(GameSessionStore.Current, _localInput);
+            _session = new(GameSessionStore.Current, _localInput, _runner);
             BindEvents();
             _session.StartGame();
             _boardPresenter.StartGame(_session.Match.Board);
 
         }
-        public void GiveUp()
+        #region UIRequestHandlers        
+        public void HandleGiveUp()
         {
+            _audio.PlayButton();
             var info = _session.GiveUp();
-            StopAiTurn();
             _resultUI.Show();
             _resultUI.GiveUp(info);
         }
-
-        #region AI
-        private Coroutine _aiRoutine;
-        private IEnumerator ProcessAiTurn(AIController ai)
-        {
-            if (!ai.TryThink())
-                yield break;
-
-            yield return new WaitForSeconds(1f);
-
-            if (!ai.TryGetSelectedMove())
-                yield break;
-        }
-        private void StartAiTurn(AIController ai)
-        {
-            StopAiTurn();
-
-            _aiRoutine = StartCoroutine(ProcessAiTurn(ai));
-        }
-        private void StopAiTurn()
-        {
-            if (_aiRoutine != null)
-            {
-                StopCoroutine(_aiRoutine);
-                _aiRoutine = null;
-            }
-        }
-        #endregion
-        #region UIRequestHandlers        
-        public void ResetGame()
+        public void HandleResetGame()
         {
             _audio.PlayButton();
             _resultUI.Hide();
@@ -100,7 +67,6 @@ namespace Yujanggi.Runtime.Game
         public void HandleUndo()
         {
             _audio.PlayButton();
-            StopAiTurn();
             if (!_session.Match.TryUnDo(out var ctx))
                 return;
 
@@ -126,14 +92,12 @@ namespace Yujanggi.Runtime.Game
         {
             _audio.PlayButton();
             UnBindEvents();
-            StopAiTurn();
             SceneManager.LoadScene("LobbyScene");
         }
         #endregion
         #region MatchEventHandlers
         public void HandleGameEnded(GameResultInfo info)
         {
-            StopAiTurn();
             _session.DisableAllControllers();
             _resultUI.Show();
             _resultUI.EndGame(info);
@@ -181,8 +145,6 @@ namespace Yujanggi.Runtime.Game
             var participant = _session.BeginNextTurn(turn);
             if (participant is LocalController local)
                 _audio.PlaySfxOneShot(JanggiSfx.TurnAlert);
-            else if (participant is AIController ai)
-                StartAiTurn(ai);
         }
         #endregion
         #region ControllerRequestHandlers
@@ -192,7 +154,6 @@ namespace Yujanggi.Runtime.Game
         }
         public void HandleClickRequest(Pos pos)
         {
-            Debug.Log($"{pos.X}, {pos.Z}");
             var match = _session.Match;
             if (match.HasSelection)
                 match.TryMoveSelected(pos);

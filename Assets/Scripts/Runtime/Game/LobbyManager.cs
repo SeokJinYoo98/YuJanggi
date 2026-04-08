@@ -15,6 +15,10 @@ namespace Yujanggi.Runtime.Game
         UIVisible _curr;
 
         private AudioManager _audio;
+        private void Awake()
+        {
+            Application.targetFrameRate = 144;
+        }
         private void Start()
         {
             _audio = AudioManager.Instance;

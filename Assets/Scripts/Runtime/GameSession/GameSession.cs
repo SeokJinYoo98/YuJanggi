@@ -8,6 +8,8 @@ using Yujanggi.Runtime.Input;
 namespace Yujanggi.Runtime.GameSession
 {
     using Game;
+    using System.Collections;
+    using UnityEngine;
 
     public struct GameSessionInfo
     {
@@ -59,30 +61,29 @@ namespace Yujanggi.Runtime.GameSession
 
         private readonly IPlayerController   _cho;
         private readonly IPlayerController   _han;
-        private readonly GameSessionInfo _info;
+        private readonly GameSessionInfo     _info;
 
         public IPlayerController GetPlayer(PlayerTeam team)
             => team == PlayerTeam.Cho ? _cho : _han;
 
-        public GameSession(GameSessionInfo info, PcInputHandler localInput)
+        public GameSession(GameSessionInfo info, PcInputHandler localInput, ICoroutineRunner runner)
         {
             _info = info;
             Match = new(info.TurnTime);
             SetCamera(localInput);
 
-            _cho = CreateController(_info.Cho, PlayerTeam.Cho, localInput, Match);
-            _han = CreateController(_info.Han, PlayerTeam.Han, localInput, Match);
+            _cho = CreateController(_info.Cho, PlayerTeam.Cho, localInput, Match, runner);
+            _han = CreateController(_info.Han, PlayerTeam.Han, localInput, Match, runner);
         }
         public IPlayerController BeginNextTurn(PlayerTeam turn)
         {
+            DisableAllControllers();
             if (turn == PlayerTeam.Cho)
             {
-                _han.SetInputEnabled(false);
-                _cho.SetInputEnabled(true);
+                _cho.BeginTurn();
                 return _cho;
             }
-            _cho.SetInputEnabled(false);
-            _han.SetInputEnabled(true);
+            _han.BeginTurn();
             return _han;
         }
         public          GameResultInfo GiveUp()
@@ -92,17 +93,19 @@ namespace Yujanggi.Runtime.GameSession
         }
         public void     DisableAllControllers()
         {
-            _cho.SetInputEnabled(false);
-            _han.SetInputEnabled(false);
+            _cho.EndTurn();
+            _han.EndTurn();
         }
         public void     StartGame()
         {
-            _han.SetInputEnabled(false); _cho.SetInputEnabled(true);
+            _cho.BeginTurn();
+            _han.EndTurn();
             Match.StartGame(_info.ChoFormation, _info.HanFormation);
         }
         public void     ResetGame()
         {
-            _han.SetInputEnabled(false); _cho.SetInputEnabled(true);
+            _cho.BeginTurn();
+            _han.EndTurn();
             Match.ResetGame(_info.ChoFormation, _info.HanFormation);
         }
         private void    SetCamera(PcInputHandler localInput)
@@ -117,12 +120,13 @@ namespace Yujanggi.Runtime.GameSession
                PlayerType type,
                PlayerTeam team,
                PcInputHandler input,
-               MatchManager match)
+               MatchManager match,
+               ICoroutineRunner runner)
         {
             return type switch
             {
                 PlayerType.Local    => new LocalController(input, team),
-                PlayerType.AI       => new AIController(match.Rule, match.Board, team),
+                PlayerType.AI       => new AIController(match.Rule, match.Board, team, runner),
                 _                   => throw new ArgumentOutOfRangeException()
             };
         }

@@ -1,6 +1,13 @@
 using System;
+using System.Collections;
+using UnityEngine;
 namespace Yujanggi.Core.Domain
 {
+    public interface ICoroutineRunner
+    {
+        Coroutine Run(IEnumerator routine);
+        void Stop(Coroutine routine);
+    }
     public enum Formation { HEHE, EHEH, EHHE, HEEH }
     public enum PlayerType { Local, AI, Network }
     public enum GameModeType { Local, AI, Network }
@@ -28,7 +35,8 @@ namespace Yujanggi.Core.Domain
     public interface IPlayerController
     {
         public PlayerTeam Team { get; }
-        public void SetInputEnabled(bool enabled);
+        public void BeginTurn();
+        public void EndTurn();
         public void BindEvents(IGameInputHandler manager);
         public void UnBindEvents(IGameInputHandler manager);
     }

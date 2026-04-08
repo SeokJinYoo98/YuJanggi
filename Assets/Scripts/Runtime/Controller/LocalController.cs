@@ -22,6 +22,16 @@ namespace Yujanggi.Runtime.Controller
             //_input.OnBoardClicked -= manager.HandleClickRequest;
         }
 
+        public void BeginTurn()
+        {
+            _input.SetInputEnabled(true);
+        }
+
+        public void EndTurn()
+        {
+            _input.SetInputEnabled(false);
+        }
+
         public LocalController(IInputHandler input, PlayerTeam team)
         {
             Team = team;

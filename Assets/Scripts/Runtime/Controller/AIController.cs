@@ -1,6 +1,8 @@
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Rule;
@@ -14,24 +16,20 @@ namespace Yujanggi.Runtime.Controller
     public class AIController : IPlayerController, IAIController
     {
         public PlayerTeam Team { get; }
-        private bool _canInput = false;
         public event Action<Pos, Pos> OnMoveRequest;
 
-        private readonly IJanggiRule _rule;
-        private readonly IBoardModel _boardModel;
-        private readonly SelectionState _selection;
-        private readonly System.Random _rand = new();
 
-        public bool CanInput => _canInput;
+        private readonly IJanggiRule        _rule;
+        private readonly IBoardModel        _boardModel;
+        private readonly SelectionState     _selection;
+        private readonly System.Random _rand = new();
 
         private readonly List<MoveCandidate> _candidates = new(17);
         private int _selectedCandidateIndex = -1;
 
-        public void SetInputEnabled(bool enabled)
-            => _canInput = enabled;
-
-        public AIController(IJanggiRule rule, IBoardModel board, PlayerTeam team)
+        public AIController(IJanggiRule rule, IBoardModel board, PlayerTeam team, ICoroutineRunner runner)
         {
+            _runner = runner;
             Team        = team;
             _rule       = rule;
             _boardModel = board;
@@ -90,28 +88,51 @@ namespace Yujanggi.Runtime.Controller
             OnMoveRequest?.Invoke(from, to);
             return true;
         }
-
         private Pos SelectPiece()
         {  
             var selected = _candidates[_selectedCandidateIndex];
             return selected.From;
         }
-
         private Pos SelectCell() 
         {
             var selected = _candidates[_selectedCandidateIndex];
             int random = _rand.Next(0, selected.Ways.Count);
             return selected.Ways[random];
         }
-
         public void BindEvents(IGameInputHandler manager)
         {
             OnMoveRequest += manager.HandleMoveRequest;
         }
-
         public void UnBindEvents(IGameInputHandler manager)
         {
             OnMoveRequest -= manager.HandleMoveRequest;
+        }
+
+        private readonly ICoroutineRunner _runner;
+        private Coroutine _aiRoutine;
+        private IEnumerator ProcessAITurn()
+        {
+            if (!this.TryThink())
+                yield break;
+
+            yield return new WaitForSeconds(1f);
+
+            if (!this.TryGetSelectedMove())
+                yield break;
+        }
+
+        public void BeginTurn()
+        {
+            if (_aiRoutine != null) return;
+            _aiRoutine = _runner.Run(ProcessAITurn());
+        }
+
+        public void EndTurn()
+        {
+            if (_aiRoutine == null) return;
+
+            _runner.Stop(_aiRoutine);
+            _aiRoutine = null;
         }
 
         private readonly struct MoveCandidate
