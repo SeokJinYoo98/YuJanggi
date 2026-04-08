@@ -18,12 +18,10 @@ namespace Yujanggi.Runtime.Game
 
         [SerializeField] private ResultUI        _resultUI;
         [SerializeField] private MatchUI         _matchUI;
-        [SerializeField] private AudioManager    _audio;
-
         [SerializeField] private PcInputHandler  _localInput;
 
         private GameSession _session;
-
+        private AudioManager _audio;
         private void Awake()
         {
             Application.targetFrameRate = 144;
@@ -31,6 +29,7 @@ namespace Yujanggi.Runtime.Game
 
         private void Start()
         {
+            _audio = AudioManager.Instance;
             StartGame();
         }
         private void OnDestroy()
@@ -88,16 +87,19 @@ namespace Yujanggi.Runtime.Game
         #region UIRequestHandlers        
         public void ResetGame()
         {
+            _audio.PlayButton();
             _resultUI.Hide();
             _session.ResetGame();
             _boardPresenter.ResetGame(_session.Match.Board);
         }
         public void HandleHandicap()
         {
+            _audio.PlayButton();
             _session.Match.Handicap();
         }
         public void HandleUndo()
         {
+            _audio.PlayButton();
             StopAiTurn();
             if (!_session.Match.TryUnDo(out var ctx))
                 return;
@@ -122,6 +124,7 @@ namespace Yujanggi.Runtime.Game
         }
         public void HandleMainLobby()
         {
+            _audio.PlayButton();
             UnBindEvents();
             StopAiTurn();
             SceneManager.LoadScene("LobbyScene");

@@ -7,33 +7,42 @@ namespace Yujanggi.Runtime.Game
 {
     using GameSession;
     using UnityEngine.SceneManagement;
-
+    using Audio;
     public class LobbyManager : MonoBehaviour
     {
         [SerializeField] private AIPanelView    _aiPanel;
         [SerializeField] private LocalPanelView _localPanel;
         UIVisible _curr;
 
+        private AudioManager _audio;
+        private void Start()
+        {
+            _audio = AudioManager.Instance;
+        }
         public void HandleClosePanel()
         {
+            _audio.PlayButton();
             if (_curr == null) return;
             _curr.Hide();
             _curr = null;
         }
         public void HandleAIPanel()
         {
+            _audio.PlayButton();
             if (_curr != null) return;
             _curr = _aiPanel;
             _curr.Show();
         }
         public void HandleLocalPanel()
         {
+            _audio.PlayButton();
             if (_curr != null) return;
             _curr = _localPanel;
             _curr.Show();
         }
         public void HandleCreateSession()
         {
+            _audio.PlayButton();
             if (_curr == null) return;
             GameSessionInfo info;
             if (_curr is LocalPanelView local)
@@ -55,7 +64,10 @@ namespace Yujanggi.Runtime.Game
             SceneManager.LoadScene("JanggiScene");
         }
         public void HandleQuitGame()
-            => Application.Quit();
+        {
+            _audio.PlayButton(); 
+            Application.Quit();
+        }
         private GameSessionInfo CreateLocalSession(Formation choFormation, Formation hanFormation, int time)
         {
             return new GameSessionInfo
