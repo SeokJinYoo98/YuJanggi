@@ -55,10 +55,10 @@ namespace Yujanggi.Runtime.Board
             _pieces.UnHighlight();
             _boardView.UnHighlight();
         }
-        public void  Highlight(int id, in IReadOnlyList<Pos> ways)
+        public void  Highlight(int id, IReadOnlyList<Pos> legalWays, IReadOnlyList<Pos> illegalWays)
         {
             _pieces.HighlightPiece(id);
-            _boardView.Highlight(ways);
+            _boardView.Highlight(legalWays, illegalWays);
         }
         public void  ResetGame(IBoardModel model)
         {

@@ -6,33 +6,31 @@ namespace Yujanggi.Core.Match.Movement
 {
     public class ChariotMovement : Movement
     {
-        Step[] _steps = new Step[] { Step.Up, Step.Down, Step.Left, Step.Right };
-        public override List<Pos> FindWays(
-            IBoardModel board,
-            SelectionState selectInfo)
+        //
+        public override void FindWays(IBoardModel board, Pos from, List<Pos> buffer)
         {
-            List<Pos> ways = new();
-            var selectedPiece = selectInfo.SelectedPiece;
-            var team = selectedPiece.Team;
+            var piece = board.GetPiece(from);
+            var team = piece.Team;
 
             foreach (var step in _steps)
             {
-                var dPos = selectInfo.SelectedPos;
+                var dPos = from;
                 while (true)
                 {
                     dPos = ApplyStep(step, team, dPos);
                     var result = CheckCell(board, team, dPos);
-          
-                    
+
                     if (result == StepResult.Block || result == StepResult.Team)
                         break;
 
-                    ways.Add(dPos);
+                    buffer.Add(dPos);
                     if (result == StepResult.Enemy)
                         break;
                 }
             }
-            return ways;
         }
+        //
+        Step[] _steps = new Step[] { Step.Up, Step.Down, Step.Left, Step.Right };
+
     }
 }

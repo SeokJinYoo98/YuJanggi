@@ -7,6 +7,33 @@ namespace Yujanggi.Core.Match.Movement
 {
     public class PalaceMovement : Movement
     {
+        //
+        public override void FindWays(IBoardModel board, Pos from, List<Pos> buffer)
+        {
+            var selectedPiece = board.GetPiece(from);
+            var team = selectedPiece.Team;
+            switch (selectedPiece.Type)
+            {
+                case PieceType.Soldier:
+                case PieceType.King:
+                case PieceType.Guard:
+                    Default(board, team, from, buffer);
+                    break;
+
+                case PieceType.Chariot:
+                    Chariot(board, team, from, buffer);
+                    break;
+
+                case PieceType.Cannon:
+                    Cannon(board, team, from, buffer);
+                    break;
+                default:
+                    break;
+            }
+        }
+        //
+        
+        
         private readonly Dictionary<Pos, Step[]> _palaceLinks;
         // 추가 대상
 
@@ -29,36 +56,7 @@ namespace Yujanggi.Core.Match.Movement
                 { new Pos (5, 2+top), new[] { Step.LeftDown }}
             };
         }
-        public override List<Pos> FindWays(
-            IBoardModel board, 
-            SelectionState selectInfo)
-        {
-            List<Pos> ways = new(); 
-            var selectedPiece   = selectInfo.SelectedPiece;
-            var team            = selectedPiece.Team;
-            var pos             = selectInfo.SelectedPos;
-
-            switch (selectedPiece.Type)
-            {
-                case PieceType.Soldier:
-                case PieceType.King:
-                case PieceType.Guard:
-                    Default(board, team, pos, ways);
-                    break;
-
-                case PieceType.Chariot:
-                    Chariot(board, team, pos, ways);
-                    break;
-
-                case PieceType.Cannon:
-                    Cannon(board, team, pos, ways);
-                    break;
-                default:
-                    break;
-            }
-
-            return ways;
-        }
+     
         private void Default(IBoardModel board, PlayerTeam team, Pos pos, List<Pos> ways)
         {
             ProcessPalaceMove(board, team, pos, ways, DefaultStep);

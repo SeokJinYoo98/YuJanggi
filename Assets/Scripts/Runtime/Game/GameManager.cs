@@ -22,10 +22,18 @@ namespace Yujanggi.Runtime.Game
 
         private GameSession _session;
         private AudioManager _audio;
+
+        private void Awake()
+        {
+            _session = new(GameSessionStore.Current, _localInput, _runner);
+        }
         private void Start()
         {
             _audio = AudioManager.Instance;
+
+            BindEvents();
             StartGame();
+
         }
         private void OnDestroy()
         {
@@ -35,11 +43,9 @@ namespace Yujanggi.Runtime.Game
         {
             _session.Match.Update(Time.deltaTime);
         }
-        
+
         private void StartGame()
         {
-            _session = new(GameSessionStore.Current, _localInput, _runner);
-            BindEvents();
             _session.StartGame();
             _boardPresenter.StartGame(_session.Match.Board);
 
@@ -115,6 +121,7 @@ namespace Yujanggi.Runtime.Game
         }
         public void HandlePieceMoved(MoveRecord record)
         {
+            _boardPresenter.UnHighlight();
             var moveId = record.MovedPiece.Id;
             var to = record.To;
             _boardPresenter.MovePiece(moveId, to);
@@ -126,54 +133,44 @@ namespace Yujanggi.Runtime.Game
                 _boardPresenter.PlaceCapturedPiece(id, team);
                 return;
             }
+
             _audio.PlaySfxOneShot(JanggiSfx.Move);
         }
-        public void HandleSelectionChanged(int? id, IReadOnlyList<Pos> ways)
-        {
-            if (id == null)
-            {
-                _boardPresenter.UnHighlight();
-                return;
-            }
-            _audio.PlaySfxOneShot(JanggiSfx.Select);
-            _boardPresenter.Highlight(id.Value, ways);
-        }
+
         public void HandleTurnChanged(PlayerTeam turn)
         {
             _matchUI.UpdateTurn(turn);
 
             var participant = _session.BeginNextTurn(turn);
-            if (participant is LocalController local)
+            if (participant is LocalController)
                 _audio.PlaySfxOneShot(JanggiSfx.TurnAlert);
         }
         #endregion
         #region ControllerRequestHandlers
-        public void HandleMoveRequest(Pos from, Pos to)
-        {
-            _session.Match.TryMove(from, to);
-        }
-        public void HandleClickRequest(Pos pos)
-        {
-            var match = _session.Match;
-            if (match.HasSelection)
-                match.TryMoveSelected(pos);
-            else
-                match.TrySelect(pos);
-        }
 
+
+        public void HandleSelectionChanged(int? id, IReadOnlyList<Pos> legal, IReadOnlyList<Pos> illegal)
+        {
+            _boardPresenter.UnHighlight();
+
+            if (!id.HasValue)
+                return;
+
+            _boardPresenter.Highlight(id.Value, legal, illegal);
+            _audio.PlaySfxOneShot(JanggiSfx.Select);
+        }
         #endregion
         #region BindingEvents
         private void BindEvents()
         {
             _session.BindEvents(this);  
             _matchUI.BindEvents(_session.Match);
-            _localInput.OnBoardClicked += HandleClickRequest;
+
         }
         private void UnBindEvents()
         {
             _session.UnBindEvents(this);
             _matchUI.UnBindEvents(_session.Match);
-            _localInput.OnBoardClicked -= HandleClickRequest;
         }
         #endregion
     }

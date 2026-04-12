@@ -17,41 +17,33 @@ namespace Yujanggi.Core.Domain
 
     public class Selection
     {
-        private readonly List<Pos> _illLegalCells = new(20);
-        private readonly List<Pos> _legalCells    = new(20);
-
-        public bool HasSelection => 0 < _legalCells.Count;
-        public Pos FromPos;
-        public Pos ToPos;
-    }
-    public class SelectionState
-    {
-        private readonly List<Pos> _movableCells = new(20);
-        public SelectionInfo?       Current { get; private set; }
-        public IReadOnlyList<Pos>   MovableCells => _movableCells;
-        public bool                 HasSelection => Current.HasValue;
-        public PieceModel           SelectedPiece => Current!.Value.Piece;
-        public PlayerTeam           Team => Current!.Value.Piece.Team;
-        public Pos                  SelectedPos => Current!.Value.Pos;
-
-        public void Select(PieceModel piece, Pos pos)
-        {
-            Current = new SelectionInfo(piece, pos);
-            _movableCells.Clear();
-        }
+        private readonly HashSet<Pos> _legalSet       = new(20);
+        private readonly List<Pos>    _legalCells     = new(20);
+        private readonly List<Pos>    _illLegalCells  = new(20);
+        public IReadOnlyList<Pos> LegalCells   => _legalCells;
+        public IReadOnlyList<Pos> IllegalCells => _illLegalCells;
+        public bool               HasSelection => 0 < _legalSet.Count;
+        public Pos                FromPos;
         public void Clear()
         {
-            Current = null;
-            _movableCells.Clear();
+            _legalSet.Clear();
+            _legalCells.Clear();
+            _illLegalCells.Clear();
         }
+        public void AddLegal(Pos pos) => _legalCells.Add(pos);
+        public void SetMovable(List<Pos> legalCells, List<Pos> illegalCells)
+        {
+            Clear();
+            foreach (var pos in legalCells)
+            {
+                _legalCells.Add(pos);
+                _legalSet.Add(pos);
+            }
 
-        // Movable 관련
-        public void AddMovable(Pos way)
-            => _movableCells.Add(way);
-        public void SetMovable(List<Pos> ways)
-            => _movableCells.AddRange(ways);
-        public bool IsMovable(Pos pos)
-            => _movableCells.Contains(pos);
+            _illLegalCells.AddRange(illegalCells);
+        }
+        public bool IsMovable(Pos pos) => _legalSet.Contains(pos);
+      
     }
 
     public readonly struct MoveContext

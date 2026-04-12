@@ -8,7 +8,7 @@ namespace Yujanggi.Core.Match
         public event Action<PlayerTeam, int> OnScoreChanged;
         private int _choScore = 72;
         private int _hanScore = 72;
-        public int GetPieceScore(PieceType type)
+        private int GetPieceScore(PieceType type)
         {
             return type switch
             {
@@ -22,8 +22,9 @@ namespace Yujanggi.Core.Match
                 _ => 0
             };
         }
-        public void SetScore(PlayerTeam team, int value)
+        public void ApplyScore(PlayerTeam team, PieceType type)
         {
+            var value = GetPieceScore(type);
             if (team == PlayerTeam.Cho)
                 _choScore -= value;  
             else

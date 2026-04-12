@@ -6,6 +6,8 @@ using Yujanggi.Core.Domain;
 namespace Yujanggi.Core.Rule
 {
     using Match.Movement;
+    using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
+
     public class PalaceRule
     {
         private PalaceMovement _palaceMovement;
@@ -19,48 +21,48 @@ namespace Yujanggi.Core.Rule
         {
             _palaceMovement = new();
         }
-
-        public void ApplyPalaceRule(IBoardModel board, in SelectionState selectInfo, List<Pos> candidates)
+        public void ApplyPalaceRule(IBoardModel board, Pos from, List<Pos> buffer)
         {
-            var selectedPiece = selectInfo.SelectedPiece;
-            var type = selectedPiece.Type;
-            var pos = selectInfo.SelectedPos;
-            if (_addRule.Contains(type) && board.IsPalace(pos))
-            {
-                var ways = _palaceMovement.FindWays(board, selectInfo);
-                candidates.AddRange(ways);
-            }
+            var piece = board.GetPiece(from);
+            var type = piece.Type;
+            if (_addRule.Contains(type) && board.IsPalace(from))
+                _palaceMovement.FindWays(board, from, buffer);
 
+            
             if (_filterRule.Contains(type))
-                Filter(board, selectInfo, candidates, type);
+                Filter(board, in piece, from, buffer);
         }
-
-
-
-        private void Filter(IBoardModel board, in SelectionState selectPiece, List<Pos> ways, PieceType type)
+        private void Filter(
+            IBoardModel board, 
+            in PieceModel piece, 
+            Pos from, 
+            List<Pos> buffer)
         {
-            switch(type)
+            switch (piece.Type)
             {
                 case PieceType.Soldier:
-                    FilterSoldier(board, selectPiece, ways);
+                    FilterSoldier(from, piece, buffer);
                     break;
 
                 case PieceType.King:
                 case PieceType.Guard:
-                    FilterKingGuard(board, ways);
+                    buffer.RemoveAll(pos => !board.IsPalace(pos));
                     break;
             }
         }
-        private void FilterSoldier(IBoardModel board, SelectionState selectInfo, List<Pos> ways)
+        private void FilterSoldier(
+            Pos             from,
+            in PieceModel   piece,
+            List<Pos>       buffer)
         {
-
-            int z = selectInfo.SelectedPos.Z;
-
-            if (selectInfo.Team == PlayerTeam.Cho)
-                ways.RemoveAll(pos => pos.Z < z);
+            if (piece.Team == PlayerTeam.Cho)
+                buffer.RemoveAll(pos => pos.Z < from.Z);
             else
-                ways.RemoveAll(pos => pos.Z > z);
+                buffer.RemoveAll(pos => pos.Z > from.Z);
         }
+
+
+
         private void FilterKingGuard(IBoardModel board, List<Pos> ways)
         {
             ways.RemoveAll(pos => !board.IsPalace(pos));

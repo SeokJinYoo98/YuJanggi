@@ -3,14 +3,27 @@ using System.Collections.Generic;
 namespace Yujanggi.Core.Rule
 {
     using Board;
-    using Match.Movement;
     using Domain;
+    using Match.Movement;
+    using System;
 
     public class MovementRule
     {
+
+        //
+        public void FindCandidateWays(
+            IBoardModel board,
+            Pos from,
+            List<Pos> buffer)
+        {
+            var piece = board.GetPiece(from);
+            if (!_rules.TryGetValue(piece.Type, out var rule))
+                throw new Exception("길찾기 타입 에러: " + piece.Type);
+
+            rule.FindWays(board, from, buffer);
+        }
+        //
         readonly Dictionary<PieceType, Movement> _rules;
-
-
         public MovementRule()
         {
             var kg = new KingGuardMovement();
@@ -26,14 +39,5 @@ namespace Yujanggi.Core.Rule
             };
         }
 
-        public List<Pos> CandidateWays(
-            IBoardModel board,
-            SelectionState selectPiece)
-        {
-            if (!_rules.TryGetValue(selectPiece.SelectedPiece.Type, out var rule))
-                return new List<Pos>();
-
-            return rule.FindWays(board, selectPiece);
-        }
     }
 }

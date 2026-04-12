@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
+using Yujanggi.Core.Match;
 using Yujanggi.Core.Rule;
 
 namespace Yujanggi.Runtime.Controller
@@ -21,7 +22,7 @@ namespace Yujanggi.Runtime.Controller
 
         private readonly IJanggiRule        _rule;
         private readonly IBoardModel        _boardModel;
-        private readonly SelectionState     _selection;
+        private Selection _sel;
         private readonly System.Random _rand = new();
 
         private readonly List<MoveCandidate> _candidates = new(17);
@@ -29,11 +30,12 @@ namespace Yujanggi.Runtime.Controller
 
         public AIController(IJanggiRule rule, IBoardModel board, PlayerTeam team, ICoroutineRunner runner)
         {
-            _runner = runner;
             Team        = team;
+            _runner     = runner;
+           
             _rule       = rule;
             _boardModel = board;
-            _selection  = new SelectionState();
+            _sel        = new Selection();
         }
         
         public bool TryThink()
@@ -57,12 +59,13 @@ namespace Yujanggi.Runtime.Controller
                     if (piece.Team != Team)
                         continue;
 
-                    _selection.Clear();
-                    _selection.Select(piece, from);
+                    _sel.Clear();
+                    _sel.FromPos = from;
 
-                    _rule.FindWays(_boardModel, _selection);
+                    _rule.FindWays(_boardModel, _sel);
 
-                    var movable = _selection.MovableCells;
+   
+                    var movable = _sel.LegalCells;
                     if (movable == null || movable.Count == 0)
                         continue;
 
@@ -101,11 +104,11 @@ namespace Yujanggi.Runtime.Controller
         }
         public void BindEvents(IGameInputHandler manager)
         {
-            OnMoveRequest += manager.HandleMoveRequest;
+            //OnMoveRequest += manager.HandleMoveRequest;
         }
         public void UnBindEvents(IGameInputHandler manager)
         {
-            OnMoveRequest -= manager.HandleMoveRequest;
+            //OnMoveRequest -= manager.HandleMoveRequest;
         }
 
         private readonly ICoroutineRunner _runner;

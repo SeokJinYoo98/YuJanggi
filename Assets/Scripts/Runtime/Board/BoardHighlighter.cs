@@ -17,7 +17,7 @@ namespace Yujanggi.Runtime.Board
 
             _pool = new ObjectPool<CellHighlighter>(
                 ()  => Instantiate(_prefab, transform),
-                obj => obj.Show(),
+                obj => obj.Show(true),
                 obj => obj.Hide(),
                 obj => Destroy(obj.gameObject),
                 false,
@@ -28,14 +28,14 @@ namespace Yujanggi.Runtime.Board
             for (int i = 0; i < 25; i++)
                 _pool.Release(_pool.Get());
         }
-        public void ShowHighlight(IReadOnlyList<Pos> cells)
+        public void ShowHighlight(IReadOnlyList<Pos> cells, bool isLegal)
         {
             int length = cells.Count;
             for (int i = 0; i < length; ++i)
             {
                 var pos = cells[i];
                 var highlight = _pool.Get();
-                
+                highlight.Show(isLegal);
                 highlight.MoveTo(new Vector3(pos.X, transform.position.y, pos.Z));
                 _active.Add(highlight);
             }

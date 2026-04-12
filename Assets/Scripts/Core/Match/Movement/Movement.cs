@@ -10,10 +10,15 @@ namespace Yujanggi.Core.Match.Movement
     { Block, Empty, Enemy, Team }
     public abstract class Movement
     {
-        // 나중에 누가 플레이언지 체크
+
+        //
+        public abstract void FindWays(
+            IBoardModel board,
+            Pos from,
+            List<Pos> buffer);
+        //
         private int Forward(PlayerTeam team)
-            => team == PlayerTeam.Cho ? 1 : -1;
-        
+            => team == PlayerTeam.Cho? 1 : -1;
         protected static readonly Pos[] Dirs =
         {
             Pos.Right,
@@ -25,8 +30,6 @@ namespace Yujanggi.Core.Match.Movement
             Pos.LeftUp,
             Pos.LeftDown
         };
-
-
         protected Pos ApplyStep(
             Step step,
             Pos pos)
@@ -44,10 +47,6 @@ namespace Yujanggi.Core.Match.Movement
             return new Pos(dir.X, dir.Z * Forward(team));
         }
 
-
-        public abstract List<Pos> FindWays(
-                IBoardModel board,
-                SelectionState selectPiece);
         protected static StepResult CheckCell(
             IBoardModel board,
             PlayerTeam team,

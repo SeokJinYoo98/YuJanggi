@@ -11,9 +11,10 @@ namespace Yujanggi.Runtime.Board
     {
         [SerializeField] private BoardHighlighter  _highlighter;
 
-        public void Highlight(in IReadOnlyList<Pos> movablePositions)
+        public void Highlight(IReadOnlyList<Pos> legalWays, IReadOnlyList<Pos> illegalWays)
         {
-            _highlighter.ShowHighlight(movablePositions);
+            _highlighter.ShowHighlight(legalWays, true);
+            _highlighter.ShowHighlight(illegalWays, false);
         }
         public void UnHighlight()
         {

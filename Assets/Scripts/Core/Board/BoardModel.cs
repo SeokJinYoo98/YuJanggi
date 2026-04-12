@@ -4,20 +4,18 @@ namespace Yujanggi.Core.Board
 {
     public interface IReadOnlyBoard
     {
-        bool IsInside(Pos pos);
-        bool HasPiece(Pos pos);
-        PieceModel GetPiece(Pos pos);
     }
     public interface IBoardModel : IReadOnlyBoard
     {
+
+        public int WIDTH { get; }
+        public int HEIGHT { get; }
         public Pos          GetKingPos(PlayerTeam team);
-        public int          WIDTH { get; }
-        public int          HEIGHT { get; }
-
+        bool                IsInside(Pos pos);
+        bool                HasPiece(Pos pos);
+        PieceModel          GetPiece(Pos pos);
         public bool         IsPalace(Pos pos);
-
         public void         SetPiece(Pos pos, PieceModel piece);
-
         public MoveRecord   DoMove(Pos from, Pos to);
         public void         UndoMove(in MoveRecord moveRecord);
     }

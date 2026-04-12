@@ -6,20 +6,21 @@ namespace Yujanggi.Core.Match.Movement
 {
     public class PatternMovement : Movement
     {
-        protected Step[][] _steps;
-        public override List<Pos> FindWays(
+        //
+        public override void FindWays(
             IBoardModel board,
-            SelectionState selectPiece)
+            Pos from,
+            List<Pos> buffer)
         {
-            List<Pos> ways = new();
-
+            var piece = board.GetPiece(from);
             foreach (var steps in _steps)
-                ProcessDirection(ways, board, selectPiece.SelectedPiece.Team, selectPiece.SelectedPos, steps);
-
-            return ways;
+                ProcessDirection(buffer, board, piece.Team, from, steps);
         }
+        //
+        protected Step[][] _steps;
+        
         private void ProcessDirection(
-            List<Pos> ways,
+            List<Pos> buffer,
             IBoardModel board,
             PlayerTeam team,
             Pos pos,
@@ -39,7 +40,7 @@ namespace Yujanggi.Core.Match.Movement
                 else
                 {
                     if (CanLand(board, team, dPos))
-                        ways.Add((dPos));
+                        buffer.Add((dPos));
                 }
             }
         }

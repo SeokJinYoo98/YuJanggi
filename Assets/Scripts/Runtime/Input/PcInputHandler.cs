@@ -14,17 +14,13 @@ namespace Yujanggi.Runtime.Input
 
         public event Action<Pos> OnBoardClicked;
 
-        private bool _canInput = false;
 
         private PlayerInputs _input;
         private PlayerInputs.PlayerActions _actions;
         private void OnPressPerformed(InputAction.CallbackContext context)
-        {
-            if (!_canInput) return;
-            OnBoardClicked?.Invoke(Clicked());
-        }
-        public void SetInputEnabled(bool enabled)
-            => _canInput = enabled;
+            => OnBoardClicked?.Invoke(Clicked());
+        
+
         void Awake()
         {
             _input = new PlayerInputs();

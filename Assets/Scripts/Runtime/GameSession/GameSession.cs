@@ -35,11 +35,14 @@ namespace Yujanggi.Runtime.GameSession
             var turn = Match.Turn;
             var events = Match.MatchEvent;
             turn.OnTurnChanged        += manager.HandleTurnChanged;
-            events.OnSelectionChanged += manager.HandleSelectionChanged;
             events.OnCheckOccurred    += manager.HandleCheckOccured;
             events.OnCheckReleased    += manager.HandleCheckReleased;
-            events.OnPieceMoved       += manager.HandlePieceMoved;
             events.OnGameEnded        += manager.HandleGameEnded;
+
+            events.OnPieceMoved       += manager.HandlePieceMoved;
+
+            _cho.OnMoveRequest += Match.TryMove;
+            _han.OnMoveRequest += Match.TryMove;
         }
         public void UnBindEvents(GameManager manager)
         {
@@ -51,11 +54,13 @@ namespace Yujanggi.Runtime.GameSession
             var turn = Match.Turn;
             var events = Match.MatchEvent;
             turn.OnTurnChanged        -= manager.HandleTurnChanged;
-            events.OnSelectionChanged -= manager.HandleSelectionChanged;
             events.OnCheckOccurred    -= manager.HandleCheckOccured;
             events.OnCheckReleased    -= manager.HandleCheckReleased;
             events.OnPieceMoved       -= manager.HandlePieceMoved;
             events.OnGameEnded        -= manager.HandleGameEnded;
+
+            _cho.OnMoveRequest -= Match.TryMove;
+            _han.OnMoveRequest -= Match.TryMove;
         }
         public MatchManager Match { get; }
 
@@ -98,9 +103,11 @@ namespace Yujanggi.Runtime.GameSession
         }
         public void     StartGame()
         {
+
+            Match.StartGame(_info.ChoFormation, _info.HanFormation);
             _cho.BeginTurn();
             _han.EndTurn();
-            Match.StartGame(_info.ChoFormation, _info.HanFormation);
+
         }
         public void     ResetGame()
         {
@@ -125,7 +132,7 @@ namespace Yujanggi.Runtime.GameSession
         {
             return type switch
             {
-                PlayerType.Local    => new LocalController(input, team),
+                PlayerType.Local    => new LocalController(match.Rule, match.Board, team, input),
                 PlayerType.AI       => new AIController(match.Rule, match.Board, team, runner),
                 _                   => throw new ArgumentOutOfRangeException()
             };

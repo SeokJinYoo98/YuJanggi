@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using Yujanggi.Core.Match;
 namespace Yujanggi.Core.Domain
 {
     public interface ICoroutineRunner
@@ -13,14 +15,12 @@ namespace Yujanggi.Core.Domain
     public enum GameModeType { Local, AI, Network }
     public interface IGameInputHandler
     {
-        public void HandleClickRequest(Pos pos);
-        public void HandleMoveRequest(Pos from, Pos to);
+        public void HandleSelectionChanged(int? id, IReadOnlyList<Pos> legal, IReadOnlyList<Pos> illegal);
 
     }
     public interface IInputHandler
     {
         public event Action<Pos> OnBoardClicked;
-        public void SetInputEnabled(bool enabled);
         public void RotateCamera(PlayerTeam team);
     }
     public interface IAIController
@@ -34,6 +34,7 @@ namespace Yujanggi.Core.Domain
 
     public interface IPlayerController
     {
+        public event Action<Pos, Pos> OnMoveRequest;
         public PlayerTeam Team { get; }
         public void BeginTurn();
         public void EndTurn();

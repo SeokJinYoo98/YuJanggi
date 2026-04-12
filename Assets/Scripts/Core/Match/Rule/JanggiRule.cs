@@ -7,47 +7,67 @@ namespace Yujanggi.Core.Rule
     public interface IJanggiRule
     {
         public void FindWays(
-           IBoardModel board,
-           SelectionState selectionState);
+            IBoardModel board, 
+            Selection       selection);
     }
     public class JanggiRule : IJanggiRule
     {
         private readonly MovementRule _movementRule;
         private readonly PalaceRule   _palaceRule;
 
-
-        private readonly List<Pos>  _legalMoveBuffer = new(35);
-        private SelectionState      _simulation;
-
+        private readonly List<Pos>    _candidatesBuffer  = new(20);
+        private readonly List<Pos>    _legalBuffer       = new(20);
+        private readonly List<Pos>    _illegalBuffer     = new(20);
+        private readonly List<Pos>    _kingInCheckBuffer = new(20);
+ 
         public JanggiRule()
         {
-            _simulation   = new();
-            _movementRule = new();
-            _palaceRule   = new();
-        }
-        public bool CanMove(IBoardModel board, Pos from, Pos to)
-        {
-            if (!board.HasPiece(from))
-                return false;
-
-            _simulation.Clear();
-            return IsLegalMove(board, from, to);
-        }
-        private bool IsLegalMove(IBoardModel board, Pos from, Pos to)
-        {
-            return true;
+            _movementRule   = new();
+            _palaceRule     = new();
         }
 
-        public void FindWays(
-            IBoardModel board,
-            SelectionState selectionState)
+        //
+        public bool IsLegalMove(IBoardModel board, Pos from, Pos to)
         {
-            if (!selectionState.HasSelection)
-                throw new Exception("셀렉션이 없는데 길을 왜 찾지?");
-            var candidates = FindCandidates(board, selectionState);
-            FilterLegalMoves(board, selectionState, candidates);
+            ClearBuffer();
+            FindCandidates(board, from, _candidatesBuffer);
+            FilterLegalMoves(board, from, _candidatesBuffer);
+            return _legalBuffer.Contains(to);
+        }
+        public void  FindWays(IBoardModel board, Selection selection)
+        {
+            ClearBuffer();
+            FindCandidates(board, selection.FromPos, _candidatesBuffer);
+            FilterLegalMoves(board, selection.FromPos, _candidatesBuffer);
+            selection.SetMovable(_legalBuffer, _illegalBuffer);
+        }
+        private void FindCandidates(IBoardModel board, Pos from, List<Pos> buffer)
+        {
+            _movementRule.FindCandidateWays(board, from, buffer);
+            _palaceRule.ApplyPalaceRule(board, from, buffer);
+        }
+        private void ClearBuffer()
+        {
+            _illegalBuffer.Clear();
+            _legalBuffer.Clear();
+            _candidatesBuffer.Clear();
+            _kingInCheckBuffer.Clear();
+        }
+        private void FilterLegalMoves(IBoardModel board, Pos from, List<Pos> targetPositions)
+        {
+            var piece = board.GetPiece(from);
 
-            selectionState.SetMovable(candidates);
+            foreach (var toPos in targetPositions)
+            {
+                var moveRecord = board.DoMove(from, toPos);
+
+                if (!IsKingInCheck(board, piece.Team))
+                    _legalBuffer.Add(toPos);
+                else 
+                    _illegalBuffer.Add(toPos);
+
+                board.UndoMove(moveRecord);
+            }
         }
         public bool IsKingInCheck(IBoardModel board, PlayerTeam team)
         {
@@ -63,19 +83,16 @@ namespace Yujanggi.Core.Rule
                         continue;
 
                     var piece = board.GetPiece(pos);
-
+    
                     // 내 말이면 검사할 필요 없음
                     if (piece.Team == team)
                         continue;
 
-                    _simulation.Clear();
-                    _simulation.Select(piece, pos);
-
-                    var ways = FindCandidates(board, _simulation);
-
-                    foreach (var way in ways)
+                    _kingInCheckBuffer.Clear();
+                    FindCandidates(board, pos, _kingInCheckBuffer);
+                    foreach (var way in _kingInCheckBuffer)
                     {
-                        if (way.X == kingPos.X && way.Z == kingPos.Z)
+                        if (way == kingPos)
                             return true;
                     }
                 }
@@ -83,8 +100,17 @@ namespace Yujanggi.Core.Rule
 
             return false;
         }
-        public int CntAnyLegalMove(IBoardModel board, PlayerTeam defence)
+        //
+        public bool CanMove(IBoardModel board, Pos from, Pos to)
         {
+            if (!board.HasPiece(from))
+                return false;
+
+            return IsLegalMove(board, from, to);
+        }
+        public int CountLegalMove(IBoardModel board, PlayerTeam defence)
+        {
+            
             for (int x = 0; x < board.WIDTH; ++x)
             {
                 for (int z = 0; z < board.HEIGHT; ++z)
@@ -95,45 +121,15 @@ namespace Yujanggi.Core.Rule
                     var piece = board.GetPiece(pos);
                     if (piece.Team != defence) continue;
 
-                    _simulation.Clear();
-                    _simulation.Select(piece, pos);
-
-                    var ways = FindCandidates(board, _simulation);
-                    FilterLegalMoves(board, _simulation, ways);
+                    ClearBuffer();
+                    FindCandidates(board, pos, _candidatesBuffer);
+                    FilterLegalMoves(board, pos, _candidatesBuffer);
                     
-                    if (0 < ways.Count)
-                        return ways.Count;      
+                    if (0 < _legalBuffer.Count)
+                        return _legalBuffer.Count;      
                 }
             }
             return 0;
-        }
-
-
-        private List<Pos> FindCandidates(IBoardModel board, SelectionState selectionState)
-        {
-            var candidates = _movementRule.CandidateWays(board, selectionState);
-            _palaceRule.ApplyPalaceRule(board, selectionState, candidates);
-            return candidates;
-        }
-        private void FilterLegalMoves(IBoardModel board, SelectionState selection, List<Pos> candidates)
-        {
-            var fromPos = selection.SelectedPos;
-            var myTeam = selection.SelectedPiece.Team;
-
-            _legalMoveBuffer.Clear();
-
-            foreach (var toPos in candidates)
-            {
-                var moveRecord = board.DoMove(fromPos, toPos);
-
-                if (!IsKingInCheck(board, myTeam))
-                    _legalMoveBuffer.Add(toPos);
-
-                board.UndoMove(moveRecord);
-            }
-
-            candidates.Clear();
-            candidates.AddRange(_legalMoveBuffer);
         }
     }
 }

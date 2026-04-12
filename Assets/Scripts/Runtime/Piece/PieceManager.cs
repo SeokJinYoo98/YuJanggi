@@ -42,7 +42,7 @@ namespace Yujanggi.Runtime.Piece
         }
         public void SpawnPieces(IBoardModel boardModel)
         {
-            int width = boardModel.WIDTH;
+            int width  = boardModel.WIDTH;
             int height = boardModel.HEIGHT;
 
             for (int x = 0; x < width; ++ x)

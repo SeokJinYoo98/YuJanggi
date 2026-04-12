@@ -6,20 +6,16 @@ namespace Yujanggi.Core.Match.Movement
 {
     public class CannonMovement : Movement
     {
-        Step[] _steps = new Step[] { Step.Up, Step.Down, Step.Left, Step.Right };
-
-        public override List<Pos> FindWays(
-            IBoardModel board,
-            SelectionState selectPiece)
+        //
+        public override void FindWays(IBoardModel board, Pos from, List<Pos> buffer)
         {
-            List<Pos> ways = new();
-            var team    = selectPiece.SelectedPiece.Team;
-            var start   = selectPiece.SelectedPos;
+            var piece = board.GetPiece(from);
+            var team = piece.Team;
 
             foreach (var step in _steps)
             {
                 bool bridge = false;
-                var dPos = start;
+                var dPos = from;
 
                 while (true)
                 {
@@ -35,9 +31,9 @@ namespace Yujanggi.Core.Match.Movement
                         if (result == StepResult.Empty)
                             continue;
 
-                        var piece = board.GetPiece(dPos);
+                        var otherPiece = board.GetPiece(dPos);
 
-                        if (piece.Type == PieceType.Cannon)
+                        if (otherPiece.Type == PieceType.Cannon)
                             break;
 
                         bridge = true;
@@ -46,23 +42,26 @@ namespace Yujanggi.Core.Match.Movement
 
                     if (result == StepResult.Empty)
                     {
-                        ways.Add(dPos);
+                        buffer.Add(dPos);
                         continue;
                     }
 
                     if (result == StepResult.Enemy)
                     {
-                        var piece = board.GetPiece(dPos);
+                        var otherPiece = board.GetPiece(dPos);
 
-                        if (piece.Type != PieceType.Cannon)
-                            ways.Add(dPos);
+                        if (otherPiece.Type != PieceType.Cannon)
+                            buffer.Add(dPos);
                     }
 
                     break;
                 }
             }
 
-            return ways;
         }
+        //
+        Step[] _steps = new Step[] { Step.Up, Step.Down, Step.Left, Step.Right };
+        
+
     }
 }
