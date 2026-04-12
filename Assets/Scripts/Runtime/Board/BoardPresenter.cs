@@ -14,7 +14,7 @@ namespace Yujanggi.Runtime.Board
     {
         private BoardView _boardView;
         [SerializeField] private PieceManager _pieces;
-
+        private bool _isHighlighted = false;
         private Pos _garbageChoPos = new Pos(0, -1);
         private Pos _garbagehanPos = new Pos(0, -2);
 
@@ -52,11 +52,15 @@ namespace Yujanggi.Runtime.Board
         }
         public void  UnHighlight()
         {
+            if (!_isHighlighted) return;
+
             _pieces.UnHighlight();
             _boardView.UnHighlight();
+            _isHighlighted = false;
         }
         public void  Highlight(int id, IReadOnlyList<Pos> legalWays, IReadOnlyList<Pos> illegalWays)
         {
+            _isHighlighted = true;
             _pieces.HighlightPiece(id);
             _boardView.Highlight(legalWays, illegalWays);
         }

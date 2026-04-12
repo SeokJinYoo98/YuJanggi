@@ -94,7 +94,7 @@ namespace Yujanggi.Runtime.Controller
                 return false;
 
             OnMoveRequest?.Invoke(_selection.FromPos, toPos);
-
+            ClearSelection();
             return true;
         }
 
@@ -119,6 +119,7 @@ namespace Yujanggi.Runtime.Controller
 
         private void ClearSelection()
         {
+            _selection.FromPos = Pos.Invalid;
             _selection.Clear();
             OnSelectionChanged?.Invoke(null, _selection.LegalCells, _selection.IllegalCells);
         }

@@ -121,7 +121,6 @@ namespace Yujanggi.Runtime.Game
         }
         public void HandlePieceMoved(MoveRecord record)
         {
-            _boardPresenter.UnHighlight();
             var moveId = record.MovedPiece.Id;
             var to = record.To;
             _boardPresenter.MovePiece(moveId, to);
@@ -139,11 +138,16 @@ namespace Yujanggi.Runtime.Game
 
         public void HandleTurnChanged(PlayerTeam turn)
         {
+
             _matchUI.UpdateTurn(turn);
 
             var participant = _session.BeginNextTurn(turn);
             if (participant is LocalController)
+            {
+               
                 _audio.PlaySfxOneShot(JanggiSfx.TurnAlert);
+            }
+               
         }
         #endregion
         #region ControllerRequestHandlers
