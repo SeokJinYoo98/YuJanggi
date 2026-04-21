@@ -39,6 +39,14 @@ namespace Yujanggi.Core.Match
         public  Score        Score { get; }
         public  BoardModel   Board { get; }
         public  JanggiRule   Rule { get; }
+        public MatchManager(Turn turn, Record record, Score score, BoardModel board, JanggiRule rule)
+        {
+            Turn   = turn;
+            Record = record;
+            Score  = score;
+            Board  = board;
+            Rule   = rule;
+        }
         public MatchManager(float maxTime = 30f)
         {
             Turn        = new Turn(maxTime);

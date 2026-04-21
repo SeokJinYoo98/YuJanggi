@@ -24,14 +24,15 @@ namespace Yujanggi.Runtime.GameSession
     public class GameSession
     {
         public GameSession(
-            GameSessionInfo info, 
+            GameSessionInfo sessionInfo,
+            GameSessionView sessionView,
+            MatchManager sessionMatch,
             PcInputHandler localInput, 
-            ICoroutineRunner runner,
-            GameSessionView sessionView)
+            ICoroutineRunner runner)
         {
             _sessionView = sessionView;
-            _info        = info;
-            _match        = new(info.TurnTime);
+            _info        = sessionInfo;
+            _match       = sessionMatch;
             SetCamera(localInput);
 
             _cho = CreateController(_info.Cho, PlayerTeam.Cho, localInput, _match, runner);
