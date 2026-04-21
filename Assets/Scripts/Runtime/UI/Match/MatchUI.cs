@@ -23,6 +23,8 @@ namespace Yujanggi.Runtime.UI
         private bool _janggunAnim = false;
         private float _speed = 10;
 
+        int _totalCnt = 0;
+        int _currView = 0;
         public void BindEvents(IMatchManager match)
         {
             var turn = match.Turn;
@@ -64,10 +66,14 @@ namespace Yujanggi.Runtime.UI
             }
           
         }
-        public void UpdateRecord((int now, int cnt) record)
+
+        public void UpdateRecord(int current, int totalCnt)
         {
-            _recordText.text = $"{record.now}수:{record.cnt}수";
+            _currView = current;
+            _totalCnt = totalCnt;
+            _recordText.text = $"{_currView}수:{_totalCnt}수";
         }
+
         public void UpdateTurn(PlayerTeam turn)
         {
             char turnChar;

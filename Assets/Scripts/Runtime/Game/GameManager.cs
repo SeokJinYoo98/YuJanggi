@@ -1,17 +1,17 @@
-
 using UnityEngine;
+using UnityEngine.SceneManagement;
 namespace Yujanggi.Runtime.Game
 {
     using Audio;
     using Board;
-    using Core.Match;
     using GameSession;
     using Input;
     using UI;
-    using UnityEngine.SceneManagement;
-    using Yujanggi.Core.Board;
-    using Yujanggi.Core.Domain;
-    using Yujanggi.Core.Rule;
+    using Core.Board;
+    using Core.Domain;
+    using Core.Rule;
+    using Core.Match;
+    using Yujanggi.Core.Replay;
 
     public class GameManager : MonoBehaviour
     {
@@ -31,8 +31,9 @@ namespace Yujanggi.Runtime.Game
             var sessionInfo   = GetSessionInfo();
             var sessionView   = CreateSessionView();
             var sessionMatch  = CreateMatch(sessionInfo.TurnTime, out var record);
-
             _session          = CreateSession(in sessionInfo, sessionView, sessionMatch, _localInput, _runner);
+
+            ReplayManager replay = new ReplayManager(record);
         }
         private void Start()
         {
@@ -47,9 +48,7 @@ namespace Yujanggi.Runtime.Game
         {
             _session.Update(Time.deltaTime);
         }
-
-
-        private GameSession CreateSession(
+        private GameSession      CreateSession(
             in GameSessionInfo sessionInfo,
             GameSessionView    sessionView,
             MatchManager       sessionMatch,
@@ -58,7 +57,7 @@ namespace Yujanggi.Runtime.Game
         {
             return new GameSession(sessionInfo, sessionView, sessionMatch, localInput, runner);
         }
-        private MatchManager CreateMatch(float turnTime, out Record record)
+        private MatchManager     CreateMatch(float turnTime, out Record record)
         {
             record         = new Record();
             var turn       = new Turn(turnTime);
@@ -67,9 +66,9 @@ namespace Yujanggi.Runtime.Game
             var janggiRule = new JanggiRule();
             return new MatchManager(turn, record, score, boardModel, janggiRule);
         }
-        private GameSessionView CreateSessionView()
+        private GameSessionView  CreateSessionView()
             => new GameSessionView(_boardPresenter, _resultUI, _matchUI, _audio);
-        private GameSessionInfo GetSessionInfo()
+        private GameSessionInfo  GetSessionInfo()
             => GameSessionStore.Current;
         
         #region UIRequestHandlers        

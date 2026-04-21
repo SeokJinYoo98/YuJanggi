@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Rule;
@@ -47,15 +46,7 @@ namespace Yujanggi.Core.Match
             Board  = board;
             Rule   = rule;
         }
-        public MatchManager(float maxTime = 30f)
-        {
-            Turn        = new Turn(maxTime);
-            Record      = new Record();
-            Score       = new Score();
-            Board       = new BoardModel();
-            Rule        = new JanggiRule();
-        }
-        public void  TryMove(Pos from, Pos to)
+        public void     TryMove(Pos from, Pos to)
         {
             if (!Board.IsInside(from) || !Board.IsInside(to))
                 return;
@@ -67,8 +58,7 @@ namespace Yujanggi.Core.Match
                 ExecuteMove(from, to);
             return;
         }
-
-        public void StartGame(Formation cho, Formation han)
+        public void     StartGame(Formation cho, Formation han)
         {
             Record.StartGame();
             Score.StartGame();
@@ -76,19 +66,19 @@ namespace Yujanggi.Core.Match
             BoardInitializer.SetUpPieces(Board, cho, han);
             Turn.StartGame(PlayerTeam.Cho);
         }
-        public void ResetGame(Formation cho, Formation han)
+        public void     ResetGame(Formation cho, Formation han)
         {
             StartGame(cho, han);
         }
-        public void BindEvents()
+        public void     BindEvents()
         {
             Turn.OnTurnEnd += Handicap;
         }
-        public void UnBindEvents()
+        public void     UnBindEvents()
         {
             Turn.OnTurnEnd -= Handicap;
         }
-        public bool TryUnDo(out MoveContext ctx)
+        public bool     TryUnDo(out MoveContext ctx)
         {
             if (!Record.TryPop(out ctx))
                 return false;
@@ -109,7 +99,7 @@ namespace Yujanggi.Core.Match
 
             return true;
         }
-        public void Handicap()
+        public void     Handicap()
         {
             Record.Push(MoveContext.Handicap);
             Turn.NextTurn();

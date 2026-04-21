@@ -10,10 +10,6 @@ using Yujanggi.Runtime.GameSession;
 
 namespace Yujanggi.Runtime.Controller
 {
-    public class AIPolicy
-    {
-
-    }
     public class AIController : IPlayerController, IAIController
     {
         public PlayerTeam Team { get; }

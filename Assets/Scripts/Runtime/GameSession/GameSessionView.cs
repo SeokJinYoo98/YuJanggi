@@ -86,9 +86,9 @@ namespace Yujanggi.Runtime.GameSession
             if (isLocal) _audio.PlaySfxOneShot(JanggiSfx.TurnAlert);
             _matchUI.UpdateTurn(team);
         }
-        public void OnGameEnded(bool isLocalWin, in GameResultInfo info)
+        public void OnGameEnded(bool winnerIsLocal, in GameResultInfo info)
         {
-            if (isLocalWin) _audio.PlaySfxOneShot(JanggiSfx.Win);
+            if (winnerIsLocal) _audio.PlaySfxOneShot(JanggiSfx.Win);
             else _audio.PlaySfxOneShot(JanggiSfx.Lose);
 
             _resultUI.Show();
