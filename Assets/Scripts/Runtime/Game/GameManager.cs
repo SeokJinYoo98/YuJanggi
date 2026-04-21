@@ -4,14 +4,17 @@ namespace Yujanggi.Runtime.Game
 {
     using Audio;
     using Board;
-    using GameSession;
-    using Input;
-    using UI;
     using Core.Board;
     using Core.Domain;
-    using Core.Rule;
     using Core.Match;
+    using Core.Rule;
+    using GameSession;
+    using Input;
+    using System;
+    using UI;
     using Yujanggi.Core.Replay;
+    using Yujanggi.Runtime.Controller;
+    using static Unity.Collections.Unicode;
 
     public class GameManager : MonoBehaviour
     {
@@ -31,12 +34,19 @@ namespace Yujanggi.Runtime.Game
             var sessionInfo   = GetSessionInfo();
             var sessionView   = CreateSessionView();
             var sessionMatch  = CreateMatch(sessionInfo.TurnTime, out var record);
-            _session          = CreateSession(in sessionInfo, sessionView, sessionMatch, _localInput, _runner);
+
+            var sessionCho    = CreateController(sessionInfo.Cho, PlayerTeam.Cho, _localInput, sessionMatch, _runner);
+            var sessionHan    = CreateController(sessionInfo.Han, PlayerTeam.Han, _localInput, sessionMatch, _runner);
+
+            _session          = CreateSession(in sessionInfo, sessionView, sessionMatch, sessionCho, sessionHan);
 
             ReplayManager replay = new ReplayManager(record);
+
+            SetCamera(in sessionInfo);
         }
         private void Start()
         {
+
             _session.BindEvents();
             _session.StartGame();
         }
@@ -48,16 +58,29 @@ namespace Yujanggi.Runtime.Game
         {
             _session.Update(Time.deltaTime);
         }
+
+        private void SetCamera(in GameSessionInfo sessionInfo)
+        {
+            if (sessionInfo.Mode == GameModeType.Local) return;
+            if (sessionInfo.Cho  == PlayerType.Local) return;
+
+            _localInput.RotateCamera(PlayerTeam.Han);
+        }
+        private GameSessionInfo GetSessionInfo()
+            => GameSessionStore.Current;
+
+
+        #region SessionFactory       
         private GameSession      CreateSession(
             in GameSessionInfo sessionInfo,
             GameSessionView    sessionView,
             MatchManager       sessionMatch,
-            PcInputHandler     localInput,
-            ICoroutineRunner   runner)
+            IPlayerController  cho,
+            IPlayerController  han)
         {
-            return new GameSession(sessionInfo, sessionView, sessionMatch, localInput, runner);
+            return new GameSession(sessionInfo, sessionView, sessionMatch, cho, han);
         }
-        private MatchManager     CreateMatch(float turnTime, out Record record)
+        private MatchManager      CreateMatch(float turnTime, out Record record)
         {
             record         = new Record();
             var turn       = new Turn(turnTime);
@@ -66,11 +89,25 @@ namespace Yujanggi.Runtime.Game
             var janggiRule = new JanggiRule();
             return new MatchManager(turn, record, score, boardModel, janggiRule);
         }
-        private GameSessionView  CreateSessionView()
+        private GameSessionView   CreateSessionView()
             => new GameSessionView(_boardPresenter, _resultUI, _matchUI, _audio);
-        private GameSessionInfo  GetSessionInfo()
-            => GameSessionStore.Current;
-        
+        private IPlayerController CreateController(
+           PlayerType type,
+           PlayerTeam team,
+           PcInputHandler input,
+           MatchManager match,
+           ICoroutineRunner runner)
+        {
+            // 매치를 참조하지 말고 그냥 룰과 보드를 보내주는 방향으로
+            return type switch
+            {
+                PlayerType.Local => new LocalController(match.Rule, match.Board, team, input),
+                PlayerType.AI => new AIController(match.Rule, match.Board, team, runner),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+        #endregion
+
         #region UIRequestHandlers        
         public void HandleGiveUp()
         {

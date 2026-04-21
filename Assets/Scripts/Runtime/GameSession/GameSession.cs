@@ -7,7 +7,7 @@ using Yujanggi.Runtime.Input;
 
 namespace Yujanggi.Runtime.GameSession
 {
-    public struct GameSessionInfo
+    public struct       GameSessionInfo
     {
         public GameModeType     Mode;
         public PlayerType       Cho;
@@ -20,25 +20,22 @@ namespace Yujanggi.Runtime.GameSession
     {
         public static GameSessionInfo Current;
     }
-    public class GameSession
+    public class        GameSession
     {
         public GameSession(
             GameSessionInfo  sessionInfo,
             GameSessionView  sessionView,
             MatchManager     sessionMatch,
-            PcInputHandler   localInput, 
-            ICoroutineRunner runner)
+            IPlayerController cho,
+            IPlayerController han)
         {
-            _sessionView = sessionView;
+            _sessionView        = sessionView;
             _sessionInfo        = sessionInfo;
             _sessionMatch       = sessionMatch;
-
-            SetCamera(localInput);
-
-            _playerCho = CreateController(_sessionInfo.Cho, PlayerTeam.Cho, localInput, _sessionMatch, runner);
-            _playerHan = CreateController(_sessionInfo.Han, PlayerTeam.Han, localInput, _sessionMatch, runner);
+            _playerCho          = cho;
+            _playerHan          = han;
         }
-        
+
         public void BindEvents()
         {
             _sessionMatch.BindEvents();
@@ -114,26 +111,19 @@ namespace Yujanggi.Runtime.GameSession
         private void              HandleGameEnded(GameResultInfo info)
         {
             EndGame();
-            var isLocalWin = GetPlayer(info.Winner) is LocalController;
-            _sessionView.OnGameEnded(isLocalWin, in info);
+            var winnerIsLocal = GetPlayer(info.Winner) is LocalController;
+            _sessionView.OnGameEnded(winnerIsLocal, in info);
         }
         private void              EndGame()
         {
             DisableAllControllers();
             _sessionMatch.Turn.SetTurn(TurnType.End);
-  
         }
         private void              DisableAllControllers()
         {
             _playerCho.EndTurn(); _playerHan.EndTurn();
         }
-        private void              SetCamera(PcInputHandler localInput)
-        {
-            if (_sessionInfo.Mode == GameModeType.Local) return;
-            if (_sessionInfo.Cho  == PlayerType.Local) return;
 
-            localInput.RotateCamera(PlayerTeam.Han);
-        }
         private IPlayerController BeginNextTurn(PlayerTeam turn)
         {
             DisableAllControllers();
@@ -147,19 +137,6 @@ namespace Yujanggi.Runtime.GameSession
         }
         private IPlayerController GetPlayer(PlayerTeam team)
             => team == PlayerTeam.Cho ? _playerCho : _playerHan;
-        private IPlayerController CreateController(
-           PlayerType type,
-           PlayerTeam team,
-           PcInputHandler input,
-           MatchManager match,
-           ICoroutineRunner runner)
-        {
-            return type switch
-            {
-                PlayerType.Local => new LocalController(match.Rule, match.Board, team, input),
-                PlayerType.AI => new AIController(match.Rule, match.Board, team, runner),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-        }
+
     }
 }
