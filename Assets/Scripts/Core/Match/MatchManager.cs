@@ -8,7 +8,6 @@ namespace Yujanggi.Core.Match
 {
     public class MatchEvents
     {
-        // Local AI Network 분리
         public event Action<MoveRecord>               OnPieceMoved;
         public event Action<PlayerTeam>               OnCheckOccurred;
         public event Action                           OnCheckReleased;
@@ -40,9 +39,15 @@ namespace Yujanggi.Core.Match
         public  Score        Score { get; }
         public  BoardModel   Board { get; }
         public  JanggiRule   Rule { get; }
-
-
-        public void TryMove(Pos from, Pos to)
+        public MatchManager(float maxTime = 30f)
+        {
+            Turn        = new Turn(maxTime);
+            Record      = new Record();
+            Score       = new Score();
+            Board       = new BoardModel();
+            Rule        = new JanggiRule();
+        }
+        public void  TryMove(Pos from, Pos to)
         {
             if (!Board.IsInside(from) || !Board.IsInside(to))
                 return;
@@ -54,34 +59,7 @@ namespace Yujanggi.Core.Match
                 ExecuteMove(from, to);
             return;
         }
-        private void ExecuteMove(Pos from, Pos to)
-        {
-            var record    = Board.DoMove(from, to);
 
-            var otherTeam = Turn.CurrentTeam == PlayerTeam.Cho
-                ? PlayerTeam.Han
-                : PlayerTeam.Cho;
-
-            if (record.IsCapture)
-                Score.ApplyScore(otherTeam, record.CapturedPiece.Type);
-
-            var isJanggun = IsCheck(otherTeam);
-            var isEnd     = HasAnyLegalMove(otherTeam);
-
-            var ctx = new MoveContext(record, isJanggun, isEnd);
-
-            Record.Push(ctx);
-            MatchEvent.PieceMoved(record);
-            Turn.NextTurn();
-        }
-        public MatchManager(float maxTime=30f)
-        {
-            Turn        = new Turn(maxTime);
-            Record      = new Record();
-            Score       = new Score();
-            Board       = new BoardModel();
-            Rule        = new JanggiRule(); 
-        }
         public void StartGame(Formation cho, Formation han)
         {
             Record.StartGame();
@@ -128,21 +106,19 @@ namespace Yujanggi.Core.Match
             Record.Push(MoveContext.Handicap);
             Turn.NextTurn();
         }
- 
         public GameResultInfo GiveUp()
         {
             Turn.SetTurn(TurnType.End);
             GameResultInfo info;
-            info.Winner = Turn.CurrentTeam;
-            info.MoveCnt = Record.MoveCount;
-            info.Type = GameResult.GiveUp;
+            info.Winner     = Turn.CurrentTeam;
+            info.MoveCnt    = Record.MoveCount;
+            info.Type       = GameResult.GiveUp;
             return info;
         }
-        public void Update(float deltaTime)
+        public void  Update(float deltaTime)
         {
             Turn.Update(deltaTime);
         }
-
         private bool IsCheck(PlayerTeam otherTeam)
         {
             var result = Rule.IsKingInCheck(Board, otherTeam);
@@ -151,7 +127,6 @@ namespace Yujanggi.Core.Match
                 MatchEvent.CheckReleased();
             return result;
         }
-
         private bool HasAnyLegalMove(PlayerTeam otherTeam)
         {
             int cnt = Rule.CountLegalMove(Board, otherTeam);
@@ -166,5 +141,26 @@ namespace Yujanggi.Core.Match
 
             return cnt != 0;
         }
+        private void ExecuteMove(Pos from, Pos to)
+        {
+            var record = Board.DoMove(from, to);
+
+            var otherTeam = Turn.CurrentTeam == PlayerTeam.Cho
+                ? PlayerTeam.Han
+                : PlayerTeam.Cho;
+
+            if (record.IsCapture)
+                Score.ApplyScore(otherTeam, record.CapturedPiece.Type);
+
+            var isJanggun = IsCheck(otherTeam);
+            var isEnd = HasAnyLegalMove(otherTeam);
+
+            var ctx = new MoveContext(record, isJanggun, isEnd);
+
+            Record.Push(ctx);
+            MatchEvent.PieceMoved(record);
+            Turn.NextTurn();
+        }
+
     }
 }

@@ -7,6 +7,7 @@ using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Match;
 using Yujanggi.Core.Rule;
+using Yujanggi.Runtime.GameSession;
 
 namespace Yujanggi.Runtime.Controller
 {
@@ -102,11 +103,11 @@ namespace Yujanggi.Runtime.Controller
             int random = _rand.Next(0, selected.Ways.Count);
             return selected.Ways[random];
         }
-        public void BindEvents(IGameInputHandler manager)
+        public void BindEvents(GameSessionView view)
         {
             //OnMoveRequest += manager.HandleMoveRequest;
         }
-        public void UnBindEvents(IGameInputHandler manager)
+        public void UnBindEvents(GameSessionView view)
         {
             //OnMoveRequest -= manager.HandleMoveRequest;
         }
@@ -137,7 +138,6 @@ namespace Yujanggi.Runtime.Controller
             _runner.Stop(_aiRoutine);
             _aiRoutine = null;
         }
-
         private readonly struct MoveCandidate
         {
             public PieceModel Piece { get; }

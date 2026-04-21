@@ -7,10 +7,6 @@ using Yujanggi.Runtime.Input;
 
 namespace Yujanggi.Runtime.GameSession
 {
-    using Game;
-    using System.Collections;
-    using UnityEngine;
-
     public struct GameSessionInfo
     {
         public GameModeType     Mode;
@@ -24,63 +20,91 @@ namespace Yujanggi.Runtime.GameSession
     {
         public static GameSessionInfo Current;
     }
+
     public class GameSession
     {
-        public void BindEvents(GameManager manager)
+        public GameSession(
+            GameSessionInfo info, 
+            PcInputHandler localInput, 
+            ICoroutineRunner runner,
+            GameSessionView sessionView)
         {
-            _cho.BindEvents(manager);
-            _han.BindEvents(manager);
-
-            Match.BindEvents();
-            var turn = Match.Turn;
-            var events = Match.MatchEvent;
-            turn.OnTurnChanged        += manager.HandleTurnChanged;
-            events.OnCheckOccurred    += manager.HandleCheckOccured;
-            events.OnCheckReleased    += manager.HandleCheckReleased;
-            events.OnGameEnded        += manager.HandleGameEnded;
-
-            events.OnPieceMoved       += manager.HandlePieceMoved;
-
-            _cho.OnMoveRequest += Match.TryMove;
-            _han.OnMoveRequest += Match.TryMove;
-        }
-        public void UnBindEvents(GameManager manager)
-        {
-            _cho.UnBindEvents(manager);
-            _han.UnBindEvents(manager);
-
-            Match.UnBindEvents();
-
-            var turn = Match.Turn;
-            var events = Match.MatchEvent;
-            turn.OnTurnChanged        -= manager.HandleTurnChanged;
-            events.OnCheckOccurred    -= manager.HandleCheckOccured;
-            events.OnCheckReleased    -= manager.HandleCheckReleased;
-            events.OnPieceMoved       -= manager.HandlePieceMoved;
-            events.OnGameEnded        -= manager.HandleGameEnded;
-
-            _cho.OnMoveRequest -= Match.TryMove;
-            _han.OnMoveRequest -= Match.TryMove;
-        }
-        public MatchManager Match { get; }
-
-        private readonly IPlayerController   _cho;
-        private readonly IPlayerController   _han;
-        private readonly GameSessionInfo     _info;
-
-        public IPlayerController GetPlayer(PlayerTeam team)
-            => team == PlayerTeam.Cho ? _cho : _han;
-
-        public GameSession(GameSessionInfo info, PcInputHandler localInput, ICoroutineRunner runner)
-        {
-            _info = info;
-            Match = new(info.TurnTime);
+            _sessionView = sessionView;
+            _info        = info;
+            _match        = new(info.TurnTime);
             SetCamera(localInput);
 
-            _cho = CreateController(_info.Cho, PlayerTeam.Cho, localInput, Match, runner);
-            _han = CreateController(_info.Han, PlayerTeam.Han, localInput, Match, runner);
+            _cho = CreateController(_info.Cho, PlayerTeam.Cho, localInput, _match, runner);
+            _han = CreateController(_info.Han, PlayerTeam.Han, localInput, _match, runner);
         }
-        public IPlayerController BeginNextTurn(PlayerTeam turn)
+        
+        public void              BindEvents()
+        {
+            _match.BindEvents();
+            _sessionView.BindEvents(_match);
+            _cho.BindEvents(_sessionView);
+            _han.BindEvents(_sessionView);
+
+            var events = _match.MatchEvent;
+            var turn = _match.Turn;
+            turn.OnTurnChanged        += HandleTurnChanged;
+            events.OnGameEnded        += HandleGameEnded;
+
+            _cho.OnMoveRequest += _match.TryMove;
+            _han.OnMoveRequest += _match.TryMove;
+        }
+        public void              UnBindEvents()
+        {
+            _match.UnBindEvents();
+            _sessionView.UnBindEvents(_match);
+            _cho.UnBindEvents(_sessionView);
+            _han.UnBindEvents(_sessionView);
+
+            var events  = _match.MatchEvent;
+            var turn    = _match.Turn; 
+            turn.OnTurnChanged        -= HandleTurnChanged;
+            events.OnGameEnded        -= HandleGameEnded;
+
+            _cho.OnMoveRequest -= _match.TryMove;
+            _han.OnMoveRequest -= _match.TryMove;
+        }
+        public void              Handicap()
+            => _match.Handicap();
+        public void              GiveUp()
+        {
+            DisableAllControllers();
+            var info = _match.GiveUp();
+            _sessionView.ShowResultUI(in info);
+        }
+        public void              StartGame()
+        {
+            _match.StartGame(_info.ChoFormation, _info.HanFormation);
+            _cho.BeginTurn();
+            _han.EndTurn();
+            _sessionView.StartGame(_match.Board);
+        }
+        public void              ResetGame()
+        {
+            StartGame();
+            var board = _match.Board;
+            _sessionView.ResetGame(board);
+        }
+        public void              UnDo()
+        {
+            if (!_match.TryUnDo(out var ctx)) return;
+            if (ctx.IsHandicap)
+                return;
+            _sessionView.UnDo(in ctx);
+        }
+        public void              Update(float deltaTime)
+            => _match.Update(deltaTime);
+
+        private readonly MatchManager       _match;
+        private readonly IPlayerController  _cho;
+        private readonly IPlayerController  _han;
+        private readonly GameSessionInfo    _info;
+        private readonly GameSessionView    _sessionView;
+        private IPlayerController BeginNextTurn(PlayerTeam turn)
         {
             DisableAllControllers();
             if (turn == PlayerTeam.Cho)
@@ -91,52 +115,49 @@ namespace Yujanggi.Runtime.GameSession
             _han.BeginTurn();
             return _han;
         }
-        public          GameResultInfo GiveUp()
+        private void              HandleTurnChanged(PlayerTeam next)
         {
+            var nextPlayer = BeginNextTurn(next);
+            bool isLocal = nextPlayer is LocalController;
+            _sessionView.OnTurnChanged(next, isLocal);
+        }
+        private void              HandleGameEnded(GameResultInfo info)
+        {
+            EndGame();
+            var isLocalWin = GetPlayer(info.Winner) is LocalController;
+            _sessionView.OnGameEnded(isLocalWin, in info);
+        }
+        private void              EndGame()
+        {
+            _match.Turn.SetTurn(TurnType.End);
             DisableAllControllers();
-            return Match.GiveUp();
         }
-        public void     DisableAllControllers()
+        private IPlayerController GetPlayer(PlayerTeam team)
+            => team == PlayerTeam.Cho ? _cho : _han;
+        private void              DisableAllControllers()
         {
-            _cho.EndTurn();
-            _han.EndTurn();
+            _cho.EndTurn(); _han.EndTurn();
         }
-        public void     StartGame()
-        {
-
-            Match.StartGame(_info.ChoFormation, _info.HanFormation);
-            _cho.BeginTurn();
-            _han.EndTurn();
-
-        }
-        public void     ResetGame()
-        {
-            _cho.BeginTurn();
-            _han.EndTurn();
-            Match.ResetGame(_info.ChoFormation, _info.HanFormation);
-        }
-        private void    SetCamera(PcInputHandler localInput)
+        private void              SetCamera(PcInputHandler localInput)
         {
             if (_info.Mode == GameModeType.Local) return;
-
-            if (_info.Cho == PlayerType.Local) return;
+            if (_info.Cho  == PlayerType.Local) return;
 
             localInput.RotateCamera(PlayerTeam.Han);
         }
-        private static IPlayerController CreateController(
-               PlayerType type,
-               PlayerTeam team,
-               PcInputHandler input,
-               MatchManager match,
-               ICoroutineRunner runner)
+        private IPlayerController CreateController(
+           PlayerType type,
+           PlayerTeam team,
+           PcInputHandler input,
+           MatchManager match,
+           ICoroutineRunner runner)
         {
             return type switch
             {
-                PlayerType.Local    => new LocalController(match.Rule, match.Board, team, input),
-                PlayerType.AI       => new AIController(match.Rule, match.Board, team, runner),
-                _                   => throw new ArgumentOutOfRangeException()
+                PlayerType.Local => new LocalController(match.Rule, match.Board, team, input),
+                PlayerType.AI => new AIController(match.Rule, match.Board, team, runner),
+                _ => throw new ArgumentOutOfRangeException()
             };
         }
     }
-
 }

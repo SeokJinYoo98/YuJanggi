@@ -35,9 +35,9 @@ namespace Yujanggi.Runtime.UI
         }
         public void UnBindEvents(IMatchManager match)
         {
-            var turn = match.Turn;
-            var record = match.Record;
-            var score = match.Score;
+            var turn    = match.Turn;
+            var record  = match.Record;
+            var score   = match.Score;
 
             turn.OnTimeChanged         -= UpdateTimer;
             record.OnRecordChanged     -= UpdateRecord;

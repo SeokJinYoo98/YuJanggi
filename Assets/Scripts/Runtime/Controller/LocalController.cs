@@ -4,6 +4,7 @@ using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Rule;
 using UnityEngine;
+using Yujanggi.Runtime.GameSession;
 namespace Yujanggi.Runtime.Controller
 {
     public class LocalController : IPlayerController, ILocalPlayer
@@ -29,16 +30,16 @@ namespace Yujanggi.Runtime.Controller
 
             _isTurn = false;
         }
-        public void BindEvents(IGameInputHandler manager)
+        public void BindEvents(GameSessionView view)
         {
             _input.OnBoardClicked += HandleClick;
-            OnSelectionChanged    += manager.HandleSelectionChanged;
+            OnSelectionChanged    += view.HandleSelectionChanged;
         }
 
-        public void UnBindEvents(IGameInputHandler manager)
+        public void UnBindEvents(GameSessionView view)
         {
             _input.OnBoardClicked -= HandleClick;
-            OnSelectionChanged    -= manager.HandleSelectionChanged;
+            OnSelectionChanged    -= view.HandleSelectionChanged;
         }
 
         public void BeginTurn()

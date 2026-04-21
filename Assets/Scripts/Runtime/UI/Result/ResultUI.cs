@@ -9,7 +9,7 @@ namespace Yujanggi.Runtime.UI
         [SerializeField] private TMP_Text _winner;
         [SerializeField] private TMP_Text _cnt;
         [SerializeField] private TMP_Text _result;
-        public void EndGame(GameResultInfo result)
+        public void EndGame(in GameResultInfo result)
         {
             if (result.Winner == PlayerTeam.Cho)
             {
@@ -24,7 +24,7 @@ namespace Yujanggi.Runtime.UI
             _result.text = "[외통수]";
             _cnt.text = result.MoveCnt.ToString();
         }
-        public void GiveUp(GameResultInfo result)
+        public void GiveUp(in GameResultInfo result)
         {
             if (result.Winner == PlayerTeam.Cho)
             {

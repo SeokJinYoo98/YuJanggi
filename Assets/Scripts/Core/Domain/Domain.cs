@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Yujanggi.Core.Match;
+using Yujanggi.Runtime.GameSession;
 namespace Yujanggi.Core.Domain
 {
     public interface ICoroutineRunner
@@ -13,11 +14,8 @@ namespace Yujanggi.Core.Domain
     public enum Formation { HEHE, EHEH, EHHE, HEEH }
     public enum PlayerType { Local, AI, Network }
     public enum GameModeType { Local, AI, Network }
-    public interface IGameInputHandler
-    {
-        public void HandleSelectionChanged(int? id, IReadOnlyList<Pos> legal, IReadOnlyList<Pos> illegal);
 
-    }
+    
     public interface IInputHandler
     {
         public event Action<Pos> OnBoardClicked;
@@ -38,8 +36,9 @@ namespace Yujanggi.Core.Domain
         public PlayerTeam Team { get; }
         public void BeginTurn();
         public void EndTurn();
-        public void BindEvents(IGameInputHandler manager);
-        public void UnBindEvents(IGameInputHandler manager);
+        public void BindEvents(GameSessionView view);
+        public void UnBindEvents(GameSessionView view);
+
     }
 
     public enum BoardActionResult
