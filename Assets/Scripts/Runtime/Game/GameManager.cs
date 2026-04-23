@@ -14,7 +14,6 @@ namespace Yujanggi.Runtime.Game
     using UI;
     using Yujanggi.Core.Replay;
     using Yujanggi.Runtime.Controller;
-    using static Unity.Collections.Unicode;
 
     public class GameManager : MonoBehaviour
     {
@@ -46,7 +45,6 @@ namespace Yujanggi.Runtime.Game
         }
         private void Start()
         {
-
             _session.BindEvents();
             _session.StartGame();
         }
@@ -107,7 +105,6 @@ namespace Yujanggi.Runtime.Game
             };
         }
         #endregion
-
         #region UIRequestHandlers        
         public void HandleGiveUp()
         {

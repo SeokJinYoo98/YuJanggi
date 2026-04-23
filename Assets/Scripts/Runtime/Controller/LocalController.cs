@@ -15,9 +15,9 @@ namespace Yujanggi.Runtime.Controller
         private readonly IBoardModel    _board;
         private readonly IJanggiRule    _rule;
 
-        private Selection               _selection;
+        private readonly Selection      _selection;
 
-        private event Action<int?, IReadOnlyList<Pos>, IReadOnlyList<Pos>> OnSelectionChanged;
+        public event Action<int?, IReadOnlyList<Pos>, IReadOnlyList<Pos>> OnSelectionChanged;
         public event Action<Pos, Pos> OnMoveRequest;
         public LocalController(IJanggiRule rule, IBoardModel board, PlayerTeam team, IInputHandler input)
         {
@@ -30,16 +30,14 @@ namespace Yujanggi.Runtime.Controller
 
             _isTurn = false;
         }
-        public void BindEvents(GameSessionView view)
+        public void BindEvents()
         {
             _input.OnBoardClicked += HandleClick;
-            OnSelectionChanged    += view.HandleSelectionChanged;
         }
 
-        public void UnBindEvents(GameSessionView view)
+        public void UnBindEvents()
         {
             _input.OnBoardClicked -= HandleClick;
-            OnSelectionChanged    -= view.HandleSelectionChanged;
         }
 
         public void BeginTurn()
@@ -104,7 +102,16 @@ namespace Yujanggi.Runtime.Controller
             if (pos == _selection.FromPos) return false;
             if (!_board.HasPiece(pos)) return false;
 
-            SelectPiece(pos);
+            if (!TryGetOwnPiece(pos, out var piece))
+            {
+                ClearSelection();
+                return false;
+            }
+            _selection.Clear();
+            _selection.FromPos = pos;
+            _rule.FindWays(_board, _selection);
+
+            OnSelectionChanged?.Invoke(piece.Id, _selection.LegalCells, _selection.IllegalCells);
             return true;
         }
 

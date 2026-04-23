@@ -25,7 +25,7 @@ namespace Yujanggi.Runtime.UI
 
         int _totalCnt = 0;
         int _currView = 0;
-        public void BindEvents(IMatchManager match)
+        public void BindEvents(IMatchViewData match)
         {
             var turn = match.Turn;
             var record = match.Record;
@@ -35,7 +35,7 @@ namespace Yujanggi.Runtime.UI
             record.OnRecordChanged     += UpdateRecord;
             score.OnScoreChanged       += UpdateScore;
         }
-        public void UnBindEvents(IMatchManager match)
+        public void UnBindEvents(IMatchViewData match)
         {
             var turn    = match.Turn;
             var record  = match.Record;

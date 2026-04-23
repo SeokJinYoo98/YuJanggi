@@ -11,7 +11,6 @@ namespace Yujanggi.Runtime.GameSession
     public enum SessionDisplayMode { Live, Replay }
     public class GameSessionView
     {
-        public SessionDisplayMode DisplayMode { get; private set; } = SessionDisplayMode.Live;
         public GameSessionView(
             BoardPresenter  board,
             ResultUI        resultUI,
@@ -23,64 +22,39 @@ namespace Yujanggi.Runtime.GameSession
             _matchUI    = matchUI;
             _audio      = audio;
         }
-
-        public void BindEvents(IMatchManager match)
+        public void BindUI(IMatchViewData match)
         {
-            var events = match.MatchEvent;
-
-            events.OnCheckOccurred    += HandleCheckOccured;
-            events.OnCheckReleased    += HandleCheckReleased;
-            events.OnPieceMoved       += HandlePieceMoved;
-
-            _matchUI.BindEvents(match);
-        }
-        public void UnBindEvents(IMatchManager match)
-        {
-            var events = match.MatchEvent;
-
-            events.OnCheckOccurred    -= HandleCheckOccured;
-            events.OnCheckReleased    -= HandleCheckReleased;
-            events.OnPieceMoved       -= HandlePieceMoved;
-
             _matchUI.UnBindEvents(match);
         }
-        // Local
-        public void SetDisplayMode(SessionDisplayMode mode)
-            => DisplayMode = mode;
-        public void HandleSelectionChanged(int? id, IReadOnlyList<Pos> legal, IReadOnlyList<Pos> illegal)
+        public void UnBindUI(IMatchViewData match)
+        {
+            _matchUI.BindEvents(match);
+        }
+        public void SelectionChanged(int? pieceId, IReadOnlyList<Pos> legalCells, IReadOnlyList<Pos> illegalCells)
         {
             _board.UnHighlight();
-
-            if (!id.HasValue)
-                return;
-
-            _board.Highlight(id.Value, legal, illegal);
+            if (!pieceId.HasValue) return;
             _audio.PlaySfxOneShot(JanggiSfx.Select);
+            _board.Highlight(pieceId.Value, legalCells, illegalCells);
         }
-        // 통합
-        public void HandlePieceMoved(MoveRecord record)
+        public void PieceMoved(in MoveRecord record)
         {
-            if (DisplayMode != SessionDisplayMode.Live) return;
-
             _board.MovePiece(record.MovedPiece.Id, record.To);
-
             if (record.IsCapture)
             {
                 _board.PlaceCapturedPiece(record.CapturedPiece.Id, record.CapturedPiece.Team);
                 _audio.PlaySfxOneShot(JanggiSfx.Capture);
                 return;
             }
-
             _audio.PlaySfxOneShot(JanggiSfx.Move);
         }
-        public void HandleCheckOccured(PlayerTeam team)
+        public void CheckOccured(PlayerTeam team)
         {
             _audio.PlaySfxOneShot(JanggiSfx.Check);
             _matchUI.PlayJanggun(team);
         }
-        public void HandleCheckReleased()
+        public void CheckReleased() 
             => _audio.PlaySfxOneShot(JanggiSfx.UnCheck);
-        // 기타
         public void OnTurnChanged(PlayerTeam team, bool isLocal)
         {
             if (isLocal) _audio.PlaySfxOneShot(JanggiSfx.TurnAlert);
@@ -91,14 +65,9 @@ namespace Yujanggi.Runtime.GameSession
             if (winnerIsLocal) _audio.PlaySfxOneShot(JanggiSfx.Win);
             else _audio.PlaySfxOneShot(JanggiSfx.Lose);
 
-            _resultUI.Show();
-            _resultUI.EndGame(info);
+            ShowResultUI(in info);
         }
-        public void ShowResultUI(in GameResultInfo info)
-        {
-            _resultUI.Show();
-            _resultUI.GiveUp(info);
-        }
+
         public void ResetGame(IBoardModel boardModel)
         {
             _resultUI.Hide();
@@ -131,5 +100,10 @@ namespace Yujanggi.Runtime.GameSession
         private readonly ResultUI       _resultUI;
         private readonly MatchUI        _matchUI;
         private readonly AudioManager   _audio;
+        private void ShowResultUI(in GameResultInfo info)
+        {
+            _resultUI.Show();
+            _resultUI.GiveUp(info);
+        }
     }
 }

@@ -33,7 +33,8 @@ namespace Yujanggi.Runtime.Controller
             _boardModel = board;
             _sel        = new Selection();
         }
-        
+        public void BindEvents() { }
+        public void UnBindEvents() { }
         public bool TryThink()
         {
             _candidates.Clear();
@@ -97,14 +98,6 @@ namespace Yujanggi.Runtime.Controller
             var selected = _candidates[_selectedCandidateIndex];
             int random = _rand.Next(0, selected.Ways.Count);
             return selected.Ways[random];
-        }
-        public void BindEvents(GameSessionView view)
-        {
-            //OnMoveRequest += manager.HandleMoveRequest;
-        }
-        public void UnBindEvents(GameSessionView view)
-        {
-            //OnMoveRequest -= manager.HandleMoveRequest;
         }
 
         private readonly ICoroutineRunner _runner;

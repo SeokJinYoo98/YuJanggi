@@ -6,6 +6,19 @@ using Yujanggi.Core.Match;
 using Yujanggi.Runtime.GameSession;
 namespace Yujanggi.Core.Domain
 {
+    public struct GameSessionInfo
+    {
+        public GameModeType Mode;
+        public PlayerType Cho;
+        public Formation ChoFormation;
+        public PlayerType Han;
+        public Formation HanFormation;
+        public float TurnTime;
+    }
+    public static class GameSessionStore
+    {
+        public static GameSessionInfo Current;
+    }
     public interface ICoroutineRunner
     {
         Coroutine Run(IEnumerator routine);
@@ -23,11 +36,11 @@ namespace Yujanggi.Core.Domain
     }
     public interface IAIController
     {
-        public event Action<Pos, Pos> OnMoveRequest;
+
     }
     public interface ILocalPlayer
     {
-
+        public event Action<int?, IReadOnlyList<Pos>, IReadOnlyList<Pos>> OnSelectionChanged;
     }
 
     public interface IPlayerController
@@ -36,9 +49,8 @@ namespace Yujanggi.Core.Domain
         public PlayerTeam Team { get; }
         public void BeginTurn();
         public void EndTurn();
-        public void BindEvents(GameSessionView view);
-        public void UnBindEvents(GameSessionView view);
-
+        public void BindEvents();
+        public void UnBindEvents();
     }
 
     public enum BoardActionResult

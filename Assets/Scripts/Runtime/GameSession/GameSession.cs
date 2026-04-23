@@ -1,25 +1,9 @@
-using System;
-
+using System.Collections.Generic;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Match;
-using Yujanggi.Runtime.Controller;
-using Yujanggi.Runtime.Input;
 
 namespace Yujanggi.Runtime.GameSession
 {
-    public struct       GameSessionInfo
-    {
-        public GameModeType     Mode;
-        public PlayerType       Cho;
-        public Formation        ChoFormation;
-        public PlayerType       Han;
-        public Formation        HanFormation;
-        public float            TurnTime;
-    }
-    public static class GameSessionStore
-    {
-        public static GameSessionInfo Current;
-    }
     public class        GameSession
     {
         public GameSession(
@@ -38,33 +22,45 @@ namespace Yujanggi.Runtime.GameSession
 
         public void BindEvents()
         {
+            _playerCho.BindEvents(); 
+            _playerHan.BindEvents();
             _sessionMatch.BindEvents();
-            _sessionView.BindEvents(_sessionMatch);
-            _playerCho.BindEvents(_sessionView);
-            _playerHan.BindEvents(_sessionView);
+            _sessionView.BindUI(_sessionMatch);
 
             var events = _sessionMatch.MatchEvent;
-            var turn = _sessionMatch.Turn;
-            turn.OnTurnChanged        += HandleTurnChanged;
             events.OnGameEnded        += HandleGameEnded;
+            events.OnTurnChanged      += HandleTurnChanged;
+            events.OnPieceMoved       += HandlePieceMoved;
+            events.OnCheckOccurred    += HandleCheckOccured;
+            events.OnCheckReleased    += HandleCheckReleased;
 
-            _playerCho.OnMoveRequest += _sessionMatch.TryMove;
-            _playerHan.OnMoveRequest += _sessionMatch.TryMove;
+            _playerCho.OnMoveRequest  += HandleTryMove;
+            _playerHan.OnMoveRequest  += HandleTryMove;
+            if (_playerCho is ILocalPlayer local1)
+                local1.OnSelectionChanged += HandleSelectionChanged;
+            if (_playerHan is ILocalPlayer local2)
+                local2.OnSelectionChanged += HandleSelectionChanged;
         }
         public void UnBindEvents()
         {
+            _playerCho.UnBindEvents(); 
+            _playerHan.UnBindEvents();
             _sessionMatch.UnBindEvents();
-            _sessionView.UnBindEvents(_sessionMatch);
-            _playerCho.UnBindEvents(_sessionView);
-            _playerHan.UnBindEvents(_sessionView);
+            _sessionView.UnBindUI(_sessionMatch);
 
             var events  = _sessionMatch.MatchEvent;
-            var turn    = _sessionMatch.Turn; 
-            turn.OnTurnChanged        -= HandleTurnChanged;
+            events.OnTurnChanged      -= HandleTurnChanged;
             events.OnGameEnded        -= HandleGameEnded;
+            events.OnPieceMoved       -= HandlePieceMoved;
+            events.OnCheckOccurred    -= HandleCheckOccured;
+            events.OnCheckReleased    -= HandleCheckReleased;
 
-            _playerCho.OnMoveRequest -= _sessionMatch.TryMove;
-            _playerHan.OnMoveRequest -= _sessionMatch.TryMove;
+            _playerCho.OnMoveRequest -= HandleTryMove;
+            _playerHan.OnMoveRequest -= HandleTryMove;
+            if (_playerCho is ILocalPlayer local1)
+                local1.OnSelectionChanged -= HandleSelectionChanged;
+            if (_playerHan is ILocalPlayer local2)
+                local2.OnSelectionChanged -= HandleSelectionChanged;
         }
         public void Handicap()
             => _sessionMatch.Handicap();
@@ -72,7 +68,7 @@ namespace Yujanggi.Runtime.GameSession
         {
             DisableAllControllers();
             var info = _sessionMatch.GiveUp();
-            _sessionView.ShowResultUI(in info);
+            HandleGameEnded(info);
         }
         public void StartGame()
         {
@@ -97,33 +93,51 @@ namespace Yujanggi.Runtime.GameSession
         public void Update(float deltaTime)
             => _sessionMatch.Update(deltaTime);
 
+        #region 멤버변수
         private readonly IPlayerController  _playerCho;
         private readonly IPlayerController  _playerHan;
         private readonly GameSessionInfo    _sessionInfo;
         private readonly GameSessionView    _sessionView;
         private readonly MatchManager       _sessionMatch;
+        private SessionDisplayMode _mode = SessionDisplayMode.Live;
+        #endregion
+
+        private void              HandleTryMove(Pos from, Pos to)
+        {
+            _sessionMatch.TryMove(from, to);
+        }
+        private void              HandleCheckReleased()
+        {
+            _sessionView.CheckReleased();
+        }
+        private void              HandleCheckOccured(PlayerTeam team)
+        {
+            _sessionView.CheckOccured(team);
+        }
+        private void              HandlePieceMoved(MoveRecord record)
+        {
+            _sessionView.PieceMoved(in record);
+        }
+        private void              HandleSelectionChanged(int? pieceId, IReadOnlyList<Pos> legalCells, IReadOnlyList<Pos> illegalCells)
+        {
+            _sessionView.SelectionChanged(pieceId, legalCells, illegalCells);
+        }
         private void              HandleTurnChanged(PlayerTeam next)
         {
             var nextPlayer = BeginNextTurn(next);
-            bool isLocal = nextPlayer is LocalController;
+            bool isLocal = nextPlayer is ILocalPlayer;
             _sessionView.OnTurnChanged(next, isLocal);
         }
         private void              HandleGameEnded(GameResultInfo info)
         {
-            EndGame();
-            var winnerIsLocal = GetPlayer(info.Winner) is LocalController;
-            _sessionView.OnGameEnded(winnerIsLocal, in info);
-        }
-        private void              EndGame()
-        {
             DisableAllControllers();
-            _sessionMatch.Turn.SetTurn(TurnType.End);
+            var winnerIsLocal = GetPlayer(info.Winner) is ILocalPlayer;
+            _sessionView.OnGameEnded(winnerIsLocal, in info);
         }
         private void              DisableAllControllers()
         {
             _playerCho.EndTurn(); _playerHan.EndTurn();
         }
-
         private IPlayerController BeginNextTurn(PlayerTeam turn)
         {
             DisableAllControllers();

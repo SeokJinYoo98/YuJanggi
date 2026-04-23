@@ -11,7 +11,7 @@ namespace Yujanggi.Core.Match
         public event Action<PlayerTeam>               OnCheckOccurred;
         public event Action                           OnCheckReleased;
         public event Action<GameResultInfo>           OnGameEnded;
-
+        public event Action<PlayerTeam>               OnTurnChanged;
         public void PieceMoved(MoveRecord record)
             => OnPieceMoved?.Invoke(record);
         public void CheckOccurred(PlayerTeam team)
@@ -20,17 +20,23 @@ namespace Yujanggi.Core.Match
             => OnCheckReleased?.Invoke();
         public void GameEnded(GameResultInfo info)
             => OnGameEnded?.Invoke(info);
+        public void TurnChanged(PlayerTeam next)
+            => OnTurnChanged?.Invoke(next);
     }
-    public interface IMatchManager
+    public interface IMatchViewData
     {
         public Turn         Turn { get; }
         public JanggiRule   Rule { get; }
         public Record       Record { get; }
         public Score        Score { get; }
+    }
+    public interface IMatchManager
+    {
+
         public BoardModel   Board { get; }
         public MatchEvents  MatchEvent { get; }
     }
-    public class MatchManager : IMatchManager
+    public class MatchManager : IMatchManager, IMatchViewData
     {
         public  MatchEvents  MatchEvent { get; } = new();
         public  Turn         Turn { get; }
@@ -70,14 +76,18 @@ namespace Yujanggi.Core.Match
         {
             StartGame(cho, han);
         }
-        public void     BindEvents()
-        {
-            Turn.OnTurnEnd += Handicap;
-        }
         public void     UnBindEvents()
         {
-            Turn.OnTurnEnd -= Handicap;
+            this.Turn.OnTurnChanged  -= TurnChanged;
+            this.Turn.OnTurnEnd      -= Handicap;
+
         }
+        public void     BindEvents()
+        {
+            this.Turn.OnTurnChanged  += TurnChanged;
+            this.Turn.OnTurnEnd      += Handicap;
+        }
+
         public bool     TryUnDo(out MoveContext ctx)
         {
             if (!Record.TryPop(out ctx))
@@ -117,6 +127,9 @@ namespace Yujanggi.Core.Match
         {
             Turn.Update(deltaTime);
         }
+
+
+
         private bool IsCheck(PlayerTeam otherTeam)
         {
             var result = Rule.IsKingInCheck(Board, otherTeam);
@@ -152,12 +165,16 @@ namespace Yujanggi.Core.Match
 
             var isJanggun = IsCheck(otherTeam);
             var isEnd = HasAnyLegalMove(otherTeam);
-
+            if (isEnd) Turn.SetTurn(TurnType.End);
             var ctx = new MoveContext(record, isJanggun, isEnd);
 
             Record.Push(ctx);
             MatchEvent.PieceMoved(record);
             Turn.NextTurn();
+        }
+        private void TurnChanged(PlayerTeam next)
+        {
+            this.MatchEvent.TurnChanged(next);
         }
 
     }

@@ -15,6 +15,9 @@ namespace Yujanggi.Core.Match
     public class Turn
     {
         public event Action<PlayerTeam> OnTurnChanged;
+        public event Action<(PlayerTeam team, int time)> OnTimeChanged;
+        public event Action OnTurnEnd;
+
         public PlayerTeam CurrentTeam { get; private set; }
         public TurnType   TurnState { get; private set; }
         public bool IsEnd => TurnState == TurnType.End;
@@ -59,8 +62,7 @@ namespace Yujanggi.Core.Match
         private float           _timer = 0;
         private float           _turnTime = 30;
         private readonly float  _maxTurnTime = 30;
-        public event Action<(PlayerTeam team, int time)> OnTimeChanged;
-        public event Action OnTurnEnd;
+
         public void Update(float deltaTime)
         {
             if (TurnState != TurnType.Select && TurnState != TurnType.Attack)
