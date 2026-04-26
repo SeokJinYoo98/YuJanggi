@@ -12,7 +12,6 @@ namespace Yujanggi.Runtime.Game
     using Input;
     using System;
     using UI;
-    using Yujanggi.Core.Replay;
     using Yujanggi.Runtime.Controller;
 
     public class GameManager : MonoBehaviour
@@ -39,7 +38,7 @@ namespace Yujanggi.Runtime.Game
 
             _session          = CreateSession(in sessionInfo, sessionView, sessionMatch, sessionCho, sessionHan);
 
-            ReplayManager replay = new ReplayManager(record);
+            //ReplayManager replay = new ReplayManager(record);
 
             SetCamera(in sessionInfo);
         }
@@ -71,7 +70,7 @@ namespace Yujanggi.Runtime.Game
         #region SessionFactory       
         private GameSession      CreateSession(
             in GameSessionInfo sessionInfo,
-            GameSessionView    sessionView,
+            GameSessionPresenter    sessionView,
             MatchManager       sessionMatch,
             IPlayerController  cho,
             IPlayerController  han)
@@ -87,8 +86,8 @@ namespace Yujanggi.Runtime.Game
             var janggiRule = new JanggiRule();
             return new MatchManager(turn, record, score, boardModel, janggiRule);
         }
-        private GameSessionView   CreateSessionView()
-            => new GameSessionView(_boardPresenter, _resultUI, _matchUI, _audio);
+        private GameSessionPresenter   CreateSessionView()
+            => new GameSessionPresenter(_boardPresenter, _resultUI, _matchUI, _audio);
         private IPlayerController CreateController(
            PlayerType type,
            PlayerTeam team,
@@ -131,6 +130,18 @@ namespace Yujanggi.Runtime.Game
             _audio.PlayButton();
             _session.UnBindEvents();
             SceneManager.LoadScene("LobbyScene");
+        }
+        public void HandleReplayForward()
+        {
+            Debug.Log("Replay F");
+            _audio.PlayButton();
+            _session.StepForward();
+        }
+        public void HandleReplayBackward()
+        {
+            Debug.Log("Replay B");
+            _audio.PlayButton();
+            _session.StepBackward();
         }
         #endregion
     }

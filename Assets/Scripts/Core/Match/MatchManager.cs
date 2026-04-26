@@ -118,7 +118,7 @@ namespace Yujanggi.Core.Match
         {
             Turn.SetTurn(TurnType.End);
             GameResultInfo info;
-            info.Winner     = Turn.CurrentTeam;
+            info.Loser     = Turn.CurrentTeam;
             info.MoveCnt    = Record.MoveCount;
             info.Type       = GameResult.GiveUp;
             return info;
@@ -146,7 +146,7 @@ namespace Yujanggi.Core.Match
                 GameResultInfo info;
                 info.MoveCnt = Record.MoveCount;
                 info.Type = GameResult.CheckMate;
-                info.Winner = Turn.CurrentTeam;
+                info.Loser = Turn.CurrentTeam;
                 MatchEvent.GameEnded(info);
             }
 

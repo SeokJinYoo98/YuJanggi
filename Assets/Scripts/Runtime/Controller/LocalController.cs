@@ -16,7 +16,7 @@ namespace Yujanggi.Runtime.Controller
         private readonly IJanggiRule    _rule;
 
         private readonly Selection      _selection;
-
+        public bool IsLocal() => true;
         public event Action<int?, IReadOnlyList<Pos>, IReadOnlyList<Pos>> OnSelectionChanged;
         public event Action<Pos, Pos> OnMoveRequest;
         public LocalController(IJanggiRule rule, IBoardModel board, PlayerTeam team, IInputHandler input)

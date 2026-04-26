@@ -1,66 +1,60 @@
-using System.Collections.Generic;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Match;
 
+
 namespace Yujanggi.Runtime.GameSession
 {
-    public class        GameSession
+    using Replay;
+    public class GameSession
     {
+        #region public Field F
         public GameSession(
             GameSessionInfo  sessionInfo,
-            GameSessionView  sessionView,
+            GameSessionPresenter  sessionView,
             MatchManager     sessionMatch,
             IPlayerController cho,
             IPlayerController han)
         {
-            _sessionView        = sessionView;
+            _sessionPresenter        = sessionView;
             _sessionInfo        = sessionInfo;
             _sessionMatch       = sessionMatch;
             _playerCho          = cho;
             _playerHan          = han;
+            _sessionReplay      = new ReplayManager(_sessionMatch.Record);
         }
-
         public void BindEvents()
         {
-            _playerCho.BindEvents(); 
-            _playerHan.BindEvents();
+            BindReplayEvents();
             _sessionMatch.BindEvents();
-            _sessionView.BindUI(_sessionMatch);
 
             var events = _sessionMatch.MatchEvent;
+            _sessionPresenter.BindLiveEvents(events, _playerCho, _playerHan);
+            _sessionPresenter.BindUI(_sessionMatch);
+
             events.OnGameEnded        += HandleGameEnded;
             events.OnTurnChanged      += HandleTurnChanged;
-            events.OnPieceMoved       += HandlePieceMoved;
-            events.OnCheckOccurred    += HandleCheckOccured;
-            events.OnCheckReleased    += HandleCheckReleased;
 
+            _playerCho.BindEvents();
+            _playerHan.BindEvents();
             _playerCho.OnMoveRequest  += HandleTryMove;
             _playerHan.OnMoveRequest  += HandleTryMove;
-            if (_playerCho is ILocalPlayer local1)
-                local1.OnSelectionChanged += HandleSelectionChanged;
-            if (_playerHan is ILocalPlayer local2)
-                local2.OnSelectionChanged += HandleSelectionChanged;
         }
         public void UnBindEvents()
         {
-            _playerCho.UnBindEvents(); 
-            _playerHan.UnBindEvents();
+            UnBindReplayEvents();
             _sessionMatch.UnBindEvents();
-            _sessionView.UnBindUI(_sessionMatch);
 
             var events  = _sessionMatch.MatchEvent;
+            _sessionPresenter.UnBindLiveEvents(events, _playerCho, _playerHan);
+            _sessionPresenter.UnBindUI(_sessionMatch);
+
             events.OnTurnChanged      -= HandleTurnChanged;
             events.OnGameEnded        -= HandleGameEnded;
-            events.OnPieceMoved       -= HandlePieceMoved;
-            events.OnCheckOccurred    -= HandleCheckOccured;
-            events.OnCheckReleased    -= HandleCheckReleased;
 
+            _playerCho.UnBindEvents();
+            _playerHan.UnBindEvents();
             _playerCho.OnMoveRequest -= HandleTryMove;
             _playerHan.OnMoveRequest -= HandleTryMove;
-            if (_playerCho is ILocalPlayer local1)
-                local1.OnSelectionChanged -= HandleSelectionChanged;
-            if (_playerHan is ILocalPlayer local2)
-                local2.OnSelectionChanged -= HandleSelectionChanged;
         }
         public void Handicap()
             => _sessionMatch.Handicap();
@@ -75,64 +69,50 @@ namespace Yujanggi.Runtime.GameSession
             _sessionMatch.StartGame(_sessionInfo.ChoFormation, _sessionInfo.HanFormation);
             _playerCho.BeginTurn();
             _playerHan.EndTurn();
-            _sessionView.StartGame(_sessionMatch.Board);
+            _sessionPresenter.StartGame(_sessionMatch.Board);
         }
         public void ResetGame()
         {
             StartGame();
             var board = _sessionMatch.Board;
-            _sessionView.ResetGame(board);
+            _sessionPresenter.ResetGame(board);
         }
         public void UnDo()
         {
             if (!_sessionMatch.TryUnDo(out var ctx)) return;
             if (ctx.IsHandicap)
                 return;
-            _sessionView.UnDo(in ctx);
+            _sessionPresenter.UnDo(in ctx);
         }
         public void Update(float deltaTime)
             => _sessionMatch.Update(deltaTime);
-
-        #region 멤버변수
-        private readonly IPlayerController  _playerCho;
-        private readonly IPlayerController  _playerHan;
-        private readonly GameSessionInfo    _sessionInfo;
-        private readonly GameSessionView    _sessionView;
-        private readonly MatchManager       _sessionMatch;
-        private SessionDisplayMode _mode = SessionDisplayMode.Live;
         #endregion
 
+        #region private Field Member
+        private readonly IPlayerController      _playerCho;
+        private readonly IPlayerController      _playerHan;
+        private readonly GameSessionInfo        _sessionInfo;
+        private readonly GameSessionPresenter   _sessionPresenter;
+        private readonly MatchManager           _sessionMatch;
+        private readonly ReplayManager          _sessionReplay;
+        #endregion
+
+        #region private Field F
         private void              HandleTryMove(Pos from, Pos to)
         {
             _sessionMatch.TryMove(from, to);
-        }
-        private void              HandleCheckReleased()
-        {
-            _sessionView.CheckReleased();
-        }
-        private void              HandleCheckOccured(PlayerTeam team)
-        {
-            _sessionView.CheckOccured(team);
-        }
-        private void              HandlePieceMoved(MoveRecord record)
-        {
-            _sessionView.PieceMoved(in record);
-        }
-        private void              HandleSelectionChanged(int? pieceId, IReadOnlyList<Pos> legalCells, IReadOnlyList<Pos> illegalCells)
-        {
-            _sessionView.SelectionChanged(pieceId, legalCells, illegalCells);
         }
         private void              HandleTurnChanged(PlayerTeam next)
         {
             var nextPlayer = BeginNextTurn(next);
             bool isLocal = nextPlayer is ILocalPlayer;
-            _sessionView.OnTurnChanged(next, isLocal);
+            _sessionPresenter.OnTurnChanged(next, isLocal);
         }
         private void              HandleGameEnded(GameResultInfo info)
         {
             DisableAllControllers();
-            var winnerIsLocal = GetPlayer(info.Winner) is ILocalPlayer;
-            _sessionView.OnGameEnded(winnerIsLocal, in info);
+            var loserIsLocal = GetPlayer(info.Loser).IsLocal();
+            _sessionPresenter.OnGameEnded(loserIsLocal, in info);
         }
         private void              DisableAllControllers()
         {
@@ -151,6 +131,37 @@ namespace Yujanggi.Runtime.GameSession
         }
         private IPlayerController GetPlayer(PlayerTeam team)
             => team == PlayerTeam.Cho ? _playerCho : _playerHan;
+        #endregion
 
+        #region Replay
+        private void BindReplayEvents()
+        {
+            _sessionReplay.OnReplayEntered += HandleEnterReplay;
+            _sessionReplay.OnReplayExited  += HandleExitReplay;
+        }
+        private void UnBindReplayEvents()
+        {
+            _sessionReplay.OnReplayEntered -= HandleEnterReplay;
+            _sessionReplay.OnReplayExited  -= HandleExitReplay;
+        }
+        public void StepForward()
+        {
+
+        }
+        public void StepBackward()
+        {
+
+        
+        }
+        private void HandleEnterReplay()
+        {
+            DisableAllControllers();
+
+        }
+        private void HandleExitReplay()
+        {
+
+        }
+        #endregion
     }
 }

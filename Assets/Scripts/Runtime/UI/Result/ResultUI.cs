@@ -11,7 +11,7 @@ namespace Yujanggi.Runtime.UI
         [SerializeField] private TMP_Text _result;
         public void EndGame(in GameResultInfo result)
         {
-            if (result.Winner == PlayerTeam.Cho)
+            if (result.Loser == PlayerTeam.Cho)
             {
                 _winner.color = Color.green;
                 _winner.text = "초";
@@ -26,7 +26,7 @@ namespace Yujanggi.Runtime.UI
         }
         public void GiveUp(in GameResultInfo result)
         {
-            if (result.Winner == PlayerTeam.Cho)
+            if (result.Loser == PlayerTeam.Cho)
             {
                 _winner.color = Color.red;
                 _winner.text = "한";

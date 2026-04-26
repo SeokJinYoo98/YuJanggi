@@ -1,0 +1,146 @@
+using System.Collections.Generic;
+using Yujanggi.Core.Board;
+using Yujanggi.Core.Domain;
+using Yujanggi.Core.Match;
+using Yujanggi.Runtime.Audio;
+using Yujanggi.Runtime.Board;
+using Yujanggi.Runtime.UI;
+
+namespace Yujanggi.Runtime.GameSession
+{
+
+    public class GameSessionPresenter
+    {
+        public GameSessionPresenter(
+            BoardPresenter  board,
+            ResultUI        resultUI,
+            MatchUI         matchUI,
+            AudioManager    audio)
+        {
+            _board      = board;
+            _resultUI   = resultUI;
+            _matchUI    = matchUI;
+            _audio      = audio;
+        }
+        #region Live
+        public void  BindLiveEvents(MatchEvents match, IPlayerController cho, IPlayerController han)
+        {
+            match.OnCheckOccurred += HandleCheckOccured;
+            match.OnCheckReleased += HandleCheckReleased;
+            match.OnPieceMoved    += HandlePieceMoved;
+            
+            if (cho.IsLocal())
+            {
+                ILocalPlayer c = (ILocalPlayer) cho;
+                c.OnSelectionChanged += HandleSelectionChanged;
+            }
+            if (han.IsLocal())
+            {
+                ILocalPlayer h = (ILocalPlayer)han;
+                h.OnSelectionChanged += HandleSelectionChanged;
+            }
+        }
+        public void  UnBindLiveEvents(MatchEvents match, IPlayerController cho, IPlayerController han)
+        {
+            match.OnCheckOccurred -= HandleCheckOccured;
+            match.OnCheckReleased -= HandleCheckReleased;
+            match.OnPieceMoved    -= HandlePieceMoved;
+
+            if (cho.IsLocal())
+            {
+                ILocalPlayer c = (ILocalPlayer)cho;
+                c.OnSelectionChanged -= HandleSelectionChanged;
+            }
+            if (han.IsLocal())
+            {
+                ILocalPlayer h = (ILocalPlayer)han;
+                h.OnSelectionChanged -= HandleSelectionChanged;
+            }
+        }
+        private void HandleCheckOccured(PlayerTeam team)
+        {
+            _audio.PlaySfxOneShot(JanggiSfx.Check);
+            _matchUI.PlayJanggun(team);
+        }
+        private void HandleCheckReleased()
+            => _audio.PlaySfxOneShot(JanggiSfx.UnCheck);
+        private void HandlePieceMoved(MoveRecord record)
+        {
+            _board.MovePiece(record.MovedPiece.Id, record.To);
+            if (record.IsCapture)
+            {
+                _board.PlaceCapturedPiece(record.CapturedPiece.Id, record.CapturedPiece.Team);
+                _audio.PlaySfxOneShot(JanggiSfx.Capture);
+                return;
+            }
+            _audio.PlaySfxOneShot(JanggiSfx.Move);
+        }
+        private void HandleSelectionChanged(int? pieceId, IReadOnlyList<Pos> legalCells, IReadOnlyList<Pos> illegalCells)
+        {
+            _board.UnHighlight();
+            if (!pieceId.HasValue) return;
+            _audio.PlaySfxOneShot(JanggiSfx.Select);
+            _board.Highlight(pieceId.Value, legalCells, illegalCells);
+        }
+        #endregion;
+
+        public void BindUI(IMatchViewData match)
+        {
+            _matchUI.BindEvents(match);
+        }
+        public void UnBindUI(IMatchViewData match)
+        {
+            _matchUI.UnBindEvents(match);
+        }
+        public void OnTurnChanged(PlayerTeam team, bool isLocal)
+        {
+            if (isLocal) _audio.PlaySfxOneShot(JanggiSfx.TurnAlert);
+            _matchUI.UpdateTurn(team);
+        }
+        public void OnGameEnded(bool loserIsLocal, in GameResultInfo info)
+        {
+            if (loserIsLocal) _audio.PlaySfxOneShot(JanggiSfx.Lose); 
+            else _audio.PlaySfxOneShot(JanggiSfx.Win);
+
+            ShowResultUI(in info);
+        }
+
+        public void ResetGame(IBoardModel boardModel)
+        {
+            _resultUI.Hide();
+            _board.ResetGame(boardModel);
+        }
+        public void StartGame(IBoardModel boardModel)
+        {
+            _board.StartGame(boardModel);
+        }
+
+        public void UnDo(in MoveContext ctx)
+        {
+            // BoardPresenter도 UnDo만
+            _board.UnHighlight();
+            var movedPiece = ctx.Record.MovedPiece;
+
+            var movedId = movedPiece.Id;
+            var to = ctx.Record.From;
+            _board.MovePiece(movedId, to);
+
+            if (ctx.IsCapture)
+            {
+                to = ctx.Record.To;
+                var captured = ctx.Record.CapturedPiece;
+                _board.RestoreCapturedPiece(captured.Id, captured.Team, to);
+            }
+        }
+       
+        private readonly BoardPresenter _board;
+        private readonly ResultUI       _resultUI;
+        private readonly MatchUI        _matchUI;
+        private readonly AudioManager   _audio;
+        private void ShowResultUI(in GameResultInfo info)
+        {
+            _resultUI.Show();
+            _resultUI.GiveUp(info);
+        }
+    }
+}

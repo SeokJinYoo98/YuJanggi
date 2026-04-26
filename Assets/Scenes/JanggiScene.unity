@@ -1291,9 +1291,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Yujanggi.Runtime.Audio.AudioManager, Assembly-CSharp
-        m_MethodName: PlayButton
+      - m_Target: {fileID: 1678781764}
+        m_TargetAssemblyTypeName: Yujanggi.Runtime.Game.GameManager, Assembly-CSharp
+        m_MethodName: HandleReplayForward
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3803,9 +3803,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Yujanggi.Runtime.Audio.AudioManager, Assembly-CSharp
-        m_MethodName: PlayButton
+      - m_Target: {fileID: 1678781764}
+        m_TargetAssemblyTypeName: Yujanggi.Runtime.Game.GameManager, Assembly-CSharp
+        m_MethodName: HandleReplayBackward
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

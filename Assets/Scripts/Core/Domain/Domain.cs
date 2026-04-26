@@ -6,6 +6,17 @@ using Yujanggi.Core.Match;
 using Yujanggi.Runtime.GameSession;
 namespace Yujanggi.Core.Domain
 {
+    interface ISessionState
+    {
+        public void Enter(GameSession session);
+        public void Exit(GameSession session);
+        public void ExecuteMove(Pos from, Pos to);
+        public void SelectionChanged(int? pieceId, IReadOnlyList<Pos> legalCells, IReadOnlyList<Pos> illegalCells);
+        public void CheckReleased();
+        public void CheckOccured(PlayerTeam team);
+        public void PieceMoved(MoveRecord record);
+    }
+
     public struct GameSessionInfo
     {
         public GameModeType Mode;
@@ -47,6 +58,7 @@ namespace Yujanggi.Core.Domain
     {
         public event Action<Pos, Pos> OnMoveRequest;
         public PlayerTeam Team { get; }
+        public bool IsLocal();
         public void BeginTurn();
         public void EndTurn();
         public void BindEvents();
@@ -126,7 +138,7 @@ namespace Yujanggi.Core.Domain
     {
         public int          MoveCnt;
         public GameResult   Type;
-        public PlayerTeam   Winner;
+        public PlayerTeam   Loser;
     }
 
 }

@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using Yujanggi.Core.Domain;
 
 namespace Yujanggi.Core.Board
 {
+
     public interface IReadOnlyBoard
     {
     }
@@ -73,7 +75,7 @@ namespace Yujanggi.Core.Board
 
             return new(from, to, moved, captured);
         }
-        public void UndoMove(in MoveRecord moveRecord)
+        public void         UndoMove(in MoveRecord moveRecord)
         {
             var from = moveRecord.From;
             var to = moveRecord.To;
@@ -86,6 +88,22 @@ namespace Yujanggi.Core.Board
             UpdateKingPos(from, moved);
         }
 
+        public Dictionary<int, Pos> CreateSnapShot()
+        {
+            var snapShot = new Dictionary<int, Pos>();
+            for (int x = 0; x < _width; ++x)
+            {
+                for (int z = 0; z < _height; ++z)
+                {
+                    var pos = new Pos(x, z);
+                    if (!HasPiece(pos)) continue;
+
+                    var piece = GetPiece(pos);
+                    snapShot[piece.Id] = pos;
+                }
+            }
+            return snapShot;
+        }
         // private
         private CellData[,] _board;
 

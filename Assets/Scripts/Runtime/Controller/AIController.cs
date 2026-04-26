@@ -14,8 +14,8 @@ namespace Yujanggi.Runtime.Controller
     {
         public PlayerTeam Team { get; }
         public event Action<Pos, Pos> OnMoveRequest;
-
-
+        public bool IsLocal() => false;
+       
         private readonly IJanggiRule        _rule;
         private readonly IBoardModel        _boardModel;
         private Selection _sel;
