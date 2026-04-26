@@ -6,17 +6,6 @@ using Yujanggi.Core.Match;
 using Yujanggi.Runtime.GameSession;
 namespace Yujanggi.Core.Domain
 {
-    interface ISessionState
-    {
-        public void Enter(GameSession session);
-        public void Exit(GameSession session);
-        public void ExecuteMove(Pos from, Pos to);
-        public void SelectionChanged(int? pieceId, IReadOnlyList<Pos> legalCells, IReadOnlyList<Pos> illegalCells);
-        public void CheckReleased();
-        public void CheckOccured(PlayerTeam team);
-        public void PieceMoved(MoveRecord record);
-    }
-
     public struct GameSessionInfo
     {
         public GameModeType Mode;
@@ -44,6 +33,8 @@ namespace Yujanggi.Core.Domain
     {
         public event Action<Pos> OnBoardClicked;
         public void RotateCamera(PlayerTeam team);
+        public void Activate();
+        public void Deactivate();
     }
     public interface IAIController
     {

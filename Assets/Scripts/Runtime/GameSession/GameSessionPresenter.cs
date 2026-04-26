@@ -23,39 +23,17 @@ namespace Yujanggi.Runtime.GameSession
             _audio      = audio;
         }
         #region Live
-        public void  BindLiveEvents(MatchEvents match, IPlayerController cho, IPlayerController han)
+        public void  BindLiveEvents(MatchEvents match)
         {
             match.OnCheckOccurred += HandleCheckOccured;
             match.OnCheckReleased += HandleCheckReleased;
             match.OnPieceMoved    += HandlePieceMoved;
-            
-            if (cho.IsLocal())
-            {
-                ILocalPlayer c = (ILocalPlayer) cho;
-                c.OnSelectionChanged += HandleSelectionChanged;
-            }
-            if (han.IsLocal())
-            {
-                ILocalPlayer h = (ILocalPlayer)han;
-                h.OnSelectionChanged += HandleSelectionChanged;
-            }
         }
-        public void  UnBindLiveEvents(MatchEvents match, IPlayerController cho, IPlayerController han)
+        public void  UnBindLiveEvents(MatchEvents match)
         {
             match.OnCheckOccurred -= HandleCheckOccured;
             match.OnCheckReleased -= HandleCheckReleased;
             match.OnPieceMoved    -= HandlePieceMoved;
-
-            if (cho.IsLocal())
-            {
-                ILocalPlayer c = (ILocalPlayer)cho;
-                c.OnSelectionChanged -= HandleSelectionChanged;
-            }
-            if (han.IsLocal())
-            {
-                ILocalPlayer h = (ILocalPlayer)han;
-                h.OnSelectionChanged -= HandleSelectionChanged;
-            }
         }
         private void HandleCheckOccured(PlayerTeam team)
         {
@@ -75,15 +53,9 @@ namespace Yujanggi.Runtime.GameSession
             }
             _audio.PlaySfxOneShot(JanggiSfx.Move);
         }
-        private void HandleSelectionChanged(int? pieceId, IReadOnlyList<Pos> legalCells, IReadOnlyList<Pos> illegalCells)
-        {
-            _board.UnHighlight();
-            if (!pieceId.HasValue) return;
-            _audio.PlaySfxOneShot(JanggiSfx.Select);
-            _board.Highlight(pieceId.Value, legalCells, illegalCells);
-        }
-        #endregion;
 
+
+        #endregion;
         public void BindUI(IMatchViewData match)
         {
             _matchUI.BindEvents(match);
@@ -92,10 +64,17 @@ namespace Yujanggi.Runtime.GameSession
         {
             _matchUI.UnBindEvents(match);
         }
-        public void OnTurnChanged(PlayerTeam team, bool isLocal)
+        public void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legalCells, IReadOnlyList<Pos> illegalCells)
         {
-            if (isLocal) _audio.PlaySfxOneShot(JanggiSfx.TurnAlert);
-            _matchUI.UpdateTurn(team);
+            _board.UnHighlight();
+            if (!pieceId.HasValue) return;
+            _audio.PlaySfxOneShot(JanggiSfx.Select);
+            _board.Highlight(pieceId.Value, legalCells, illegalCells);
+        }
+        public void OnTurnChanged(bool isLocal)
+        {
+            if (!isLocal) return;
+            _audio.PlaySfxOneShot(JanggiSfx.TurnAlert);
         }
         public void OnGameEnded(bool loserIsLocal, in GameResultInfo info)
         {
@@ -114,7 +93,6 @@ namespace Yujanggi.Runtime.GameSession
         {
             _board.StartGame(boardModel);
         }
-
         public void UnDo(in MoveContext ctx)
         {
             // BoardPresenter도 UnDo만

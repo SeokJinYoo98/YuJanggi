@@ -11,15 +11,17 @@ namespace Yujanggi.Runtime.Input
     public class PcInputHandler : MonoBehaviour, IInputHandler
     {
         [SerializeField] private Camera _camera;
-
+        private bool _isActivate = true;
         public event Action<Pos> OnBoardClicked;
 
 
         private PlayerInputs _input;
         private PlayerInputs.PlayerActions _actions;
         private void OnPressPerformed(InputAction.CallbackContext context)
-            => OnBoardClicked?.Invoke(Clicked());
-        
+        {
+            if (!_isActivate) return;
+            OnBoardClicked?.Invoke(Clicked());
+        }
 
         void Awake()
         {
@@ -65,7 +67,8 @@ namespace Yujanggi.Runtime.Input
                 _camera.transform.eulerAngles = new Vector3(90, 0, 0);
             }
         }
-
+        public void Activate()   => _isActivate = true;
+        public void Deactivate() => _isActivate = false;
 
     }
 }

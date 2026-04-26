@@ -75,9 +75,9 @@ namespace Yujanggi.Runtime.Game
             IPlayerController  cho,
             IPlayerController  han)
         {
-            return new GameSession(sessionInfo, sessionView, sessionMatch, cho, han);
+            return new GameSession(sessionInfo, sessionView, sessionMatch, cho, han, _localInput);
         }
-        private MatchManager      CreateMatch(float turnTime, out Record record)
+        private MatchManager           CreateMatch(float turnTime, out Record record)
         {
             record         = new Record();
             var turn       = new Turn(turnTime);
@@ -88,7 +88,7 @@ namespace Yujanggi.Runtime.Game
         }
         private GameSessionPresenter   CreateSessionView()
             => new GameSessionPresenter(_boardPresenter, _resultUI, _matchUI, _audio);
-        private IPlayerController CreateController(
+        private IPlayerController      CreateController(
            PlayerType type,
            PlayerTeam team,
            PcInputHandler input,

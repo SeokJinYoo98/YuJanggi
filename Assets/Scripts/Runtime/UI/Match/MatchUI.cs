@@ -31,7 +31,8 @@ namespace Yujanggi.Runtime.UI
             var record = match.Record;
             var score = match.Score;
 
-            turn.OnTimeChanged         += UpdateTimer; 
+            turn.OnTimeChanged         += UpdateTimer;
+            turn.OnTurnChanged         += UpdateTurn;
             record.OnRecordChanged     += UpdateRecord;
             score.OnScoreChanged       += UpdateScore;
         }
@@ -42,6 +43,7 @@ namespace Yujanggi.Runtime.UI
             var score   = match.Score;
 
             turn.OnTimeChanged         -= UpdateTimer;
+            turn.OnTurnChanged         -= UpdateTurn;
             record.OnRecordChanged     -= UpdateRecord;
             score.OnScoreChanged       -= UpdateScore;
         }
@@ -105,6 +107,10 @@ namespace Yujanggi.Runtime.UI
                 _hanTimerText.text = $"{info.time}:시간";
             else
                 _choTimerText.text = $"시간:{info.time}";
+        }
+        public void UpdateTurn()
+        {
+
         }
         public void PlayJanggun(PlayerTeam team)
         {
