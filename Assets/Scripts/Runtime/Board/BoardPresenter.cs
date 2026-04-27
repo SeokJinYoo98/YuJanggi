@@ -4,13 +4,15 @@ namespace Yujanggi.Runtime.Board
     using Core.Board;
     using System.Collections.Generic;
     using Yujanggi.Core.Domain;
-    using Yujanggi.Core.Match;
     using Yujanggi.Runtime.Piece;
-    public interface IBoardPresenter
+    public interface IReplayBoardRenderer
     {
-
+        public void RestoreCapturedPiece(int id, PlayerTeam team, Pos to);
+        public void PlaceCapturedPiece(int id, PlayerTeam team);
+        public void MovePiece(int id, Pos to);
+        public void UnHighlight();
     }
-    public class BoardPresenter : MonoBehaviour, IBoardPresenter
+    public class BoardPresenter : MonoBehaviour, IReplayBoardRenderer
     {
         private BoardView _boardView;
         [SerializeField] private PieceManager _pieces;
@@ -48,6 +50,7 @@ namespace Yujanggi.Runtime.Board
         }
         public void  MovePiece(int id, Pos to)
         {
+            Debug.Log("보드프레젠터 무브");
             _pieces.DoMove(id, to);
         }
         public void  UnHighlight()

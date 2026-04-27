@@ -13,6 +13,7 @@ namespace Yujanggi.Runtime.Game
     using System;
     using UI;
     using Yujanggi.Runtime.Controller;
+    using Yujanggi.Runtime.Replay;
 
     public class GameManager : MonoBehaviour
     {
@@ -32,13 +33,12 @@ namespace Yujanggi.Runtime.Game
             var sessionInfo   = GetSessionInfo();
             var sessionView   = CreateSessionView();
             var sessionMatch  = CreateMatch(sessionInfo.TurnTime, out var record);
+            var sessionReplay = CreateReplayManager(record);
 
             var sessionCho    = CreateController(sessionInfo.Cho, PlayerTeam.Cho, _localInput, sessionMatch, _runner);
             var sessionHan    = CreateController(sessionInfo.Han, PlayerTeam.Han, _localInput, sessionMatch, _runner);
 
-            _session          = CreateSession(in sessionInfo, sessionView, sessionMatch, sessionCho, sessionHan);
-
-            //ReplayManager replay = new ReplayManager(record);
+            _session          = CreateSession(in sessionInfo, sessionView, sessionMatch, sessionReplay, sessionCho, sessionHan);
 
             SetCamera(in sessionInfo);
         }
@@ -69,13 +69,24 @@ namespace Yujanggi.Runtime.Game
 
         #region SessionFactory       
         private GameSession      CreateSession(
-            in GameSessionInfo sessionInfo,
+            in GameSessionInfo      sessionInfo,
             GameSessionPresenter    sessionView,
-            MatchManager       sessionMatch,
-            IPlayerController  cho,
-            IPlayerController  han)
+            MatchManager            sessionMatch,
+            ReplayPresenter           sessionReplay,
+            IPlayerController       cho,
+            IPlayerController       han)
         {
-            return new GameSession(sessionInfo, sessionView, sessionMatch, cho, han, _localInput);
+            return new GameSession(
+                sessionInfo, 
+                sessionView, 
+                sessionMatch,
+                sessionReplay, 
+                cho, han, 
+                _localInput);
+        }
+        private ReplayPresenter          CreateReplayManager(Record record)
+        {
+            return new ReplayPresenter(_boardPresenter, record, _runner, _audio);
         }
         private MatchManager           CreateMatch(float turnTime, out Record record)
         {

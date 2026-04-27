@@ -61,6 +61,7 @@ namespace Yujanggi.Runtime.Piece
         }
         public void DoMove(int id, Pos to)
         {
+            Debug.Log("피스 무브");
             _views[id].MoveTo(to);
         }
     }

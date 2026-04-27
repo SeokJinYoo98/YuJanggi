@@ -44,7 +44,6 @@ namespace Yujanggi.Core.Match
 
             // 현재 상태에서 직전 수를 되돌릴 때 필요한 record
             context = _records[_currIdx - 1];
-
             _currIdx--;
 
             OnRecordChanged?.Invoke(_currIdx, MoveCount);

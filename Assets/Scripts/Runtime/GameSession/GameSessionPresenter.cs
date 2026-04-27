@@ -8,8 +8,7 @@ using Yujanggi.Runtime.UI;
 
 namespace Yujanggi.Runtime.GameSession
 {
-
-    public class GameSessionPresenter
+    public class GameSessionPresenter 
     {
         public GameSessionPresenter(
             BoardPresenter  board,
@@ -93,9 +92,8 @@ namespace Yujanggi.Runtime.GameSession
         {
             _board.StartGame(boardModel);
         }
-        public void UnDo(in MoveContext ctx)
+        public void UnDo(MoveContext ctx)
         {
-            // BoardPresenter도 UnDo만
             _board.UnHighlight();
             var movedPiece = ctx.Record.MovedPiece;
 
@@ -110,7 +108,7 @@ namespace Yujanggi.Runtime.GameSession
                 _board.RestoreCapturedPiece(captured.Id, captured.Team, to);
             }
         }
-       
+
         private readonly BoardPresenter _board;
         private readonly ResultUI       _resultUI;
         private readonly MatchUI        _matchUI;
