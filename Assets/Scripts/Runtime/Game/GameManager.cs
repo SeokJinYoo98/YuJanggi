@@ -11,12 +11,14 @@ namespace Yujanggi.Runtime.Game
     using GameSession;
     using Input;
     using System;
+    using TMPro;
     using UI;
     using Yujanggi.Runtime.Controller;
     using Yujanggi.Runtime.Replay;
 
     public class GameManager : MonoBehaviour
     {
+        [SerializeField] private TMP_Text        _currDisplayMode;
         [SerializeField] private BoardPresenter  _boardPresenter;
         [SerializeField] private CoroutineRunner _runner;
         [SerializeField] private ResultUI        _resultUI;
@@ -72,7 +74,7 @@ namespace Yujanggi.Runtime.Game
             in GameSessionInfo      sessionInfo,
             GameSessionPresenter    sessionView,
             MatchManager            sessionMatch,
-            ReplayPresenter           sessionReplay,
+            ReplayPresenter         sessionReplay,
             IPlayerController       cho,
             IPlayerController       han)
         {
@@ -84,9 +86,9 @@ namespace Yujanggi.Runtime.Game
                 cho, han, 
                 _localInput);
         }
-        private ReplayPresenter          CreateReplayManager(Record record)
+        private ReplayPresenter        CreateReplayManager(Record record)
         {
-            return new ReplayPresenter(_boardPresenter, record, _runner, _audio);
+            return new ReplayPresenter(_boardPresenter, record, _runner, _audio, _currDisplayMode);
         }
         private MatchManager           CreateMatch(float turnTime, out Record record)
         {
@@ -144,15 +146,14 @@ namespace Yujanggi.Runtime.Game
         }
         public void HandleReplayForward()
         {
-            Debug.Log("Replay F");
             _audio.PlayButton();
-            _session.StepForward();
+            _session.TryStepForward();
         }
         public void HandleReplayBackward()
         {
-            Debug.Log("Replay B");
             _audio.PlayButton();
-            _session.StepBackward();
+            _session.TryStepBackward();
+     
         }
         #endregion
     }

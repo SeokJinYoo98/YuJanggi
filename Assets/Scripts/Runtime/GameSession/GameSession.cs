@@ -5,9 +5,8 @@ using Yujanggi.Core.Match;
 namespace Yujanggi.Runtime.GameSession
 {
     using Replay;
+    using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
-
     public class GameSession
     {
         #region public Field F
@@ -39,8 +38,10 @@ namespace Yujanggi.Runtime.GameSession
             _sessionPresenter.BindLiveEvents(events);
             events.OnGameEnded        += HandleGameEnded;
             events.OnTurnChanged      += HandleTurnChanged;
-            _playerCho.BindEvents(); _playerHan.BindEvents();
-            _playerCho.OnMoveRequest  += HandleTryMove; _playerHan.OnMoveRequest += HandleTryMove;
+            _playerCho.BindEvents(); 
+            _playerHan.BindEvents();
+            _playerCho.OnMoveRequest  += HandleTryMove; 
+            _playerHan.OnMoveRequest  += HandleTryMove;
             if (_playerCho.IsLocal()) ((ILocalPlayer)_playerCho).OnSelectionChanged += HandleSelectionChanged;
             if (_playerHan.IsLocal()) ((ILocalPlayer)_playerHan).OnSelectionChanged += HandleSelectionChanged;
         }
@@ -51,10 +52,12 @@ namespace Yujanggi.Runtime.GameSession
             var events = _sessionMatch.MatchEvent;
             _sessionPresenter.UnBindUI(_sessionMatch);
             _sessionPresenter.UnBindLiveEvents(events);
-            events.OnTurnChanged      -= HandleTurnChanged;
-            events.OnGameEnded        -= HandleGameEnded;
-            _playerCho.UnBindEvents(); _playerHan.UnBindEvents();
-            _playerCho.OnMoveRequest  -= HandleTryMove; _playerHan.OnMoveRequest -= HandleTryMove;
+            events.OnTurnChanged -= HandleTurnChanged;
+            events.OnGameEnded   -= HandleGameEnded;
+            _playerCho.UnBindEvents(); 
+            _playerHan.UnBindEvents();
+            _playerCho.OnMoveRequest -= HandleTryMove; 
+            _playerHan.OnMoveRequest -= HandleTryMove;
             if (_playerCho.IsLocal()) ((ILocalPlayer)_playerCho).OnSelectionChanged -= HandleSelectionChanged;
             if (_playerHan.IsLocal()) ((ILocalPlayer)_playerHan).OnSelectionChanged -= HandleSelectionChanged;
         }
@@ -75,9 +78,10 @@ namespace Yujanggi.Runtime.GameSession
         }
         public void ResetGame()
         {
-            StartGame();
-            var board = _sessionMatch.Board;
-            _sessionPresenter.ResetGame(board);
+            _sessionMatch.StartGame(_sessionInfo.ChoFormation, _sessionInfo.HanFormation);
+            _sessionPresenter.ResetGame(_sessionMatch.Board);
+            _playerCho.BeginTurn();
+            _playerHan.EndTurn();
         }
         public void UnDo()
         {
@@ -110,6 +114,7 @@ namespace Yujanggi.Runtime.GameSession
         }
         private void              HandleGameEnded(GameResultInfo info)
         {
+            _sessionReplay.Reset();
             DisableAllControllers();
             var loserIsLocal = GetPlayer(info.Loser).IsLocal();
             _sessionPresenter.OnGameEnded(loserIsLocal, in info);
@@ -150,21 +155,20 @@ namespace Yujanggi.Runtime.GameSession
             _sessionReplay.OnReplayEntered -= HandleEnterReplay;
             _sessionReplay.OnReplayExited  -= HandleExitReplay;
         }
-        public void  StepForward()
-        {
-            _sessionReplay.TryNext();
-        }
-        public void  StepBackward()
-        {
-            _sessionReplay.TryPrev();
-        }
+        public bool TryStepForward()
+            => _sessionReplay.TryNextStep();
+        public bool TryStepBackward()
+            => _sessionReplay.TryPrevStep();
+
         private void HandleEnterReplay()
         {
+            _sessionPresenter.SyncBoardState(_sessionMatch);
             _sessionPresenter.UnBindLiveEvents(_sessionMatch.MatchEvent);
             _localInput.Deactivate();
         }
         private void HandleExitReplay()
         {
+            _sessionPresenter.SyncBoardState(_sessionMatch);
             _sessionPresenter.BindLiveEvents(_sessionMatch.MatchEvent);
             _localInput.Activate();
         }

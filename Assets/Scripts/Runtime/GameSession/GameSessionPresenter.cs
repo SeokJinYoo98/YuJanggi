@@ -43,6 +43,7 @@ namespace Yujanggi.Runtime.GameSession
             => _audio.PlaySfxOneShot(JanggiSfx.UnCheck);
         private void HandlePieceMoved(MoveRecord record)
         {
+            _board.UnHighlight();
             _board.MovePiece(record.MovedPiece.Id, record.To);
             if (record.IsCapture)
             {
@@ -65,7 +66,6 @@ namespace Yujanggi.Runtime.GameSession
         }
         public void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legalCells, IReadOnlyList<Pos> illegalCells)
         {
-            _board.UnHighlight();
             if (!pieceId.HasValue) return;
             _audio.PlaySfxOneShot(JanggiSfx.Select);
             _board.Highlight(pieceId.Value, legalCells, illegalCells);
@@ -82,11 +82,16 @@ namespace Yujanggi.Runtime.GameSession
 
             ShowResultUI(in info);
         }
-
+        public void SyncBoardState(IMatchManager match)
+        {
+            _board.UnHighlight();
+            var board = match.Board;
+            _board.SyncBoardState(board);
+        }
         public void ResetGame(IBoardModel boardModel)
         {
             _resultUI.Hide();
-            _board.ResetGame(boardModel);
+            _board.SyncBoardState(boardModel);
         }
         public void StartGame(IBoardModel boardModel)
         {
@@ -108,6 +113,7 @@ namespace Yujanggi.Runtime.GameSession
                 _board.RestoreCapturedPiece(captured.Id, captured.Team, to);
             }
         }
+        
 
         private readonly BoardPresenter _board;
         private readonly ResultUI       _resultUI;

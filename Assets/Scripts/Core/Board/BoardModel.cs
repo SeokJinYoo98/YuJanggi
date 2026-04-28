@@ -35,7 +35,7 @@ namespace Yujanggi.Core.Board
             _choKingPos = new Pos(4, 1);
             _hanKingPos = new Pos(4, 8);
         }
-        public void ResetBoard()
+        public void         ResetBoard()
         {
             for (int x = 0; x < _width; ++x)
             {
@@ -45,7 +45,6 @@ namespace Yujanggi.Core.Board
                 }
             }
         }
-        // 공개 API Set은 공개인가?
         public bool         IsPalace(Pos pos)
         {
             if (!IsInside(pos)) return false;
@@ -55,7 +54,7 @@ namespace Yujanggi.Core.Board
             => 0 <= pos.X && pos.X < _width && 0 <= pos.Z && pos.Z < _height;
         public bool         HasPiece(Pos pos)
             => !_board[pos.X, pos.Z].Piece.IsNone;
-        public PieceModel    GetPiece(Pos pos)
+        public PieceModel   GetPiece(Pos pos)
             => _board[pos.X, pos.Z].Piece;
         public void         SetPiece(Pos pos, PieceModel piece)
         {
@@ -88,22 +87,6 @@ namespace Yujanggi.Core.Board
             UpdateKingPos(from, moved);
         }
 
-        public Dictionary<int, Pos> CreateSnapShot()
-        {
-            var snapShot = new Dictionary<int, Pos>();
-            for (int x = 0; x < _width; ++x)
-            {
-                for (int z = 0; z < _height; ++z)
-                {
-                    var pos = new Pos(x, z);
-                    if (!HasPiece(pos)) continue;
-
-                    var piece = GetPiece(pos);
-                    snapShot[piece.Id] = pos;
-                }
-            }
-            return snapShot;
-        }
         // private
         private CellData[,] _board;
 

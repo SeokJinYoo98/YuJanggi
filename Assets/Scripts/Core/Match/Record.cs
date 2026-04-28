@@ -5,34 +5,33 @@ namespace Yujanggi.Core.Match
 {
     public class Record
     {
-        public event Action<int, int> OnRecordChanged;
-        public bool IsLive => _currIdx == MoveCount;
-        public int MoveCount        => _records.Count;
-        public int CurrentIndex     => _currIdx;
+        public event Action<int, int>  OnRecordChanged;
+        public int CurrTurn         => _currIdx + 1;
+        public int Count            => _records.Count;
+        public int TotalTurn        => _records.Count + 1;
+        // 현재 화면에 적용된 마지막 기록 Index
         private int _currIdx = 0;
+        private bool _replay = false;
         private readonly List<MoveContext> _records = new(100);
         public void StartGame()
         {
             _records.Clear();
             _currIdx = 0;
-
-            OnRecordChanged?.Invoke(_currIdx, MoveCount);
+            OnRecordChanged?.Invoke(CurrTurn, TotalTurn);
         }
-
-        public void Push(MoveContext context)
+        public bool TryGetMoveCtx(int idx, out MoveContext context)
         {
-            bool wasLive = IsLive;
-
-            _records.Add(context);
-
-            if (wasLive)
+            if (idx < 0 || _records.Count <= idx)
             {
-                // 라이브 상태였으면 따라간다
-                _currIdx = MoveCount;
+                context = default;
+                return false;
             }
-
-            OnRecordChanged?.Invoke(_currIdx, MoveCount);
+            _currIdx = idx;
+            context  = _records[_currIdx];
+            OnRecordChanged?.Invoke(CurrTurn, TotalTurn);
+            return true;
         }
+
 
         public bool TryPrev(out MoveContext context)
         {
@@ -41,31 +40,40 @@ namespace Yujanggi.Core.Match
                 context = default;
                 return false;
             }
-
+            
             // 현재 상태에서 직전 수를 되돌릴 때 필요한 record
-            context = _records[_currIdx - 1];
+            context = _records[_currIdx];
             _currIdx--;
 
-            OnRecordChanged?.Invoke(_currIdx, MoveCount);
+            OnRecordChanged?.Invoke(CurrTurn, TotalTurn);
             return true;
         }
         public bool TryNext(out MoveContext context)
         {
-            if (_currIdx >= MoveCount)
+            if (_currIdx + 1 == _records.Count)
             {
                 context = default;
                 return false;
             }
 
             // 다음 상태로 진행할 때 적용할 record
+            
             context = _records[_currIdx];
-
             _currIdx++;
 
-            OnRecordChanged?.Invoke(_currIdx, MoveCount);
+
+            OnRecordChanged?.Invoke(CurrTurn, TotalTurn);
             return true;
         }
+        public void Push(MoveContext context)
+        {
+            _records.Add(context);
 
+            if (!_replay)
+                _currIdx = _records.Count - 1;
+            
+            OnRecordChanged?.Invoke(CurrTurn, TotalTurn);
+        }
         public bool TryPop(out MoveContext context)
         {
             if (_records.Count == 0)
@@ -78,10 +86,9 @@ namespace Yujanggi.Core.Match
             context = _records[lastIdx];
             _records.RemoveAt(lastIdx);
 
-            if (_currIdx > MoveCount)
-                _currIdx = MoveCount;
+            if (!_replay) _currIdx = _records.Count - 1;
 
-            OnRecordChanged?.Invoke(_currIdx, MoveCount);
+            OnRecordChanged?.Invoke(_currIdx, TotalTurn);
             return true;
         }
         public bool TryPeek(out MoveContext context)
@@ -95,12 +102,5 @@ namespace Yujanggi.Core.Match
             context = _records[^1];
             return true;
         }
-
-        public void SeekToLatest()
-        {
-            _currIdx = MoveCount;
-            OnRecordChanged?.Invoke(_currIdx, MoveCount);
-        }
-
     }
 }

@@ -32,7 +32,6 @@ namespace Yujanggi.Core.Match
     }
     public interface IMatchManager
     {
-
         public BoardModel   Board { get; }
         public MatchEvents  MatchEvent { get; }
     }
@@ -119,7 +118,7 @@ namespace Yujanggi.Core.Match
             Turn.SetTurn(TurnType.End);
             GameResultInfo info;
             info.Loser     = Turn.CurrentTeam;
-            info.MoveCnt    = Record.MoveCount;
+            info.MoveCnt    = Record.TotalTurn;
             info.Type       = GameResult.GiveUp;
             return info;
         }
@@ -144,7 +143,7 @@ namespace Yujanggi.Core.Match
             if (cnt == 0)
             {
                 GameResultInfo info;
-                info.MoveCnt = Record.MoveCount;
+                info.MoveCnt = Record.TotalTurn;
                 info.Type = GameResult.CheckMate;
                 info.Loser = Turn.CurrentTeam;
                 MatchEvent.GameEnded(info);

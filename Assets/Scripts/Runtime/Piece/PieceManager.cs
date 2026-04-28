@@ -19,6 +19,9 @@ namespace Yujanggi.Runtime.Piece
         }
         public void HighlightPiece(int id)
         {
+            if (_currPiece != -1)
+                UnHighlight();
+            
             _currPiece = id;
             _views[_currPiece].Highlight();
         }     
@@ -61,7 +64,6 @@ namespace Yujanggi.Runtime.Piece
         }
         public void DoMove(int id, Pos to)
         {
-            Debug.Log("피스 무브");
             _views[id].MoveTo(to);
         }
     }

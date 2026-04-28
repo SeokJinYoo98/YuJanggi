@@ -11,6 +11,7 @@ namespace Yujanggi.Runtime.Board
         public void PlaceCapturedPiece(int id, PlayerTeam team);
         public void MovePiece(int id, Pos to);
         public void UnHighlight();
+        public void HighlightOnlyPiece(int id);
     }
     public class BoardPresenter : MonoBehaviour, IReplayBoardRenderer
     {
@@ -50,7 +51,6 @@ namespace Yujanggi.Runtime.Board
         }
         public void  MovePiece(int id, Pos to)
         {
-            Debug.Log("보드프레젠터 무브");
             _pieces.DoMove(id, to);
         }
         public void  UnHighlight()
@@ -63,9 +63,10 @@ namespace Yujanggi.Runtime.Board
         }
         public void  Highlight(int id, IReadOnlyList<Pos> legalWays, IReadOnlyList<Pos> illegalWays)
         {
-            _isHighlighted = true;
+            if (_isHighlighted) UnHighlight();
             _pieces.HighlightPiece(id);
-            _boardView.Highlight(legalWays, illegalWays);
+            _boardView.Highlight(legalWays, illegalWays); 
+            _isHighlighted = true;
         }
         public void  ResetGame(IBoardModel model)
         {
@@ -73,6 +74,16 @@ namespace Yujanggi.Runtime.Board
             _pieces.ResetViews(model);
             _garbageChoPos = new Pos(0, -1);
             _garbagehanPos = new Pos(0, -2);
+        }
+        public void SyncBoardState(IBoardModel boardModel)
+        {
+            _pieces.ResetViews(boardModel);
+        }
+        public void HighlightOnlyPiece(int id)
+        {
+            Debug.Log("하이라이트");
+            _pieces.HighlightPiece(id); 
+            _isHighlighted = true;
         }
     }
 }

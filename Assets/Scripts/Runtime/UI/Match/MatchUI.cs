@@ -23,8 +23,8 @@ namespace Yujanggi.Runtime.UI
         private bool _janggunAnim = false;
         private float _speed = 10;
 
-        int _totalCnt = 0;
-        int _currView = 0;
+        int _totalTurn = 0;
+        int _currTurn  = 0;
         public void BindEvents(IMatchViewData match)
         {
             var turn = match.Turn;
@@ -33,7 +33,7 @@ namespace Yujanggi.Runtime.UI
 
             turn.OnTimeChanged         += UpdateTimer;
             turn.OnTurnChanged         += UpdateTurn;
-            record.OnRecordChanged     += UpdateRecord;
+            record.OnRecordChanged     += UpdateTotalTurn;
             score.OnScoreChanged       += UpdateScore;
         }
         public void UnBindEvents(IMatchViewData match)
@@ -44,7 +44,7 @@ namespace Yujanggi.Runtime.UI
 
             turn.OnTimeChanged         -= UpdateTimer;
             turn.OnTurnChanged         -= UpdateTurn;
-            record.OnRecordChanged     -= UpdateRecord;
+            record.OnRecordChanged     -= UpdateTotalTurn;
             score.OnScoreChanged       -= UpdateScore;
         }
         public void Start()
@@ -68,13 +68,21 @@ namespace Yujanggi.Runtime.UI
             }
           
         }
-
-        public void UpdateRecord(int current, int totalCnt)
+        public void UpdateTotalTurn(int currTurn, int totalTurn)
         {
-            _currView = current;
-            _totalCnt = totalCnt;
-            _recordText.text = $"{_currView}수:{_totalCnt}수";
+            _currTurn = currTurn;
+            _totalTurn = totalTurn;
+            UpdateRecord();
         }
+        public void UpdateCurrTurn(int currTurn)
+        {
+            _currTurn = currTurn;
+            UpdateRecord();
+        }
+        private void UpdateRecord()
+            => _recordText.text = $"{_currTurn}수:{_totalTurn}수";
+
+
 
         public void UpdateTurn(PlayerTeam turn)
         {
@@ -107,10 +115,6 @@ namespace Yujanggi.Runtime.UI
                 _hanTimerText.text = $"{info.time}:시간";
             else
                 _choTimerText.text = $"시간:{info.time}";
-        }
-        public void UpdateTurn()
-        {
-
         }
         public void PlayJanggun(PlayerTeam team)
         {
