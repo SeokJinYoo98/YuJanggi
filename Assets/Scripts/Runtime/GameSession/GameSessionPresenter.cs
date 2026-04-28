@@ -66,6 +66,7 @@ namespace Yujanggi.Runtime.GameSession
         }
         public void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legalCells, IReadOnlyList<Pos> illegalCells)
         {
+            _board.UnHighlight();
             if (!pieceId.HasValue) return;
             _audio.PlaySfxOneShot(JanggiSfx.Select);
             _board.Highlight(pieceId.Value, legalCells, illegalCells);
