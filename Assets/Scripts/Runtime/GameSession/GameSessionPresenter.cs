@@ -73,6 +73,7 @@ namespace Yujanggi.Runtime.GameSession
         }
         public void OnTurnChanged(bool isLocal)
         {
+            _board.UnHighlight();
             if (!isLocal) return;
             _audio.PlaySfxOneShot(JanggiSfx.TurnAlert);
         }
