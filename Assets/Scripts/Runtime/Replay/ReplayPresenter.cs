@@ -9,24 +9,12 @@ namespace Yujanggi.Runtime.Replay
     using Yujanggi.Runtime.Audio;
     using Yujanggi.Runtime.Board;
 
-    /*
-        1. Enter -> 최신 기보 재생 (인덱스 움직일 필요 없음)
-        2. Prev  -> 이전 기보 재생
-        3. Next  -> 다음 기보 재생 (최신 기보 도달 및 횟수 체크)
-        4. Exit  -> 리플레이 종료
 
-            _currIdx  = 0
-            CurrTurn  = 1
-            TotalTurn = 1
-    */
     public class ReplayPresenter
     {
         
         public event Action OnReplayEntered;
         public event Action OnReplayExited;
-
-        private MoveContext? _currCtx   = null;
-        private bool         _isForward = false;
 
         private Coroutine    _replayRoutine;
 
@@ -36,7 +24,10 @@ namespace Yujanggi.Runtime.Replay
         private readonly AudioManager         _audio;
         private readonly TMP_Text             _displayMode;
         private int                           _currIdx = 0;
-        private bool                          _isActivate = false;
+
+        private bool IsRecordAtLatest => _record.IsLive;
+        private bool IsRecordsEmpty   => _record.Count == 0;
+        private bool IsPresenterLive  => _currState == ReplayState.Live;
         public ReplayPresenter(IReplayBoardRenderer board, Record record, ICoroutineRunner runner, AudioManager audio, TMP_Text displayMode)
         {
             _board       = board;
@@ -45,149 +36,153 @@ namespace Yujanggi.Runtime.Replay
             _audio       = audio;
             _displayMode = displayMode;
         }
-        #region Enter Exit
         public void Reset()
         {
-            StopReplayAnim();
-            ExitReplay();
+            StopCoroutine();
+            ExitReplayView();
         }
-        private bool ExitReplay()
-        {
-            StopReplayAnim();
-            _isActivate         = false;
-            _currCtx            = null;
-            _displayMode.text   = "실시간 보기";
-            OnReplayExited?.Invoke();
-            return false;
-        }
-        public bool  TryNextStep()
-        {
-            var nextIdx = _currIdx + 1;
-            if (_record.Count <= nextIdx)
-                return ExitReplay();
-
-            if (!_record.TryGetMoveCtx(nextIdx, out var moveCtx)) 
-                return false;
-           
-            PrepareReplay(in moveCtx, true);
-            PlayReplayStep();
-
-            _currIdx = nextIdx;
-            return true;
-        }
-        public bool  TryPrevStep()
-        {
-            if (_record.Count == 0) 
-                return false;
-
-            if (!_isActivate) // 요기서 최근 인덱스 바로 재생
-                return EnterReplay(false);
-
-            var nextIdx = _currIdx - 1;
-            if (!_record.TryGetMoveCtx(nextIdx, out var moveCtx))
-                return false;
-
-            PrepareReplay(in moveCtx, false);
-            PlayReplayStep();
-
-            _currIdx = nextIdx;
-            return true;
-        }
-        private bool EnterReplay(bool isForward)
-        {
-            _displayMode.text = "기보 보기";
-            _currIdx = _record.Count - 1;
-
-            if (!_record.TryGetMoveCtx(_currIdx, out var ctx))
-                return false;
-            OnReplayEntered?.Invoke();
-
-            _currCtx    = ctx;
-            _isForward  = isForward;
-            _isActivate = true;
-
-            _board.HighlightOnlyPiece(ctx.Record.MovedPiece.Id);
-            PlayReplayStep();
-            return true;
-        }
+     
+        private enum ReplayState { Live, Forward, Backward };
+        private ReplayState     _currState   = ReplayState.Live;
+        private MoveContext?    _currCtx     = null;
 
 
-        #endregion
-        #region Couroutine
-        private IEnumerator ProcessReplayAnim()
-        {
-            while(true)
-            {
-                if (!_currCtx.HasValue) yield break;
-                
-                ApplyReplayStep(_isForward);
-                yield return new WaitForSeconds(1f);
-                ApplyReplayStep(!_isForward);
-                yield return new WaitForSeconds(1f);
-            }
-        }
-        private void        StopReplayAnim()
+        private const float _replayTimer = 0.5f;
+        private void StopCoroutine()
         {
             if (_replayRoutine == null) return;
             _runner.Stop(_replayRoutine);
             _replayRoutine = null;
         }
-
-        #endregion
-        #region Board
-        private void PrepareReplay(in MoveContext moveCtx, bool isForward)
+        private void StartCoroutine(MoveContext ctx)
         {
-            StopReplayAnim();
-            ApplyReplayStep(_isForward);
-            _currCtx   = moveCtx;
-            _isForward = isForward;
-     
-            var moveRecord  = _currCtx.Value.Record;
-            var id          = moveRecord.MovedPiece.Id;
-            _board.HighlightOnlyPiece(id);
+            if (_replayRoutine != null) return;
+            _replayRoutine = _runner.Run(ReplayRoutine(ctx));
         }
-        private void ApplyReplayStep(bool isForward)
+        private void UpdateState(ReplayState nextState, in MoveContext? nextCtx, int nextIdx)
         {
-            var ctx = _currCtx.Value;
-            if (ctx.IsHandicap) return;
-
-            if (isForward) ApplyForwardStep(ctx.Record);
-            else ApplyBackwardStep(ctx.Record);
+            _currState = nextState;
+            _currCtx   = nextCtx;
+            _currIdx   = nextIdx;
         }
-        private void PlayReplayStep()
+        private void ClearPrevState(ReplayState nextState)
         {
-            StopReplayAnim();
-            _replayRoutine = _runner.Run(ProcessReplayAnim());
+            _board.UnHighlight();
+            StopCoroutine();
+            if (_currCtx.HasValue)
+            {
+                if (nextState == ReplayState.Forward)
+                    DoMove(_currCtx.Value.Record, false);
+                else
+                    UnDoMove(_currCtx.Value.Record);
+            }
+
+        }
+        private void PrepareVisual(in MoveRecord moveRecord)
+        {
+            var movedPiece = moveRecord.MovedPiece;
+            _board.HighlightOnlyPiece(movedPiece.Id);
         }
 
-
-        private void ApplyForwardStep(in MoveRecord record)
+        private void EnterState(ReplayState nextState, in MoveContext nextCtx, int nextIdx)
         {
-            // 이동된 말 이동
-            _audio.PlaySfxOneShot(JanggiSfx.Move);
-            var movedId = record.MovedPiece.Id;
-            var movedTo = record.To;
-            _board.MovePiece(movedId, movedTo);
+            ClearPrevState(nextState);
 
-            // 잡힌 말 처리
+            PrepareVisual(nextCtx.Record);
+            StartCoroutine(nextCtx);
+
+            UpdateState(nextState, nextCtx, nextIdx);
+        }
+        public void ReplayBackward()
+        {
+            if (IsRecordsEmpty) return;
+ 
+            if (IsPresenterLive)
+            {
+                EnterReplayView();
+                return;
+            }
+            if (_currIdx == 0) return;
+
+            var nextState = ReplayState.Backward;
+            int nextIdx = _currIdx - 1;
+            if (!_record.TryGetMoveCtx(nextIdx, out var nextCtx)) return;
+
+            EnterState(nextState, in nextCtx, nextIdx);
+        }
+        public void ReplayForward()
+        {
+            if (IsPresenterLive)
+                return;
+            if (IsRecordAtLatest)
+            {
+                ExitReplayView();
+                return;
+            }
+            var nextState = ReplayState.Forward;
+            var nextIdx   = _currIdx + 1;
+            if (!_record.TryGetMoveCtx(nextIdx, out var nextCtx))
+                return;
+  
+            EnterState(nextState, in nextCtx, nextIdx);
+        }
+
+        private void EnterReplayView()
+        {
+            OnReplayEntered?.Invoke();
+            _displayMode.text = "기보 보기";
+
+            var nextState = ReplayState.Backward;
+            var nextIdx  = _record.Count - 1;
+            if (!_record.TryGetMoveCtx(nextIdx, out var nextCtx)) return;
+
+            EnterState(nextState, in nextCtx, nextIdx);
+        }
+        private void ExitReplayView()
+        {
+            ClearPrevState(ReplayState.Forward);
+            UpdateState(ReplayState.Live, null, _record.Count - 1);
+            _displayMode.text = "라이브 보기"; 
+            OnReplayExited?.Invoke();
+        }
+        private void UnDoMove(MoveRecord record)
+        {
+            var movedPiece   = record.MovedPiece;
+            var movedToPos   = record.From;
+            _board.MovePiece(movedPiece.Id, movedToPos);
+
             if (!record.IsCapture) return;
-            _audio.PlaySfxOneShot(JanggiSfx.Capture);
+            var capturedId    = record.CapturedPiece.Id;
+            var cpaturedTeam  = record.CapturedPiece.Team;
+            var cpaturedToPos = record.To;
+            _board.RestoreCapturedPiece(capturedId, cpaturedTeam, cpaturedToPos);
+        }
+        private void DoMove(MoveRecord record, bool playAudio)
+        {
+            if (playAudio)
+                _audio.PlaySfxOneShot(JanggiSfx.Move);
+
+            var movedPiece = record.MovedPiece;
+            var movedToPos = record.To;
+            _board.MovePiece(movedPiece.Id, movedToPos);
+
+            if (!record.IsCapture) return;
+            if (playAudio) 
+                _audio.PlaySfxOneShot(JanggiSfx.Capture);
             var capturedId   = record.CapturedPiece.Id;
             var capturedTeam = record.CapturedPiece.Team;
             _board.PlaceCapturedPiece(capturedId, capturedTeam);
         }
-        private void ApplyBackwardStep(in MoveRecord record)
+        private IEnumerator ReplayRoutine(MoveContext ctx)
         {
-            var movedId = record.MovedPiece.Id;
-            var movedTo = record.From;
-            _board.MovePiece(movedId, movedTo);
-
-            if (!record.IsCapture) return;
-            var capturedId      = record.CapturedPiece.Id;
-            var capturedTeam    = record.CapturedPiece.Team;
-            var capturedTo      = record.To;
-            _board.RestoreCapturedPiece(capturedId, capturedTeam, capturedTo);
+            yield return new WaitForSeconds(_replayTimer);
+            while (!ctx.IsHandicap)
+            {
+                DoMove(ctx.Record, true);
+                yield return new WaitForSeconds(_replayTimer);
+                UnDoMove(ctx.Record);
+                yield return new WaitForSeconds(_replayTimer);
+            }
         }
-        #endregion
     }
 }

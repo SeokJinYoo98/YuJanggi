@@ -39,14 +39,14 @@ namespace Yujanggi.Runtime.Board
         public void  RestoreCapturedPiece(int id, PlayerTeam team, Pos to)
         {
             ref var garbagePos = ref GetGarbagePos(team);
-            garbagePos += Pos.Left;
+            // garbagePos += Pos.Left;
             _pieces.DoMove(id, to);
         }
         public void  PlaceCapturedPiece(int id, PlayerTeam team)
         {
             ref var garbagePos = ref GetGarbagePos(team);
             var to = garbagePos;
-            garbagePos += Pos.Right;
+            // garbagePos += Pos.Right;
             _pieces.DoMove(id, to);
         }
         public void  MovePiece(int id, Pos to)
@@ -81,7 +81,6 @@ namespace Yujanggi.Runtime.Board
         }
         public void HighlightOnlyPiece(int id)
         {
-            Debug.Log("하이라이트");
             _pieces.HighlightPiece(id); 
             _isHighlighted = true;
         }

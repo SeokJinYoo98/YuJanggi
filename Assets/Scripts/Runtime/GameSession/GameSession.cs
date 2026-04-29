@@ -65,8 +65,10 @@ namespace Yujanggi.Runtime.GameSession
             => _sessionMatch.Handicap();
         public void GiveUp()
         {
+            if (!_sessionMatch.TryGiveUp(out var info))
+                return;
+
             DisableAllControllers();
-            var info = _sessionMatch.GiveUp();
             HandleGameEnded(info);
         }
         public void StartGame()
@@ -155,10 +157,14 @@ namespace Yujanggi.Runtime.GameSession
             _sessionReplay.OnReplayEntered -= HandleEnterReplay;
             _sessionReplay.OnReplayExited  -= HandleExitReplay;
         }
-        public bool TryStepForward()
-            => _sessionReplay.TryNextStep();
-        public bool TryStepBackward()
-            => _sessionReplay.TryPrevStep();
+        public void TryStepForward()
+        {
+            _sessionReplay.ReplayForward();
+        }
+        public void TryStepBackward()
+        {
+            _sessionReplay.ReplayBackward();
+        }
 
         private void HandleEnterReplay()
         {

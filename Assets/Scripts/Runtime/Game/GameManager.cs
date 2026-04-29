@@ -144,6 +144,11 @@ namespace Yujanggi.Runtime.Game
             _session.UnBindEvents();
             SceneManager.LoadScene("LobbyScene");
         }
+        public void HandleReplayModeEnter()
+        {
+            _resultUI.Hide();
+            HandleReplayBackward();
+        }
         public void HandleReplayForward()
         {
             _audio.PlayButton();

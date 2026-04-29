@@ -53,6 +53,9 @@ namespace Yujanggi.Core.Match
         }
         public void     TryMove(Pos from, Pos to)
         {
+            if (Turn.IsEnd)
+                return;
+            
             if (!Board.IsInside(from) || !Board.IsInside(to))
                 return;
 
@@ -89,6 +92,12 @@ namespace Yujanggi.Core.Match
 
         public bool     TryUnDo(out MoveContext ctx)
         {
+            if (Turn.IsEnd)
+            {
+                ctx = default;
+                return false;
+            }
+
             if (!Record.TryPop(out ctx))
                 return false;
             
@@ -110,17 +119,22 @@ namespace Yujanggi.Core.Match
         }
         public void     Handicap()
         {
+            if (Turn.IsEnd) return;
             Record.Push(MoveContext.Handicap);
             Turn.NextTurn();
         }
-        public GameResultInfo GiveUp()
+        public bool TryGiveUp(out GameResultInfo info)
         {
+            if(Turn.IsEnd)
+            {
+                info = default;
+                return false;
+            }
             Turn.SetTurn(TurnType.End);
-            GameResultInfo info;
             info.Loser     = Turn.CurrentTeam;
             info.MoveCnt    = Record.TotalTurn;
             info.Type       = GameResult.GiveUp;
-            return info;
+            return true;
         }
         public void  Update(float deltaTime)
         {
