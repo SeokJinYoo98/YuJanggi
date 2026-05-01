@@ -64,8 +64,10 @@ namespace Yujanggi.Runtime.Controller
                 return;
 
             if (TryReselectPiece(pos))
+            {
+                ClearSelection();
                 return;
-
+            }
             ClearSelection();
         }
 

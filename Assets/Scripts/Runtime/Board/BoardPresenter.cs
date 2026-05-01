@@ -18,36 +18,32 @@ namespace Yujanggi.Runtime.Board
         private BoardView _boardView;
         [SerializeField] private PieceManager _pieces;
         private bool _isHighlighted = false;
-        private Pos _garbageChoPos = new Pos(0, -1);
-        private Pos _garbagehanPos = new Pos(0, -2);
+        private int _deathCnt       = 0;
+        private Vector3 _deathPos   = new Vector3(4, 0, -2);
+
 
         private void Awake()
         {
             _boardView = GetComponent<BoardView>();   
         }
        
-        private ref Pos GetGarbagePos(PlayerTeam team)
-        {
-            if (team == PlayerTeam.Cho)
-                return ref _garbageChoPos;
-            return ref _garbagehanPos;
-        }
+ 
         public void  StartGame(IBoardModel model)
         {
             _pieces.SpawnPieces(model);
         }
         public void  RestoreCapturedPiece(int id, PlayerTeam team, Pos to)
         {
-            ref var garbagePos = ref GetGarbagePos(team);
+            // ref var garbagePos = ref GetGarbagePos(team);
             // garbagePos += Pos.Left;
+            --_deathCnt;
             _pieces.DoMove(id, to);
         }
         public void  PlaceCapturedPiece(int id, PlayerTeam team)
         {
-            ref var garbagePos = ref GetGarbagePos(team);
-            var to = garbagePos;
-            // garbagePos += Pos.Right;
-            _pieces.DoMove(id, to);
+            var deathPos = new Vector3(_deathPos.x, _deathPos.y + _deathCnt, _deathPos.z);
+            ++_deathCnt;
+            _pieces.DoMove(id, deathPos);
         }
         public void  MovePiece(int id, Pos to)
         {
@@ -72,8 +68,8 @@ namespace Yujanggi.Runtime.Board
         {
             UnHighlight();
             _pieces.ResetViews(model);
-            _garbageChoPos = new Pos(0, -1);
-            _garbagehanPos = new Pos(0, -2);
+            _deathPos = new Vector3(4, 0, -2);
+            _deathCnt = 0;
         }
         public void SyncBoardState(IBoardModel boardModel)
         {

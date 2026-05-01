@@ -3,6 +3,8 @@ using Yujanggi.Core.Domain;
 namespace Yujanggi.Core.Match
 {
     using System;
+    using static UnityEngine.Rendering.DebugUI;
+
     public class Score
     {
         public event Action<PlayerTeam, int> OnScoreChanged;
@@ -22,13 +24,14 @@ namespace Yujanggi.Core.Match
                 _ => 0
             };
         }
-        public void ApplyScore(PlayerTeam team, PieceType type)
+        public void ApplyScore(PlayerTeam team, PieceType type, bool isUndo = false)
         {
             var value = GetPieceScore(type);
+            value = isUndo ? value : value * -1;
             if (team == PlayerTeam.Cho)
-                _choScore -= value;  
+                _choScore += value;  
             else
-                _hanScore -= value;
+                _hanScore += value;
 
             OnScoreChanged?.Invoke(team, team == PlayerTeam.Cho ? _choScore : _hanScore);
         }

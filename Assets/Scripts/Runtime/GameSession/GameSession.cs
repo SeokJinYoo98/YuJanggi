@@ -4,15 +4,13 @@ using Yujanggi.Core.Match;
 
 namespace Yujanggi.Runtime.GameSession
 {
-    using Replay;
-    using System;
     using System.Collections.Generic;
     public class GameSession
     {
         #region public Field F
         public GameSession(
             GameSessionInfo         sessionInfo,
-            GameSessionPresenter    sessionView,
+            MatchPresenter    sessionView,
             MatchManager            sessionMatch,
             ReplayPresenter         sessionReplay,
             IPlayerController       cho,
@@ -62,9 +60,13 @@ namespace Yujanggi.Runtime.GameSession
             if (_playerHan.IsLocal()) ((ILocalPlayer)_playerHan).OnSelectionChanged -= HandleSelectionChanged;
         }
         public void Handicap()
-            => _sessionMatch.Handicap();
+        {
+            if (!_sessionReplay.IsLiveMode) return;
+            _sessionMatch.Handicap();
+        }
         public void GiveUp()
         {
+            if (!_sessionReplay.IsLiveMode) return;
             if (!_sessionMatch.TryGiveUp(out var info))
                 return;
 
@@ -87,9 +89,9 @@ namespace Yujanggi.Runtime.GameSession
         }
         public void UnDo()
         {
+            if (!_sessionReplay.IsLiveMode) return;
             if (!_sessionMatch.TryUnDo(out var ctx)) return;
-            if (ctx.IsHandicap)
-                return;
+            if (ctx.IsHandicap) return;
             _sessionPresenter.UnDo(ctx);
         }
         public void Update(float deltaTime)
@@ -100,7 +102,7 @@ namespace Yujanggi.Runtime.GameSession
         private readonly IPlayerController      _playerCho;
         private readonly IPlayerController      _playerHan;
         private readonly GameSessionInfo        _sessionInfo;
-        private readonly GameSessionPresenter   _sessionPresenter;
+        private readonly MatchPresenter   _sessionPresenter;
         private readonly MatchManager           _sessionMatch;
         private readonly ReplayPresenter        _sessionReplay;
         private readonly IInputHandler          _localInput;
@@ -174,9 +176,17 @@ namespace Yujanggi.Runtime.GameSession
         }
         private void HandleExitReplay()
         {
-            _sessionPresenter.SyncBoardState(_sessionMatch);
-            _sessionPresenter.BindLiveEvents(_sessionMatch.MatchEvent);
-            _localInput.Activate();
+            if (_sessionMatch.Turn.IsEnd)
+            {
+                _sessionPresenter.ShowResultUI();
+            }
+            else
+            {
+                _sessionPresenter.SyncBoardState(_sessionMatch);
+                _sessionPresenter.BindLiveEvents(_sessionMatch.MatchEvent);
+                _localInput.Activate();
+            }
+
         }
         #endregion
     }

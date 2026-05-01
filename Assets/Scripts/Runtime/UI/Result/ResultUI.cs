@@ -9,35 +9,52 @@ namespace Yujanggi.Runtime.UI
         [SerializeField] private TMP_Text _winner;
         [SerializeField] private TMP_Text _cnt;
         [SerializeField] private TMP_Text _result;
+
         public void EndGame(in GameResultInfo result)
         {
+            switch(result.Type)
+            {
+                case GameResult.CheckMate:
+                    CheckMate(in result);
+                    break;
+                case GameResult.GiveUp:
+                    GiveUp(in result);
+                    break;
+                default:
+                    break;
+            }
+
+        }
+        private void CheckMate(in GameResultInfo result)
+        {
             if (result.Loser == PlayerTeam.Cho)
             {
                 _winner.color = Color.green;
-                _winner.text = "초";
+                _winner.SetText("초");
             }
             else
             {
                 _winner.color = Color.red;
-                _winner.text = "한";
+                _winner.SetText("한");
+
             }
-            _result.text = "[외통수]";
-            _cnt.text = result.MoveCnt.ToString();
+            _result.SetText("[외통수]");
+            _cnt.SetText("{0}", result.MoveCnt);
         }
-        public void GiveUp(in GameResultInfo result)
+        private void GiveUp(in GameResultInfo result)
         {
             if (result.Loser == PlayerTeam.Cho)
             {
                 _winner.color = Color.red;
-                _winner.text = "한";
+                _winner.SetText("한");
             }
             else
             {
                 _winner.color = Color.green;
-                _winner.text = "초";
+                _winner.SetText("초");
             }
-            _result.text = "[기권승]";
-            _cnt.text = result.MoveCnt.ToString();
+            _result.SetText("[기권승]");
+            _cnt.SetText("{0}", result.MoveCnt);
         }
     }
 }

@@ -6,11 +6,12 @@ using Yujanggi.Runtime.Audio;
 using Yujanggi.Runtime.Board;
 using Yujanggi.Runtime.UI;
 
+using UnityEngine;
 namespace Yujanggi.Runtime.GameSession
 {
-    public class GameSessionPresenter 
+    public class MatchPresenter 
     {
-        public GameSessionPresenter(
+        public MatchPresenter(
             BoardPresenter  board,
             ResultUI        resultUI,
             MatchUI         matchUI,
@@ -65,15 +66,17 @@ namespace Yujanggi.Runtime.GameSession
             _matchUI.UnBindEvents(match);
         }
         public void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legalCells, IReadOnlyList<Pos> illegalCells)
-        {
-            _board.UnHighlight();
-            if (!pieceId.HasValue) return;
+        { 
+            if (!pieceId.HasValue)
+            {
+                _board.UnHighlight();
+                return;
+            }
             _audio.PlaySfxOneShot(JanggiSfx.Select);
             _board.Highlight(pieceId.Value, legalCells, illegalCells);
         }
         public void OnTurnChanged(bool isLocal)
         {
-            _board.UnHighlight();
             if (!isLocal) return;
             _audio.PlaySfxOneShot(JanggiSfx.TurnAlert);
         }
@@ -81,12 +84,13 @@ namespace Yujanggi.Runtime.GameSession
         {
             if (loserIsLocal) _audio.PlaySfxOneShot(JanggiSfx.Lose); 
             else _audio.PlaySfxOneShot(JanggiSfx.Win);
-
-            ShowResultUI(in info);
+            _resultUI.EndGame(info);
+            ShowResultUI();
         }
+        public void ShowResultUI()
+            => _resultUI.Show();
         public void SyncBoardState(IMatchManager match)
         {
-            _board.UnHighlight();
             var board = match.Board;
             _board.SyncBoardState(board);
         }
@@ -108,6 +112,7 @@ namespace Yujanggi.Runtime.GameSession
             var to = ctx.Record.From;
             _board.MovePiece(movedId, to);
 
+            Debug.Log($"{to.X}, {to.Z}");
             if (ctx.IsCapture)
             {
                 to = ctx.Record.To;
@@ -121,10 +126,6 @@ namespace Yujanggi.Runtime.GameSession
         private readonly ResultUI       _resultUI;
         private readonly MatchUI        _matchUI;
         private readonly AudioManager   _audio;
-        private void ShowResultUI(in GameResultInfo info)
-        {
-            _resultUI.Show();
-            _resultUI.GiveUp(info);
-        }
+
     }
 }

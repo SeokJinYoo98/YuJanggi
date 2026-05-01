@@ -1,4 +1,4 @@
-namespace Yujanggi.Runtime.Replay
+namespace Yujanggi.Runtime.GameSession
 {
     using Core.Match;
     using System;
@@ -15,7 +15,7 @@ namespace Yujanggi.Runtime.Replay
         
         public event Action OnReplayEntered;
         public event Action OnReplayExited;
-
+        
         private Coroutine    _replayRoutine;
 
         private readonly ICoroutineRunner     _runner;
@@ -27,7 +27,7 @@ namespace Yujanggi.Runtime.Replay
 
         private bool IsRecordAtLatest => _record.IsLive;
         private bool IsRecordsEmpty   => _record.Count == 0;
-        private bool IsPresenterLive  => _currState == ReplayState.Live;
+        public bool  IsLiveMode  => _currState == ReplayState.Live;
         public ReplayPresenter(IReplayBoardRenderer board, Record record, ICoroutineRunner runner, AudioManager audio, TMP_Text displayMode)
         {
             _board       = board;
@@ -72,9 +72,9 @@ namespace Yujanggi.Runtime.Replay
             if (_currCtx.HasValue)
             {
                 if (nextState == ReplayState.Forward)
-                    DoMove(_currCtx.Value.Record, false);
+                    DoMove(_currCtx.Value, false);
                 else
-                    UnDoMove(_currCtx.Value.Record);
+                    UnDoMove(_currCtx.Value);
             }
 
         }
@@ -88,32 +88,46 @@ namespace Yujanggi.Runtime.Replay
         {
             ClearPrevState(nextState);
 
-            PrepareVisual(nextCtx.Record);
-            StartCoroutine(nextCtx);
+            if (!nextCtx.IsHandicap)
+            {
+                PrepareVisual(nextCtx.Record);
+                StartCoroutine(nextCtx);
+            }
 
             UpdateState(nextState, nextCtx, nextIdx);
         }
         public void ReplayBackward()
         {
-            if (IsRecordsEmpty) return;
- 
-            if (IsPresenterLive)
+            if (IsRecordsEmpty)
+            {
+                return;
+            }
+
+            if (IsLiveMode)
             {
                 EnterReplayView();
                 return;
             }
-            if (_currIdx == 0) return;
+            if (_currIdx == 0)
+            {
+                return;
+            }
 
             var nextState = ReplayState.Backward;
             int nextIdx = _currIdx - 1;
-            if (!_record.TryGetMoveCtx(nextIdx, out var nextCtx)) return;
+            if (!_record.TryGetMoveCtx(nextIdx, out var nextCtx))
+            {
+                return;
+            }
 
             EnterState(nextState, in nextCtx, nextIdx);
         }
         public void ReplayForward()
         {
-            if (IsPresenterLive)
+            if (IsLiveMode)
+            {
                 return;
+            }
             if (IsRecordAtLatest)
             {
                 ExitReplayView();
@@ -122,16 +136,20 @@ namespace Yujanggi.Runtime.Replay
             var nextState = ReplayState.Forward;
             var nextIdx   = _currIdx + 1;
             if (!_record.TryGetMoveCtx(nextIdx, out var nextCtx))
+            {
                 return;
+            }
+                
   
             EnterState(nextState, in nextCtx, nextIdx);
         }
 
         private void EnterReplayView()
         {
+            _record.EnterReplay();
             OnReplayEntered?.Invoke();
-            _displayMode.text = "기보 보기";
-
+            _displayMode.SetText("기보 보기");
+            
             var nextState = ReplayState.Backward;
             var nextIdx  = _record.Count - 1;
             if (!_record.TryGetMoveCtx(nextIdx, out var nextCtx)) return;
@@ -140,13 +158,17 @@ namespace Yujanggi.Runtime.Replay
         }
         private void ExitReplayView()
         {
+            _record.ExitReplay();
             ClearPrevState(ReplayState.Forward);
             UpdateState(ReplayState.Live, null, _record.Count - 1);
-            _displayMode.text = "라이브 보기"; 
             OnReplayExited?.Invoke();
+
+            _displayMode.SetText("라이브 보기");
         }
-        private void UnDoMove(MoveRecord record)
+        private void UnDoMove(MoveContext moveCtx)
         {
+            if (moveCtx.IsHandicap) return;
+            var record = moveCtx.Record;
             var movedPiece   = record.MovedPiece;
             var movedToPos   = record.From;
             _board.MovePiece(movedPiece.Id, movedToPos);
@@ -157,11 +179,14 @@ namespace Yujanggi.Runtime.Replay
             var cpaturedToPos = record.To;
             _board.RestoreCapturedPiece(capturedId, cpaturedTeam, cpaturedToPos);
         }
-        private void DoMove(MoveRecord record, bool playAudio)
+        private void DoMove(MoveContext moveCtx, bool playAudio)
         {
+            if (moveCtx.IsHandicap) return;
+
             if (playAudio)
                 _audio.PlaySfxOneShot(JanggiSfx.Move);
 
+            var record = moveCtx.Record;
             var movedPiece = record.MovedPiece;
             var movedToPos = record.To;
             _board.MovePiece(movedPiece.Id, movedToPos);
@@ -178,9 +203,9 @@ namespace Yujanggi.Runtime.Replay
             yield return new WaitForSeconds(_replayTimer);
             while (!ctx.IsHandicap)
             {
-                DoMove(ctx.Record, true);
+                DoMove(ctx, true);
                 yield return new WaitForSeconds(_replayTimer);
-                UnDoMove(ctx.Record);
+                UnDoMove(ctx);
                 yield return new WaitForSeconds(_replayTimer);
             }
         }

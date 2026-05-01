@@ -21,7 +21,7 @@ namespace Yujanggi.Runtime.UI
 
         [SerializeField] private TMP_Text _janggunText;
         private bool _janggunAnim = false;
-        private float _speed = 10;
+        private float _speed = 20;
 
         int _totalTurn = 0;
         int _currTurn  = 0;
@@ -80,41 +80,37 @@ namespace Yujanggi.Runtime.UI
             UpdateRecord();
         }
         private void UpdateRecord()
-            => _recordText.text = $"{_currTurn}수:{_totalTurn}수";
+            => _recordText.SetText("{0}수:{1}수", _currTurn, _totalTurn);
+            // => _recordText.text = $"{_currTurn}수:{_totalTurn}수";
 
 
 
         public void UpdateTurn(PlayerTeam turn)
         {
-            char turnChar;
             if (turn == PlayerTeam.Cho)
             {
-                turnChar = '초';
                 _turnText.color = Color.green;
-
+                _turnText.SetText("차례:초");
             }
             else
             {
-                turnChar = '한';
-                _turnText.color = Color.red;
+                _turnText.color = Color.red; 
+                _turnText.SetText("차례:한");
             }
-
-            _turnText.text = $"차례:{turnChar}";
         }
         public void UpdateScore(PlayerTeam team, int score)
         {
             if (team == PlayerTeam.Cho)
-                _choScoreText.text = $"점수:{score}";
-            
+                _choScoreText.SetText("점수:{0}", score);
             else
-                _hanScoreText.text = $"{score}:점수";
+                _hanScoreText.SetText("점수:{0}", score);
         }
         public void UpdateTimer((PlayerTeam team, int time) info)
         {
             if (info.team == PlayerTeam.Han)
-                _hanTimerText.text = $"{info.time}:시간";
+                _hanTimerText.SetText("{0}:시간", info.time);
             else
-                _choTimerText.text = $"시간:{info.time}";
+                _choTimerText.SetText("시간:{0}", info.time);
         }
         public void PlayJanggun(PlayerTeam team)
         {

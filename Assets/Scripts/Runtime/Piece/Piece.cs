@@ -23,6 +23,12 @@ namespace Yujanggi.Runtime.Piece
             transform.position = new Vector3(pos.X, 1, pos.Z);
             transform.Rotate(new Vector3(0, 180, 0));
         }
+        public void  MoveTo(Vector3 toPos)
+        {
+            Debug.Log($"MoveTo called: {name} -> {toPos}");
+            if (_moveRoutine != null) StopCoroutine(_moveRoutine);
+            _moveRoutine = StartCoroutine(CoMove(toPos, 0.16f));
+        }
         public void  MoveTo(Pos toPos)
         {
             if (_moveRoutine != null) StopCoroutine(_moveRoutine);
@@ -74,7 +80,7 @@ namespace Yujanggi.Runtime.Piece
             while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
-                float t = elapsed / duration;
+                float t = Mathf.Clamp01(elapsed / duration);
                 transform.position = Vector3.Lerp(startPos, targetPos, t);
                 yield return null;
             }

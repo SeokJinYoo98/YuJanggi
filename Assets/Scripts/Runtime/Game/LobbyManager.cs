@@ -17,7 +17,8 @@ namespace Yujanggi.Runtime.Game
         private AudioManager _audio;
         private void Awake()
         {
-            Application.targetFrameRate = 144;
+            Application.targetFrameRate = 60;
+            Application.runInBackground = true;
         }
         private void Start()
         {

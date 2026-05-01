@@ -14,8 +14,6 @@ namespace Yujanggi.Runtime.Game
     using TMPro;
     using UI;
     using Yujanggi.Runtime.Controller;
-    using Yujanggi.Runtime.Replay;
-
     public class GameManager : MonoBehaviour
     {
         [SerializeField] private TMP_Text        _currDisplayMode;
@@ -72,7 +70,7 @@ namespace Yujanggi.Runtime.Game
         #region SessionFactory       
         private GameSession      CreateSession(
             in GameSessionInfo      sessionInfo,
-            GameSessionPresenter    sessionView,
+            MatchPresenter    sessionView,
             MatchManager            sessionMatch,
             ReplayPresenter         sessionReplay,
             IPlayerController       cho,
@@ -99,8 +97,8 @@ namespace Yujanggi.Runtime.Game
             var janggiRule = new JanggiRule();
             return new MatchManager(turn, record, score, boardModel, janggiRule);
         }
-        private GameSessionPresenter   CreateSessionView()
-            => new GameSessionPresenter(_boardPresenter, _resultUI, _matchUI, _audio);
+        private MatchPresenter   CreateSessionView()
+            => new MatchPresenter(_boardPresenter, _resultUI, _matchUI, _audio);
         private IPlayerController      CreateController(
            PlayerType type,
            PlayerTeam team,

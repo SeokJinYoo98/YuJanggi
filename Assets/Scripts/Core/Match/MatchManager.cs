@@ -113,7 +113,7 @@ namespace Yujanggi.Core.Match
             var team = record.CapturedPiece.Team;
             var type = record.CapturedPiece.Type;
   
-            Score.ApplyScore(team, type);
+            Score.ApplyScore(team, type, true);
 
             return true;
         }

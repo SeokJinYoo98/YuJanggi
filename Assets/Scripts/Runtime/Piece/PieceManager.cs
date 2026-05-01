@@ -19,9 +19,8 @@ namespace Yujanggi.Runtime.Piece
         }
         public void HighlightPiece(int id)
         {
-            if (_currPiece != -1)
-                UnHighlight();
-            
+            if (id == -1) return;
+            if (_currPiece != -1) UnHighlight();
             _currPiece = id;
             _views[_currPiece].Highlight();
         }     
@@ -62,9 +61,10 @@ namespace Yujanggi.Runtime.Piece
                 }
             }
         }
+        public void DoMove(int id, Vector3 to)
+            => _views[id].MoveTo(to);
+
         public void DoMove(int id, Pos to)
-        {
-            _views[id].MoveTo(to);
-        }
+            => _views[id].MoveTo(to);
     }
 }
