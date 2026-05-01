@@ -17,7 +17,7 @@ namespace Yujanggi.Runtime.GameSession
             IPlayerController       han,
             IInputHandler           localInput)
         {
-            _sessionPresenter   = sessionView;
+            _matchPresenter   = sessionView;
             _sessionInfo        = sessionInfo;
             _sessionMatch       = sessionMatch;
             _sessionReplay      = sessionReplay;
@@ -32,8 +32,8 @@ namespace Yujanggi.Runtime.GameSession
             BindReplayEvents();
             _sessionMatch.BindEvents();
             var events = _sessionMatch.MatchEvent;
-            _sessionPresenter.BindUI(_sessionMatch);
-            _sessionPresenter.BindLiveEvents(events);
+            _matchPresenter.BindUI(_sessionMatch);
+            _matchPresenter.BindLiveEvents(events);
             events.OnGameEnded        += HandleGameEnded;
             events.OnTurnChanged      += HandleTurnChanged;
             _playerCho.BindEvents(); 
@@ -48,8 +48,8 @@ namespace Yujanggi.Runtime.GameSession
             UnBindReplayEvents();
             _sessionMatch.UnBindEvents();
             var events = _sessionMatch.MatchEvent;
-            _sessionPresenter.UnBindUI(_sessionMatch);
-            _sessionPresenter.UnBindLiveEvents(events);
+            _matchPresenter.UnBindUI(_sessionMatch);
+            _matchPresenter.UnBindLiveEvents(events);
             events.OnTurnChanged -= HandleTurnChanged;
             events.OnGameEnded   -= HandleGameEnded;
             _playerCho.UnBindEvents(); 
@@ -78,12 +78,12 @@ namespace Yujanggi.Runtime.GameSession
             _sessionMatch.StartGame(_sessionInfo.ChoFormation, _sessionInfo.HanFormation);
             _playerCho.BeginTurn();
             _playerHan.EndTurn();
-            _sessionPresenter.StartGame(_sessionMatch.Board);
+            _matchPresenter.StartGame(_sessionMatch.Board);
         }
         public void ResetGame()
         {
             _sessionMatch.StartGame(_sessionInfo.ChoFormation, _sessionInfo.HanFormation);
-            _sessionPresenter.ResetGame(_sessionMatch.Board);
+            _matchPresenter.ResetGame(_sessionMatch.Board);
             _playerCho.BeginTurn();
             _playerHan.EndTurn();
         }
@@ -92,7 +92,7 @@ namespace Yujanggi.Runtime.GameSession
             if (!_sessionReplay.IsLiveMode) return;
             if (!_sessionMatch.TryUnDo(out var ctx)) return;
             if (ctx.IsHandicap) return;
-            _sessionPresenter.UnDo(ctx);
+            _matchPresenter.UnDo(ctx);
         }
         public void Update(float deltaTime)
             => _sessionMatch.Update(deltaTime);
@@ -102,7 +102,7 @@ namespace Yujanggi.Runtime.GameSession
         private readonly IPlayerController      _playerCho;
         private readonly IPlayerController      _playerHan;
         private readonly GameSessionInfo        _sessionInfo;
-        private readonly MatchPresenter   _sessionPresenter;
+        private readonly MatchPresenter         _matchPresenter;
         private readonly MatchManager           _sessionMatch;
         private readonly ReplayPresenter        _sessionReplay;
         private readonly IInputHandler          _localInput;
@@ -113,7 +113,7 @@ namespace Yujanggi.Runtime.GameSession
         private void              HandleTurnChanged(PlayerTeam next)
         {
             var nextPlayer = GetPlayer(next);
-            _sessionPresenter.OnTurnChanged(nextPlayer.IsLocal());
+            _matchPresenter.OnTurnChanged(nextPlayer.IsLocal());
             BeginNextTurn(next);
         }
         private void              HandleGameEnded(GameResultInfo info)
@@ -121,10 +121,10 @@ namespace Yujanggi.Runtime.GameSession
             _sessionReplay.Reset();
             DisableAllControllers();
             var loserIsLocal = GetPlayer(info.Loser).IsLocal();
-            _sessionPresenter.OnGameEnded(loserIsLocal, in info);
+            _matchPresenter.OnGameEnded(loserIsLocal, in info);
         }
         private void              HandleSelectionChanged(int? pieceId, IReadOnlyList<Pos> legalCells, IReadOnlyList<Pos> illegalCells)
-            => _sessionPresenter.OnSelectionChanged(pieceId, legalCells, illegalCells);
+            => _matchPresenter.OnSelectionChanged(pieceId, legalCells, illegalCells);
         private void              HandleTryMove(Pos from, Pos to)
         {
             _sessionMatch.TryMove(from, to);
@@ -135,6 +135,8 @@ namespace Yujanggi.Runtime.GameSession
         }
         private IPlayerController BeginNextTurn(PlayerTeam turn)
         {
+            if (_sessionReplay.IsLiveMode) 
+                _matchPresenter.Clear();
             DisableAllControllers();
             if (turn == PlayerTeam.Cho)
             {
@@ -159,31 +161,31 @@ namespace Yujanggi.Runtime.GameSession
             _sessionReplay.OnReplayEntered -= HandleEnterReplay;
             _sessionReplay.OnReplayExited  -= HandleExitReplay;
         }
-        public void TryStepForward()
+        public void StepForward()
         {
             _sessionReplay.ReplayForward();
         }
-        public void TryStepBackward()
+        public void StepBackward()
         {
             _sessionReplay.ReplayBackward();
         }
 
         private void HandleEnterReplay()
         {
-            _sessionPresenter.SyncBoardState(_sessionMatch);
-            _sessionPresenter.UnBindLiveEvents(_sessionMatch.MatchEvent);
+            _matchPresenter.SyncBoardState(_sessionMatch);
+            _matchPresenter.UnBindLiveEvents(_sessionMatch.MatchEvent);
             _localInput.Deactivate();
         }
         private void HandleExitReplay()
         {
             if (_sessionMatch.Turn.IsEnd)
             {
-                _sessionPresenter.ShowResultUI();
+                _matchPresenter.ShowResultUI();
             }
             else
             {
-                _sessionPresenter.SyncBoardState(_sessionMatch);
-                _sessionPresenter.BindLiveEvents(_sessionMatch.MatchEvent);
+                _matchPresenter.SyncBoardState(_sessionMatch);
+                _matchPresenter.BindLiveEvents(_sessionMatch.MatchEvent);
                 _localInput.Activate();
             }
 

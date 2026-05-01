@@ -22,15 +22,14 @@ namespace Yujanggi.Core.Domain
         private readonly List<Pos>    _illLegalCells  = new(20);
         public IReadOnlyList<Pos> LegalCells   => _legalCells;
         public IReadOnlyList<Pos> IllegalCells => _illLegalCells;
-        public bool               HasSelection => 0 < _legalSet.Count;
-        public Pos                FromPos;
+        public bool               HasSelection => FromPos != Pos.Invalid;
+        public Pos                FromPos = Pos.Invalid;
         public void Clear()
         {
             _legalSet.Clear();
             _legalCells.Clear();
             _illLegalCells.Clear();
         }
-        public void AddLegal(Pos pos) => _legalCells.Add(pos);
         public void SetMovable(List<Pos> legalCells, List<Pos> illegalCells)
         {
             Clear();
@@ -43,7 +42,6 @@ namespace Yujanggi.Core.Domain
             _illLegalCells.AddRange(illegalCells);
         }
         public bool IsMovable(Pos pos) => _legalSet.Contains(pos);
-      
     }
 
     public readonly struct MoveContext

@@ -25,15 +25,13 @@ namespace Yujanggi.Runtime.Piece
         }
         public void  MoveTo(Vector3 toPos)
         {
-            Debug.Log($"MoveTo called: {name} -> {toPos}");
             if (_moveRoutine != null) StopCoroutine(_moveRoutine);
             _moveRoutine = StartCoroutine(CoMove(toPos, 0.16f));
         }
         public void  MoveTo(Pos toPos)
         {
-            if (_moveRoutine != null) StopCoroutine(_moveRoutine);
             Vector3 targetWorldPos = new Vector3(toPos.X, transform.position.y, toPos.Z);
-            _moveRoutine = StartCoroutine(CoMove(targetWorldPos, 0.16f));
+            MoveTo(targetWorldPos);
         }
         public void  Highlight()
         {

@@ -65,6 +65,8 @@ namespace Yujanggi.Runtime.GameSession
         {
             _matchUI.UnBindEvents(match);
         }
+        public void Clear()
+            => _board.UnHighlight();
         public void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legalCells, IReadOnlyList<Pos> illegalCells)
         { 
             if (!pieceId.HasValue)

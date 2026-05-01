@@ -150,12 +150,12 @@ namespace Yujanggi.Runtime.Game
         public void HandleReplayForward()
         {
             _audio.PlayButton();
-            _session.TryStepForward();
+            _session.StepForward();
         }
         public void HandleReplayBackward()
         {
             _audio.PlayButton();
-            _session.TryStepBackward();
+            _session.StepBackward();
      
         }
         #endregion

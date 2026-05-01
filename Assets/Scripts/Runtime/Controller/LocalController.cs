@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Rule;
-using UnityEngine;
 using Yujanggi.Runtime.GameSession;
+using Yujanggi.Runtime.Piece;
 namespace Yujanggi.Runtime.Controller
 {
     public class LocalController : IPlayerController, ILocalPlayer
     {
         public  PlayerTeam              Team { get; }
-        private bool _isTurn;
+        private bool                    _isTurn;
         private readonly IInputHandler  _input;
         private readonly IBoardModel    _board;
         private readonly IJanggiRule    _rule;
@@ -53,44 +54,35 @@ namespace Yujanggi.Runtime.Controller
         {
             if (!CanHandleClick(pos))
                 return;
-
             if (!_selection.HasSelection)
             {
-                SelectPiece(pos);
+                TrySelectPiece(pos);
                 return;
             }
 
             if (TryMovePiece(pos))
                 return;
-
+            
+            
             if (TryReselectPiece(pos))
-            {
-                ClearSelection();
                 return;
-            }
+
             ClearSelection();
+            
         }
 
         private bool CanHandleClick(Pos pos)
             => _isTurn && _board.IsInside(pos);
-
-        private void SelectPiece(Pos pos)
+        private bool TrySelectPiece(Pos pos)
         {
             if (!TryGetOwnPiece(pos, out var piece))
-                return;
-
-            _selection.Clear();
-            _selection.FromPos = pos;
-            _rule.FindWays(_board, _selection);
-
-            OnSelectionChanged?.Invoke(piece.Id, _selection.LegalCells, _selection.IllegalCells);
-        }
-
-        private bool TryMovePiece(Pos toPos)
-        {
-            if (_selection.FromPos == toPos)
                 return false;
 
+            Select(piece.Id, pos);
+            return true;
+        }
+        private bool TryMovePiece(Pos toPos)
+        {
             if (!_selection.IsMovable(toPos))
                 return false;
 
@@ -98,25 +90,19 @@ namespace Yujanggi.Runtime.Controller
             ClearSelection();
             return true;
         }
-
         private bool TryReselectPiece(Pos pos)
         {
-            if (pos == _selection.FromPos) return false;
-            if (!_board.HasPiece(pos)) return false;
-
-            if (!TryGetOwnPiece(pos, out var piece))
-            {
-                ClearSelection();
+            if (pos == _selection.FromPos)
                 return false;
-            }
-            _selection.Clear();
-            _selection.FromPos = pos;
-            _rule.FindWays(_board, _selection);
+            if (!_board.HasPiece(pos))
+                return false;
+            if (!TryGetOwnPiece(pos, out var piece))
+                return false;
 
-            OnSelectionChanged?.Invoke(piece.Id, _selection.LegalCells, _selection.IllegalCells);
+            Select(piece.Id, pos);
+
             return true;
         }
-
         private bool TryGetOwnPiece(Pos pos, out PieceModel piece)
         {
             piece = default;
@@ -126,12 +112,20 @@ namespace Yujanggi.Runtime.Controller
             piece = _board.GetPiece(pos);
             return piece.Team == Team;
         }
-
         private void ClearSelection()
         {
-            _selection.FromPos = Pos.Invalid;
             _selection.Clear();
+            _selection.FromPos = Pos.Invalid;
             OnSelectionChanged?.Invoke(null, _selection.LegalCells, _selection.IllegalCells);
+        }
+        private void Select(int idx, Pos pos)
+        {
+            _selection.Clear();
+            _selection.FromPos = pos;
+            _rule.FindWays(_board, _selection);
+            
+
+            OnSelectionChanged?.Invoke(idx, _selection.LegalCells, _selection.IllegalCells);
         }
     }
 }
