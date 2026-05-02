@@ -79,20 +79,12 @@ namespace Yujanggi.Runtime.GameSession
             else _audio.PlaySfxOneShot(JanggiSfx.Win);
             _resultUI.EndGame(info);
         }
-        public void ShowReultUI()
+        public void ShowResultUI()
             => _resultUI.Show();
         public void HideResultUI()
             => _resultUI.Hide();
 
 
-
-
-        #region Live
-  
-
-
-
-        #endregion;
         public void BindUI(IMatchUIDatas match)
         {
             _matchUI.BindEvents(match);
@@ -101,49 +93,14 @@ namespace Yujanggi.Runtime.GameSession
         {
             _matchUI.UnBindEvents(match);
         }
-        public void UnDo(MoveContext ctx)
-        {
-            _board.UnHighlight();
-            if (ctx.IsHandicap) return;
 
-            var movedPiece = ctx.Record.MovedPiece;
-
-            var movedId = movedPiece.Id;
-            var to = ctx.Record.From;
-            _board.MovePiece(movedId, to);
-
-            if (ctx.IsCapture)
-            {
-                to = ctx.Record.To;
-                var captured = ctx.Record.CapturedPiece;
-                _board.RestoreCapturedPiece(captured.Id, captured.Team, to);
-            }
-        }
-        public void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legalCells, IReadOnlyList<Pos> illegalCells)
-        { 
-            if (!pieceId.HasValue)
-            {
-                _board.UnHighlight();
-                return;
-            }
-            _audio.PlaySfxOneShot(JanggiSfx.Select);
-            _board.Highlight(pieceId.Value, legalCells, illegalCells);
-        }
         public void OnTurnChanged(bool isLocal)
         {
             if (!isLocal) return;
             Debug.Log("턴 바뀜");
             _audio.PlaySfxOneShot(JanggiSfx.TurnAlert);
         }
-        public void OnGameEnded(bool loserIsLocal, in GameResultInfo info)
-        {
-            if (loserIsLocal) _audio.PlaySfxOneShot(JanggiSfx.Lose); 
-            else _audio.PlaySfxOneShot(JanggiSfx.Win);
-            _resultUI.EndGame(info);
-            ShowResultUI();
-        }
-        public void ShowResultUI()
-            => _resultUI.Show();
+
 
         public void ResetGame(IBoardModel boardModel)
         {

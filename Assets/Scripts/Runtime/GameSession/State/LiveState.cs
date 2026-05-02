@@ -56,9 +56,6 @@ namespace Yujanggi.Runtime.GameSession
             BeginNextTurn(nextPlayer);
         }
 
-
-
-
         public override void RequestMove(Pos from, Pos to) 
         {
             if (!_matchModel.TryMove(from, to, out var moveCtx))
@@ -88,8 +85,7 @@ namespace Yujanggi.Runtime.GameSession
             if (!moveCtx.IsHandicap)
                 _matchView.RevertMoveView(moveCtx.Record);
 
-            var nextPlayer = BeginNextTurn(moveCtx.MovePlayer);
-            _matchView.OnTurnChanged(nextPlayer.IsLocal());
+           BeginNextTurn(moveCtx.MovePlayer);
         }
     }
 }

@@ -151,26 +151,6 @@ namespace Yujanggi.Runtime.GameSession
         #endregion
 
         #region Replay
-
-        private void HandleEnterReplay()
-        {
-            _matchView.SyncBoardState(_matchModel);
-            _localInput.Deactivate();
-        }
-        private void HandleExitReplay()
-        {
-            if (_matchModel.Turn.IsEnd)
-            {
-                _matchView.ShowResultUI();
-            }
-            else
-            {
-                _matchView.SyncBoardState(_matchModel);
-                _localInput.Activate();
-            }
-
-        }
-
         public void ToLive()
             => ChangeState(SessionState.Live);
         public void ToReplay()

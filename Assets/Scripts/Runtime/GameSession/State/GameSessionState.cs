@@ -60,6 +60,7 @@ namespace Yujanggi.Runtime.GameSession
         {
             var loser = GetPlayer(info.Loser);
             _matchView.OnGameEnded(info, loser.IsLocal());
+            _matchView.ShowResultUI();
         }
         public virtual void OnCheckOccurred(PlayerTeam team)
             => _matchView.CheckOccured(team);
