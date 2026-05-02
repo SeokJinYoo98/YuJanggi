@@ -65,18 +65,19 @@ namespace Yujanggi.Core.Match
                 ExecuteMove(from, to);
             return;
         }
-        public void     StartGame(Formation cho, Formation han)
+        public void InitGame(Formation cho, Formation han)
         {
-            Turn.StartGame(PlayerTeam.Cho);
-            Record.StartGame();
-            Score.StartGame();
             Board.ResetBoard();
             BoardInitializer.SetUpPieces(Board, cho, han);
         }
-        public void     ResetGame(Formation cho, Formation han)
+        public void     StartGame()
         {
-            StartGame(cho, han);
+            
+            Record.StartGame();
+            Score.StartGame();
+            Turn.StartGame(PlayerTeam.Cho);
         }
+
         public void     UnBindEvents()
         {
             this.Turn.OnTurnChanged  -= TurnChanged;

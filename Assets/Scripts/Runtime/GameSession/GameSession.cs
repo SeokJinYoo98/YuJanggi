@@ -76,19 +76,16 @@ namespace Yujanggi.Runtime.GameSession
         }
         public void StartGame()
         {
-            _sessionMatch.StartGame(_sessionInfo.ChoFormation, _sessionInfo.HanFormation);
+            _sessionMatch.InitGame(_sessionInfo.ChoFormation, _sessionInfo.HanFormation);
             _matchPresenter.StartGame(_sessionMatch.Board);
-            _playerCho.BeginTurn();
-            _playerHan.EndTurn();
+            _sessionMatch.StartGame();
         }
         public void ResetGame()
         {
-
             _sessionReplay.Reset();
-            _sessionMatch.StartGame(_sessionInfo.ChoFormation, _sessionInfo.HanFormation);
-            _matchPresenter.ResetGame(_sessionMatch.Board); 
-            _playerCho.BeginTurn();
-            _playerHan.EndTurn();
+            _sessionMatch.InitGame(_sessionInfo.ChoFormation, _sessionInfo.HanFormation);
+            _matchPresenter.ResetGame(_sessionMatch.Board);
+            _sessionMatch.StartGame();
         }
         public void UnDo()
         {
@@ -114,9 +111,9 @@ namespace Yujanggi.Runtime.GameSession
 
         private void              HandleTurnChanged(PlayerTeam next)
         {
+            BeginNextTurn(next); 
             var nextPlayer = GetPlayer(next);
             _matchPresenter.OnTurnChanged(nextPlayer.IsLocal());
-            BeginNextTurn(next);
         }
         private void              HandleGameEnded(GameResultInfo info)
         {
@@ -141,10 +138,12 @@ namespace Yujanggi.Runtime.GameSession
 
             if (turn == PlayerTeam.Cho)
             {
+                Debug.Log("턴: 초");
                 _playerHan.EndTurn();
                 _playerCho.BeginTurn();
                 return _playerCho;
             }
+            Debug.Log("턴: 한");
             _playerCho.EndTurn();
             _playerHan.BeginTurn();
             return _playerHan;

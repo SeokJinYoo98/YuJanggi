@@ -26,12 +26,11 @@ namespace Yujanggi.Runtime.Controller
 
         public AIController(IJanggiRule rule, IBoardModel board, PlayerTeam team, ICoroutineRunner runner)
         {
-            Team        = team;
-            _runner     = runner;
-           
-            _rule       = rule;
-            _boardModel = board;
-            _selection        = new Selection();
+            Team                = team;
+            _runner             = runner;
+            _rule               = rule;
+            _boardModel         = board;
+            _selection          = new Selection();
         }
         public void BindEvents() { }
         public void UnBindEvents() { }
@@ -40,29 +39,39 @@ namespace Yujanggi.Runtime.Controller
             _candidates.Clear();
             _selectedCandidateIndex = -1;
 
-            int width = _boardModel.WIDTH;
-            int height = _boardModel.HEIGHT;
+            int pieceCount = 0;
+            int myPieceCount = 0;
+            int legalCount = 0;
 
-            for (int x = 0; x < width; ++x)
+            for (int x = 0; x < _boardModel.WIDTH; ++x)
             {
-                for (int z = 0; z < height; ++z)
+                for (int z = 0; z < _boardModel.HEIGHT; ++z)
                 {
                     var from = new Pos(x, z);
 
                     if (!_boardModel.HasPiece(from))
                         continue;
 
+                    pieceCount++;
+
                     var piece = _boardModel.GetPiece(from);
+
                     if (piece.Team != Team)
                         continue;
+
+                    myPieceCount++;
 
                     _selection.Clear();
                     _selection.FromPos = from;
 
                     _rule.FindWays(_boardModel, _selection);
 
-   
                     var movable = _selection.LegalCells;
+
+                    if (movable != null)
+                        legalCount += movable.Count;
+
+  
                     if (movable == null || movable.Count == 0)
                         continue;
 
@@ -72,6 +81,7 @@ namespace Yujanggi.Runtime.Controller
                     _candidates.Add(new MoveCandidate(piece, from, ways));
                 }
             }
+
             if (_candidates.Count == 0)
                 return false;
 
@@ -101,32 +111,31 @@ namespace Yujanggi.Runtime.Controller
         }
 
         private readonly ICoroutineRunner _runner;
-        private Coroutine _aiRoutine;
+        private Coroutine                 _aiRoutine;
         private IEnumerator ProcessAITurn()
         {
-            Debug.Log("코루틴 실행");
-            if (!this.TryThink())
-                yield break;
+            if (!TryThink()) yield break;
 
             yield return new WaitForSeconds(1f);
 
-            if (!this.TryGetSelectedMove())
-                yield break;
-            Debug.Log("코루틴 종료");
+            if (!TryGetSelectedMove()) yield break;
         }
 
         public void BeginTurn()
         {
+            Debug.Log("AI 비긴턴");
             if (_aiRoutine != null)
             {
                 _runner.Stop(_aiRoutine);
                 _aiRoutine = null;
             }
             _aiRoutine = _runner.Run(ProcessAITurn());
+            Debug.Log("AI 비긴끝");
         }
 
         public void EndTurn()
         {
+            Debug.Log("AI엔드턴");
             if (_aiRoutine == null) return;
 
             _runner.Stop(_aiRoutine);

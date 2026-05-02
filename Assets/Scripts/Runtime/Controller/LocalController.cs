@@ -43,11 +43,13 @@ namespace Yujanggi.Runtime.Controller
 
         public void BeginTurn()
         {
+            Debug.Log("플레이어 비긴턴");
             _isTurn = true;
         }
 
         public void EndTurn()
         {
+            Debug.Log("플레이어 엔드턴");
             _isTurn = false;
         }
         private void HandleClick(Pos pos)
