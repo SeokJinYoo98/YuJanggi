@@ -17,17 +17,18 @@ namespace Yujanggi.Runtime.Board
     {
         private BoardView _boardView;
         [SerializeField] private PieceManager _pieces;
-        private bool _isHighlighted = false;
-        private int _deathCnt       = 0;
-        private Vector3 _deathPos   = new Vector3(4, 0, -2);
+        private bool    _isHighlighted = false;
+        private int     _deathCnt      = 0;
+        private Vector3 _deathPos      = new Vector3(4, 0, -2);
 
 
         private void Awake()
         {
             _boardView = GetComponent<BoardView>();   
         }
-       
- 
+
+        public void SetDeathPosition(Vector3 pos)
+            => _deathPos = pos;
         public void  StartGame(IBoardModel model)
         {
             _pieces.SpawnPieces(model);
@@ -41,7 +42,7 @@ namespace Yujanggi.Runtime.Board
         }
         public void  PlaceCapturedPiece(int id, PlayerTeam team)
         {
-            var deathPos = new Vector3(_deathPos.x, _deathPos.y + _deathCnt, _deathPos.z);
+            var deathPos = new Vector3(_deathPos.x, _deathPos.y + _deathCnt * 0.1f, _deathPos.z);
             ++_deathCnt;
             _pieces.DoMove(id, deathPos);
         }

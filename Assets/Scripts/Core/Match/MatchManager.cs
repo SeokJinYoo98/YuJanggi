@@ -2,7 +2,7 @@ using System;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Rule;
-
+using UnityEngine;
 namespace Yujanggi.Core.Match
 {
     public class MatchEvents
@@ -130,7 +130,7 @@ namespace Yujanggi.Core.Match
                 info = default;
                 return false;
             }
-            Turn.SetTurn(TurnType.End);
+            Turn.EndGame();
             info.Loser     = Turn.CurrentTeam;
             info.MoveCnt    = Record.TotalTurn;
             info.Type       = GameResult.GiveUp;
@@ -156,10 +156,12 @@ namespace Yujanggi.Core.Match
             int cnt = Rule.CountLegalMove(Board, otherTeam);
             if (cnt == 0)
             {
+                Turn.EndGame();
+                Debug.Log("왜지");
                 GameResultInfo info;
-                info.MoveCnt = Record.TotalTurn;
-                info.Type = GameResult.CheckMate;
-                info.Loser = Turn.CurrentTeam;
+                info.MoveCnt    = Record.TotalTurn;
+                info.Type       = GameResult.CheckMate;
+                info.Loser      = Turn.CurrentTeam;
                 MatchEvent.GameEnded(info);
             }
 
@@ -177,8 +179,7 @@ namespace Yujanggi.Core.Match
                 Score.ApplyScore(otherTeam, record.CapturedPiece.Type);
 
             var isJanggun = IsCheck(otherTeam);
-            var isEnd = HasAnyLegalMove(otherTeam);
-            if (isEnd) Turn.SetTurn(TurnType.End);
+            var isEnd     = HasAnyLegalMove(otherTeam);
             var ctx = new MoveContext(record, isJanggun, isEnd);
 
             Record.Push(ctx);

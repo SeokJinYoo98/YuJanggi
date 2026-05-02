@@ -18,8 +18,8 @@ namespace Yujanggi.Runtime.Controller
        
         private readonly IJanggiRule        _rule;
         private readonly IBoardModel        _boardModel;
-        private Selection _sel;
-        private readonly System.Random _rand = new();
+        private readonly Selection          _selection;
+        private readonly System.Random      _rand = new();
 
         private readonly List<MoveCandidate> _candidates = new(17);
         private int _selectedCandidateIndex = -1;
@@ -31,7 +31,7 @@ namespace Yujanggi.Runtime.Controller
            
             _rule       = rule;
             _boardModel = board;
-            _sel        = new Selection();
+            _selection        = new Selection();
         }
         public void BindEvents() { }
         public void UnBindEvents() { }
@@ -56,13 +56,13 @@ namespace Yujanggi.Runtime.Controller
                     if (piece.Team != Team)
                         continue;
 
-                    _sel.Clear();
-                    _sel.FromPos = from;
+                    _selection.Clear();
+                    _selection.FromPos = from;
 
-                    _rule.FindWays(_boardModel, _sel);
+                    _rule.FindWays(_boardModel, _selection);
 
    
-                    var movable = _sel.LegalCells;
+                    var movable = _selection.LegalCells;
                     if (movable == null || movable.Count == 0)
                         continue;
 
@@ -128,15 +128,15 @@ namespace Yujanggi.Runtime.Controller
         }
         private readonly struct MoveCandidate
         {
-            public PieceModel Piece { get; }
-            public Pos From { get; }
-            public List<Pos> Ways { get; }
+            public PieceModel   Piece { get; }
+            public Pos          From { get; }
+            public List<Pos>    Ways { get; }
 
             public MoveCandidate(PieceModel piece, Pos from, List<Pos> ways)
             {
                 Piece = piece;
-                From = from;
-                Ways = ways;
+                From  = from;
+                Ways  = ways;
             }
         }
     }

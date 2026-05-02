@@ -3,15 +3,6 @@ using Yujanggi.Core.Domain;
 
 namespace Yujanggi.Core.Match
 {
-
-    public enum TurnType
-    {
-        Select,
-        Attack,
-        Update,
-        End,
-        Replay
-    }
     public class Turn
     {
         public event Action<PlayerTeam> OnTurnChanged;
@@ -19,20 +10,19 @@ namespace Yujanggi.Core.Match
         public event Action OnTurnEnd;
 
         public PlayerTeam CurrentTeam { get; private set; }
-        public TurnType   TurnState { get; private set; }
-        public bool IsEnd => TurnState == TurnType.End;
-
-        private bool NoTime = false;
+        public bool  IsEnd => _isEnd;
+        private bool _isEnd = false;
+        private bool _noTime = false;
         
         public Turn(float maxTime)
         {
             _maxTurnTime = maxTime;
-            NoTime = (int)_maxTurnTime == 0;
+            _noTime = (int)_maxTurnTime == 0;
         }
         public void StartGame(PlayerTeam player)
         {
+            _isEnd = false;
             CurrentTeam = player;
-            TurnState = TurnType.Select;
             _turnTime = _maxTurnTime;
             OnTurnChanged?.Invoke(CurrentTeam);
 
@@ -41,13 +31,15 @@ namespace Yujanggi.Core.Match
             OnTimeChanged?.Invoke((PlayerTeam.Han, (int)_turnTime));
         }
 
-        public void SetTurn(TurnType type)
+        public void EndGame()
         {
-            TurnState = type;
+            _isEnd = true;
         }
+
 
         public void NextTurn()
         {
+            if (_isEnd) return;
             _turnTime = _maxTurnTime;
             OnTimeChanged?.Invoke((CurrentTeam, (int)_turnTime));
 
@@ -56,8 +48,7 @@ namespace Yujanggi.Core.Match
                 : PlayerTeam.Cho;
 
             OnTimeChanged?.Invoke((CurrentTeam, (int)_turnTime));
-            TurnState = TurnType.Select;
-            OnTurnChanged?.Invoke(CurrentTeam);
+            OnTurnChanged?.Invoke(CurrentTeam); 
         }
         private float           _timer = 0;
         private float           _turnTime = 30;
@@ -65,10 +56,8 @@ namespace Yujanggi.Core.Match
 
         public void Update(float deltaTime)
         {
-            if (TurnState != TurnType.Select && TurnState != TurnType.Attack)
-                return;
-            if (NoTime)
-                return;
+            if (_noTime || _isEnd) return;
+
             _timer += deltaTime;
             if (1 <= _timer)
             {

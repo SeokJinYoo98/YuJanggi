@@ -5,6 +5,8 @@ using Yujanggi.Core.Match;
 namespace Yujanggi.Runtime.GameSession
 {
     using System.Collections.Generic;
+    using System.Diagnostics;
+
     public class GameSession
     {
         #region public Field F
@@ -135,8 +137,7 @@ namespace Yujanggi.Runtime.GameSession
         }
         private IPlayerController BeginNextTurn(PlayerTeam turn)
         {
-            if (_sessionReplay.IsLiveMode) 
-                _matchPresenter.Clear();
+            if (_sessionReplay.IsLiveMode) _matchPresenter.Clear();
             DisableAllControllers();
             if (turn == PlayerTeam.Cho)
             {

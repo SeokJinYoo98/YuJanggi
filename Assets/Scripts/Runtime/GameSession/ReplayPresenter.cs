@@ -173,7 +173,11 @@ namespace Yujanggi.Runtime.GameSession
             var movedToPos   = record.From;
             _board.MovePiece(movedPiece.Id, movedToPos);
 
-            if (!record.IsCapture) return;
+            if (!record.IsCapture)
+            {
+                Debug.Log("캡처가 아니래");
+                return;
+            }
             var capturedId    = record.CapturedPiece.Id;
             var cpaturedTeam  = record.CapturedPiece.Team;
             var cpaturedToPos = record.To;
@@ -191,7 +195,11 @@ namespace Yujanggi.Runtime.GameSession
             var movedToPos = record.To;
             _board.MovePiece(movedPiece.Id, movedToPos);
 
-            if (!record.IsCapture) return;
+            if (!record.IsCapture)
+            {
+                Debug.Log("캡처가 아니래");
+                return;
+            }
             if (playAudio) 
                 _audio.PlaySfxOneShot(JanggiSfx.Capture);
             var capturedId   = record.CapturedPiece.Id;

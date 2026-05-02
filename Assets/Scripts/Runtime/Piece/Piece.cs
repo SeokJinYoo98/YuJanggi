@@ -30,7 +30,7 @@ namespace Yujanggi.Runtime.Piece
         }
         public void  MoveTo(Pos toPos)
         {
-            Vector3 targetWorldPos = new Vector3(toPos.X, transform.position.y, toPos.Z);
+            Vector3 targetWorldPos = new Vector3(toPos.X, 1, toPos.Z);
             MoveTo(targetWorldPos);
         }
         public void  Highlight()

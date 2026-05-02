@@ -61,6 +61,7 @@ namespace Yujanggi.Runtime.Game
             if (sessionInfo.Mode == GameModeType.Local) return;
             if (sessionInfo.Cho  == PlayerType.Local) return;
 
+            _boardPresenter.SetDeathPosition(new Vector3(4, 0, 11));
             _localInput.RotateCamera(PlayerTeam.Han);
         }
         private GameSessionInfo GetSessionInfo()
@@ -159,5 +160,6 @@ namespace Yujanggi.Runtime.Game
      
         }
         #endregion
+        
     }
 }
