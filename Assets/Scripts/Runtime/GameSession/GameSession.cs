@@ -1,25 +1,24 @@
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Match;
-
+using UnityEngine;
 
 namespace Yujanggi.Runtime.GameSession
 {
     using System.Collections.Generic;
-    using System.Diagnostics;
 
     public class GameSession
     {
         #region public Field F
         public GameSession(
             GameSessionInfo         sessionInfo,
-            MatchPresenter    sessionView,
+            MatchPresenter          matchPresenter,
             MatchManager            sessionMatch,
             ReplayPresenter         sessionReplay,
             IPlayerController       cho,
             IPlayerController       han,
             IInputHandler           localInput)
         {
-            _matchPresenter   = sessionView;
+            _matchPresenter     = matchPresenter;
             _sessionInfo        = sessionInfo;
             _sessionMatch       = sessionMatch;
             _sessionReplay      = sessionReplay;
@@ -78,14 +77,16 @@ namespace Yujanggi.Runtime.GameSession
         public void StartGame()
         {
             _sessionMatch.StartGame(_sessionInfo.ChoFormation, _sessionInfo.HanFormation);
+            _matchPresenter.StartGame(_sessionMatch.Board);
             _playerCho.BeginTurn();
             _playerHan.EndTurn();
-            _matchPresenter.StartGame(_sessionMatch.Board);
         }
         public void ResetGame()
         {
+
+            _sessionReplay.Reset();
             _sessionMatch.StartGame(_sessionInfo.ChoFormation, _sessionInfo.HanFormation);
-            _matchPresenter.ResetGame(_sessionMatch.Board);
+            _matchPresenter.ResetGame(_sessionMatch.Board); 
             _playerCho.BeginTurn();
             _playerHan.EndTurn();
         }
@@ -93,7 +94,6 @@ namespace Yujanggi.Runtime.GameSession
         {
             if (!_sessionReplay.IsLiveMode) return;
             if (!_sessionMatch.TryUnDo(out var ctx)) return;
-            if (ctx.IsHandicap) return;
             _matchPresenter.UnDo(ctx);
         }
         public void Update(float deltaTime)
@@ -138,12 +138,14 @@ namespace Yujanggi.Runtime.GameSession
         private IPlayerController BeginNextTurn(PlayerTeam turn)
         {
             if (_sessionReplay.IsLiveMode) _matchPresenter.Clear();
-            DisableAllControllers();
+
             if (turn == PlayerTeam.Cho)
             {
+                _playerHan.EndTurn();
                 _playerCho.BeginTurn();
                 return _playerCho;
             }
+            _playerCho.EndTurn();
             _playerHan.BeginTurn();
             return _playerHan;
         }

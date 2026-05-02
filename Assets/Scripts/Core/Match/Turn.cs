@@ -23,11 +23,9 @@ namespace Yujanggi.Core.Match
         {
             _isEnd = false;
             CurrentTeam = player;
-            _turnTime = _maxTurnTime;
+            _turnTime   = _maxTurnTime;
             OnTurnChanged?.Invoke(CurrentTeam);
-
             OnTimeChanged?.Invoke((PlayerTeam.Cho, (int)_turnTime));
-
             OnTimeChanged?.Invoke((PlayerTeam.Han, (int)_turnTime));
         }
 

@@ -104,6 +104,7 @@ namespace Yujanggi.Runtime.Controller
         private Coroutine _aiRoutine;
         private IEnumerator ProcessAITurn()
         {
+            Debug.Log("코루틴 실행");
             if (!this.TryThink())
                 yield break;
 
@@ -111,11 +112,16 @@ namespace Yujanggi.Runtime.Controller
 
             if (!this.TryGetSelectedMove())
                 yield break;
+            Debug.Log("코루틴 종료");
         }
 
         public void BeginTurn()
         {
-            if (_aiRoutine != null) return;
+            if (_aiRoutine != null)
+            {
+                _runner.Stop(_aiRoutine);
+                _aiRoutine = null;
+            }
             _aiRoutine = _runner.Run(ProcessAITurn());
         }
 

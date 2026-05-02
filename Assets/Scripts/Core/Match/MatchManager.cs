@@ -2,7 +2,6 @@ using System;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Rule;
-using UnityEngine;
 namespace Yujanggi.Core.Match
 {
     public class MatchEvents
@@ -68,11 +67,11 @@ namespace Yujanggi.Core.Match
         }
         public void     StartGame(Formation cho, Formation han)
         {
+            Turn.StartGame(PlayerTeam.Cho);
             Record.StartGame();
             Score.StartGame();
             Board.ResetBoard();
             BoardInitializer.SetUpPieces(Board, cho, han);
-            Turn.StartGame(PlayerTeam.Cho);
         }
         public void     ResetGame(Formation cho, Formation han)
         {
@@ -100,13 +99,11 @@ namespace Yujanggi.Core.Match
 
             if (!Record.TryPop(out ctx))
                 return false;
-            
-            Turn.NextTurn();
 
+            Turn.NextTurn();
             if (ctx.IsHandicap)
                 return false;
             
-
             var record = ctx.Record;
             Board.UndoMove(record);
             
@@ -157,7 +154,6 @@ namespace Yujanggi.Core.Match
             if (cnt == 0)
             {
                 Turn.EndGame();
-                Debug.Log("왜지");
                 GameResultInfo info;
                 info.MoveCnt    = Record.TotalTurn;
                 info.Type       = GameResult.CheckMate;

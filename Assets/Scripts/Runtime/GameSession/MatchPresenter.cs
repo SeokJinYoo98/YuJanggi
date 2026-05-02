@@ -108,13 +108,14 @@ namespace Yujanggi.Runtime.GameSession
         public void UnDo(MoveContext ctx)
         {
             _board.UnHighlight();
+            if (ctx.IsHandicap) return;
+
             var movedPiece = ctx.Record.MovedPiece;
 
             var movedId = movedPiece.Id;
             var to = ctx.Record.From;
             _board.MovePiece(movedId, to);
 
-            Debug.Log($"{to.X}, {to.Z}");
             if (ctx.IsCapture)
             {
                 to = ctx.Record.To;
