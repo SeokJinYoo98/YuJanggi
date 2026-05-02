@@ -31,14 +31,14 @@ namespace Yujanggi.Runtime.Game
             _audio            = AudioManager.Instance;
 
             var sessionInfo   = GetSessionInfo();
-            var sessionView   = CreateSessionView();
-            var sessionMatch  = CreateMatch(sessionInfo.TurnTime, out var record);
-            var sessionReplay = CreateReplayManager(record);
+            var matchView     = CreateMatchView();
+            var matchModel    = CreateMatchModel(sessionInfo.TurnTime, out var record);
+            var replayView    = CreateReplayView(record);
 
-            var sessionCho    = CreateController(sessionInfo.Cho, PlayerTeam.Cho, _localInput, sessionMatch, _runner);
-            var sessionHan    = CreateController(sessionInfo.Han, PlayerTeam.Han, _localInput, sessionMatch, _runner);
+            var sessionCho    = CreateController(sessionInfo.Cho, PlayerTeam.Cho, _localInput, matchModel, _runner);
+            var sessionHan    = CreateController(sessionInfo.Han, PlayerTeam.Han, _localInput, matchModel, _runner);
 
-            _session          = CreateSession(in sessionInfo, sessionView, sessionMatch, sessionReplay, sessionCho, sessionHan);
+            _session          = CreateSession(in sessionInfo, matchView, matchModel, replayView, sessionCho, sessionHan);
 
             SetCamera(in sessionInfo);
         }
@@ -71,40 +71,40 @@ namespace Yujanggi.Runtime.Game
         #region SessionFactory       
         private GameSession      CreateSession(
             in GameSessionInfo      sessionInfo,
-            MatchPresenter    sessionView,
-            MatchManager            sessionMatch,
-            ReplayPresenter         sessionReplay,
+            MatchView               matchView,
+            MatchModel              matchModel,
+            ReplayView              replayView,
             IPlayerController       cho,
             IPlayerController       han)
         {
             return new GameSession(
                 sessionInfo, 
-                sessionView, 
-                sessionMatch,
-                sessionReplay, 
+                matchView, 
+                matchModel,
+                replayView, 
                 cho, han, 
                 _localInput);
         }
-        private ReplayPresenter        CreateReplayManager(Record record)
+        private ReplayView        CreateReplayView(Record record)
         {
-            return new ReplayPresenter(_boardPresenter, record, _runner, _audio, _currDisplayMode);
+            return new ReplayView(_boardPresenter, record, _runner, _audio, _currDisplayMode);
         }
-        private MatchManager           CreateMatch(float turnTime, out Record record)
+        private MatchModel           CreateMatchModel(float turnTime, out Record record)
         {
             record         = new Record();
             var turn       = new Turn(turnTime);
             var score      = new Score();
             var boardModel = new BoardModel();
             var janggiRule = new JanggiRule();
-            return new MatchManager(turn, record, score, boardModel, janggiRule);
+            return new MatchModel(turn, record, score, boardModel, janggiRule);
         }
-        private MatchPresenter   CreateSessionView()
-            => new MatchPresenter(_boardPresenter, _resultUI, _matchUI, _audio);
+        private MatchView   CreateMatchView()
+            => new MatchView(_boardPresenter, _resultUI, _matchUI, _audio);
         private IPlayerController      CreateController(
            PlayerType type,
            PlayerTeam team,
            PcInputHandler input,
-           MatchManager match,
+           MatchModel match,
            ICoroutineRunner runner)
         {
             // 매치를 참조하지 말고 그냥 룰과 보드를 보내주는 방향으로

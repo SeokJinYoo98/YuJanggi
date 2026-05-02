@@ -11,19 +11,33 @@ namespace Yujanggi.Runtime.Piece
         [SerializeField] private PieceSpawner _pieceSpawner;
         private readonly Dictionary<int, Piece> _views = new();
         private int _currPiece;
-        public void UnHighlight()
-        {
-            if (_currPiece == -1) return;
-            _views[_currPiece].UnHighlight();
-            _currPiece = -1;
-        }
         public void HighlightPiece(int id)
         {
-            if (id == -1) return;
-            if (_currPiece != -1) UnHighlight();
+            if (id == -1)
+            {
+                UnHighlightPiece();
+                return;
+            }
+
+            UnHighlightPiece();
+
+            if (!_views.TryGetValue(id, out var view))
+            {
+                Debug.LogError($"PieceView not found. id:{id}");
+                return;
+            }
+
             _currPiece = id;
-            _views[_currPiece].Highlight();
-        }     
+            view.Highlight();
+        }
+        public void UnHighlightPiece()
+        {
+            if (_views.TryGetValue(_currPiece, out var curr))
+                curr.UnHighlight();
+
+            _currPiece = -1;
+        }
+
         public void ResetViews(IBoardModel boardModel)
         {
             int width = boardModel.WIDTH;

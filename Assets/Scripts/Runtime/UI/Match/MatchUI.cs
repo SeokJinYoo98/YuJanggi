@@ -25,18 +25,18 @@ namespace Yujanggi.Runtime.UI
 
         int _totalTurn = 0;
         int _currTurn  = 0;
-        public void BindEvents(IMatchViewData match)
+        public void BindEvents(IMatchUIDatas match)
         {
-            var turn = match.Turn;
-            var record = match.Record;
-            var score = match.Score;
+            var turn        = match.Turn;
+            var record      = match.Record;
+            var score       = match.Score;
 
             turn.OnTimeChanged         += UpdateTimer;
             turn.OnTurnChanged         += UpdateTurn;
             record.OnRecordChanged     += UpdateTotalTurn;
             score.OnScoreChanged       += UpdateScore;
         }
-        public void UnBindEvents(IMatchViewData match)
+        public void UnBindEvents(IMatchUIDatas match)
         {
             var turn    = match.Turn;
             var record  = match.Record;

@@ -35,9 +35,10 @@ namespace Yujanggi.Core.Match
         }
 
 
-        public void NextTurn()
+        public PlayerTeam NextTurn()
         {
-            if (_isEnd) return;
+            if (_isEnd) 
+                return PlayerTeam.None;
             _turnTime = _maxTurnTime;
             OnTimeChanged?.Invoke((CurrentTeam, (int)_turnTime));
 
@@ -46,7 +47,8 @@ namespace Yujanggi.Core.Match
                 : PlayerTeam.Cho;
 
             OnTimeChanged?.Invoke((CurrentTeam, (int)_turnTime));
-            OnTurnChanged?.Invoke(CurrentTeam); 
+            OnTurnChanged?.Invoke(CurrentTeam);
+            return CurrentTeam;
         }
         private float           _timer = 0;
         private float           _turnTime = 30;

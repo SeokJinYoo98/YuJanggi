@@ -1,8 +1,8 @@
-using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-
+using Unity.Android.Gradle.Manifest;
+using UnityEngine;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Rule;
@@ -32,8 +32,14 @@ namespace Yujanggi.Runtime.Controller
             _boardModel         = board;
             _selection          = new Selection();
         }
-        public void BindEvents() { }
-        public void UnBindEvents() { }
+        public void BindEvents(IGameInputReceiver receiver)
+        {
+            OnMoveRequest += receiver.RequestMove;
+        }
+        public void UnBindEvents(IGameInputReceiver receiver)
+        {
+            OnMoveRequest -= receiver.RequestMove;
+        }
         public bool TryThink()
         {
             _candidates.Clear();
@@ -116,28 +122,26 @@ namespace Yujanggi.Runtime.Controller
         {
             if (!TryThink()) yield break;
 
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(0.5f);
 
             if (!TryGetSelectedMove()) yield break;
         }
 
         public void BeginTurn()
         {
-            Debug.Log("AI 비긴턴");
             if (_aiRoutine != null)
             {
                 _runner.Stop(_aiRoutine);
                 _aiRoutine = null;
             }
             _aiRoutine = _runner.Run(ProcessAITurn());
-            Debug.Log("AI 비긴끝");
         }
 
         public void EndTurn()
         {
-            Debug.Log("AI엔드턴");
+            _selection.Clear();
             if (_aiRoutine == null) return;
-
+      
             _runner.Stop(_aiRoutine);
             _aiRoutine = null;
         }

@@ -5477,7 +5477,6 @@ GameObject:
   - component: {fileID: 2126822360}
   - component: {fileID: 2126822359}
   - component: {fileID: 2126822363}
-  - component: {fileID: 2126822364}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -5592,20 +5591,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d47369a604ff30041b502cf54a5833e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.View.Board.BoardView
-  _pieces: {fileID: 509507444}
---- !u!114 &2126822364
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2126822358}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 84dc0e156af284744be51607443fadf4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.Board.BoardView
   _highlighter: {fileID: 1524079747}
+  _pieces: {fileID: 509507444}
 --- !u!1 &2129848564
 GameObject:
   m_ObjectHideFlags: 0

@@ -6,6 +6,17 @@ using Yujanggi.Core.Match;
 using Yujanggi.Runtime.GameSession;
 namespace Yujanggi.Core.Domain
 {
+    public interface IGameInputReceiver
+    {
+        void RequestMove(Pos from, Pos to);
+        void ChangeSelection(int? pieceId, IReadOnlyList<Pos> legal, IReadOnlyList<Pos> illegal);
+    }
+        public interface ISessionTransition
+    {
+        void ToLive();
+        void ToReplay();
+        void ToResult();
+    }
     public struct GameSessionInfo
     {
         public GameModeType Mode;
@@ -52,8 +63,8 @@ namespace Yujanggi.Core.Domain
         public bool IsLocal();
         public void BeginTurn();
         public void EndTurn();
-        public void BindEvents();
-        public void UnBindEvents();
+        public void BindEvents(IGameInputReceiver receiver);
+        public void UnBindEvents(IGameInputReceiver receiver);
     }
 
     public enum BoardActionResult

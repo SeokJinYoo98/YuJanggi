@@ -49,18 +49,20 @@ namespace Yujanggi.Core.Domain
         public static MoveContext Handicap => new(MoveRecord.None, false, false);
         public MoveContext(MoveRecord record, bool isJanggun, bool isEnd)
         {
-            Record = record;
-            MoveTeam = record.MovedPiece.Team;
+            Record     = record;
+            MovePlayer = record.MovedPiece.Team;
 
-            IsJanggun = isJanggun;
-            EndGame = isEnd;
+            IsJanggun   = isJanggun;
+            EndGame     = isEnd;
         }
         public MoveRecord   Record { get; }
-        public bool         IsCapture => Record.IsCapture;
-        public PlayerTeam   MoveTeam { get; }
+
         public bool         IsJanggun { get; }
         public bool         EndGame { get; }
+        public PlayerTeam   MovePlayer { get; }
+        public PlayerTeam   NextPlayer => MovePlayer == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho;
 
+        public bool IsCapture => Record.IsCapture;
         public bool IsHandicap
             => Record.Equals(MoveRecord.None);
     }

@@ -31,25 +31,27 @@ namespace Yujanggi.Runtime.Controller
 
             _isTurn = false;
         }
-        public void BindEvents()
+        public void BindEvents(IGameInputReceiver receiver)
         {
             _input.OnBoardClicked += HandleClick;
+            OnSelectionChanged    += receiver.ChangeSelection;
+            OnMoveRequest         += receiver.RequestMove;
         }
 
-        public void UnBindEvents()
+        public void UnBindEvents(IGameInputReceiver receiver)
         {
             _input.OnBoardClicked -= HandleClick;
+            OnSelectionChanged    -= receiver.ChangeSelection;
+            OnMoveRequest         -= receiver.RequestMove;
         }
 
         public void BeginTurn()
         {
-            Debug.Log("플레이어 비긴턴");
             _isTurn = true;
         }
 
         public void EndTurn()
         {
-            Debug.Log("플레이어 엔드턴");
             _isTurn = false;
         }
         private void HandleClick(Pos pos)

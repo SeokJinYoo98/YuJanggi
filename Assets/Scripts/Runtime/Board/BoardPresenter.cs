@@ -13,26 +13,41 @@ namespace Yujanggi.Runtime.Board
         public void UnHighlight();
         public void HighlightOnlyPiece(int id);
     }
+
     public class BoardPresenter : MonoBehaviour, IReplayBoardRenderer
     {
-        private BoardView _boardView;
+        [SerializeField] private BoardHighlighter _highlighter;
         [SerializeField] private PieceManager _pieces;
+
         private bool    _isHighlighted = false;
         private int     _deathCnt      = 0;
         private Vector3 _deathPos      = new Vector3(4, 0, -2);
 
+        public void UnHighlightPiece()
+            => _pieces.UnHighlightPiece();
+        public void HighlightPiece(int pieceId)
+            => _pieces.HighlightPiece(pieceId);
+        public void HighlightWays(IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals)
+        {
+            _highlighter.ShowHighlight(legals, true);
+            _highlighter.ShowHighlight(illegals, false);
+        }
+        public void UnHighlightWays()
+            => _highlighter.HideHighlight();
+
+        public void StartGame(IBoardModel model)
+        {
+            _pieces.SpawnPieces(model);
+        }
 
         private void Awake()
         {
-            _boardView = GetComponent<BoardView>();   
+           
         }
 
         public void SetDeathPosition(Vector3 pos)
             => _deathPos = pos;
-        public void  StartGame(IBoardModel model)
-        {
-            _pieces.SpawnPieces(model);
-        }
+
         public void  RestoreCapturedPiece(int id, PlayerTeam team, Pos to)
         {
             // ref var garbagePos = ref GetGarbagePos(team);
@@ -54,15 +69,16 @@ namespace Yujanggi.Runtime.Board
         {
             if (!_isHighlighted) return;
 
-            _pieces.UnHighlight();
-            _boardView.UnHighlight();
+            _pieces.UnHighlightPiece();
+            _highlighter.HideHighlight();
             _isHighlighted = false;
         }
         public void  Highlight(int id, IReadOnlyList<Pos> legalWays, IReadOnlyList<Pos> illegalWays)
         {
             if (_isHighlighted) UnHighlight();
             _pieces.HighlightPiece(id);
-            _boardView.Highlight(legalWays, illegalWays); 
+            _highlighter.ShowHighlight(legalWays, true);
+            _highlighter.ShowHighlight(illegalWays, false);
             _isHighlighted = true;
         }
         public void  ResetGame(IBoardModel model)
