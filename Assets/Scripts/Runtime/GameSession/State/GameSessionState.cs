@@ -18,21 +18,19 @@ namespace Yujanggi.Runtime.GameSession
     {
         void Enter();
         void Exit();
-
-        void HandleTurnChanged(PlayerTeam next);
-        void HandleGameEnded(in GameResultInfo info);
-        void HandleCheck(PlayerTeam team);
-        void HandleCheckReleased();
-
-        void HandleSelectionChanged(int? pieceId, IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals);
-        void HandleTryMove(Pos from, Pos to);
-
-        void Handicap();
-        void GiveUp();
-        void UnDo();
-
-        void StepForward();
-        void StepBackward();
+        // UI 알림 (Match → State) 
+        void OnTurnChanged(PlayerTeam next);
+        void OnGameEnded(in GameResultInfo info);
+        void OnCheckOccurred(PlayerTeam team);
+        void OnCheckReleased();
+        // 입력 (Controller → State)
+        void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals);
+        void RequestMove(Pos from, Pos to);
+        void RequestHandicap();
+        void RequestGiveUp();
+        void RequestUndo();
+        void RequestStepForward();
+        void RequestStepBackward();
     }
 
     public abstract class SessionStateBase : ISessionState
@@ -45,7 +43,6 @@ namespace Yujanggi.Runtime.GameSession
             _han        = han;
         }
 
-
         private readonly MatchView            _matchView;
         private readonly IPlayerController    _cho;
         private readonly IPlayerController    _han;
@@ -53,30 +50,30 @@ namespace Yujanggi.Runtime.GameSession
         public virtual void Enter() { }
         public virtual void Exit() { }
 
-        public virtual void GiveUp() { }
-        public virtual void Handicap() { }
-
-        // UI
-        public virtual void HandleTurnChanged(PlayerTeam next)
+        // UI 알림 (Match → State) 
+        public virtual void OnTurnChanged(PlayerTeam next)
         {
             var nextPlayer = GetPlayer(next);
             _matchView.OnTurnChanged(nextPlayer.IsLocal());
         }
-        public virtual void HandleGameEnded(in GameResultInfo info)
+        public virtual void OnGameEnded(in GameResultInfo info)
         {
             var loser = GetPlayer(info.Loser);
             _matchView.OnGameEnded(info, loser.IsLocal());
         }
-        public virtual void HandleCheck(PlayerTeam team){ }
-        public virtual void HandleCheckReleased() { }
+        public virtual void OnCheckOccurred(PlayerTeam team)
+            => _matchView.CheckOccured(team);
+        public virtual void OnCheckReleased()
+            => _matchView.CheckReleased();
 
-        // Input
-        public virtual void HandleSelectionChanged(int? pieceId, IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals){ }
-        public virtual void HandleTryMove(Pos from, Pos to) { }
-
-        public virtual void StepBackward() { }
-        public virtual void StepForward() { }
-        public virtual void UnDo(){ }
+        // 입력 (Controller → State)
+        public virtual void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals){ }
+        public virtual void RequestMove(Pos from, Pos to) { }
+        public virtual void RequestGiveUp() { }
+        public virtual void RequestHandicap() { }
+        public virtual void RequestStepBackward() { }
+        public virtual void RequestStepForward() { }
+        public virtual void RequestUndo(){ }
 
 
         protected readonly ISessionTransition _transition;
@@ -99,7 +96,5 @@ namespace Yujanggi.Runtime.GameSession
         }
         protected IPlayerController         GetPlayer(PlayerTeam team)
             => team == PlayerTeam.Cho ? _cho : _han;
-
-
     }
 }

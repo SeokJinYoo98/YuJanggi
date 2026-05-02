@@ -29,33 +29,9 @@ namespace Yujanggi.Runtime.GameSession
         {
             _matchView.UnHighlight();
         }
-        public override void GiveUp() 
-        {
-            if (!_matchModel.TryGiveUp(out var info))
-                return;
 
-            DisableAllControllers();
-            HandleGameEnded(info);
-        }
-        public override void HandleGameEnded(in GameResultInfo info)
-        {
-            var loser = GetPlayer(info.Loser);
-            _matchView.OnGameEnded(info, loser.IsLocal());
-        }
-        public override void HandleCheck(PlayerTeam team)
-            => _matchView.CheckOccured(team);
-        public override void HandleCheckReleased()
-            => _matchView.CheckReleased();
 
-        public override void Handicap() 
-        {
-            _matchView.UnHighlight();
-            _matchModel.Handicap(out var nextPlayer);
-            BeginNextTurn(nextPlayer);
-        }
-    
-
-        public override void HandleSelectionChanged(int? pieceId, IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals) 
+        public override void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals)
         {
             if (!pieceId.HasValue)
             {
@@ -65,7 +41,25 @@ namespace Yujanggi.Runtime.GameSession
             _matchView.HighlightPiece(pieceId.Value);
             _matchView.HighlightWays(legals, illegals);
         }
-        public override void HandleTryMove(Pos from, Pos to) 
+        public override void RequestGiveUp() 
+        {
+            if (!_matchModel.TryGiveUp(out var info))
+                return;
+
+            DisableAllControllers();
+            OnGameEnded(info);
+        }
+        public override void RequestHandicap()
+        {
+            _matchView.UnHighlight();
+            _matchModel.Handicap(out var nextPlayer);
+            BeginNextTurn(nextPlayer);
+        }
+
+
+
+
+        public override void RequestMove(Pos from, Pos to) 
         {
             if (!_matchModel.TryMove(from, to, out var moveCtx))
                 return;
@@ -83,12 +77,12 @@ namespace Yujanggi.Runtime.GameSession
            
             BeginNextTurn(moveCtx.NextPlayer);
         }
-        public override void StepBackward() 
+        public override void RequestStepBackward() 
         {
             if (_matchModel.RecordCnt == 0) return;
             _transition.ToReplay();
         }
-        public override void UnDo() 
+        public override void RequestUndo() 
         {
             if (!_matchModel.TryUnDo(out var moveCtx)) return;
             if (!moveCtx.IsHandicap)

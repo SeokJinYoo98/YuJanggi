@@ -114,29 +114,29 @@ namespace Yujanggi.Runtime.GameSession
         #region private Field F
         // Events
         private void HandleCheckReleased()
-            => _states[_currState].HandleCheckReleased();
+            => _states[_currState].OnCheckReleased();
         private void HandleCheck(PlayerTeam team)
-            => _states[_currState].HandleCheck(team);
+            => _states[_currState].OnCheckOccurred(team);
         private void HandleTurnChanged(PlayerTeam next)
-            => _states[_currState].HandleTurnChanged(next);
+            => _states[_currState].OnTurnChanged(next);
         private void HandleGameEnded(GameResultInfo info)
-            => _states[_currState].HandleGameEnded(in info);
+            => _states[_currState].OnGameEnded(in info);
         // Player
         public void RequestMove(Pos from, Pos to)
-            => _states[_currState].HandleTryMove(from, to);
+            => _states[_currState].RequestMove(from, to);
         public void ChangeSelection(int? pieceId, IReadOnlyList<Pos> legal, IReadOnlyList<Pos> illegal)
-            => _states[_currState].HandleSelectionChanged(pieceId, legal, illegal);
+            => _states[_currState].OnSelectionChanged(pieceId, legal, illegal);
         // UI
         public void  StepForward()
-            => _states[_currState].StepForward();
+            => _states[_currState].RequestStepForward();
         public void  StepBackward()
-            => _states[_currState].StepBackward();
+            => _states[_currState].RequestStepBackward();
         public void  Handicap()
-            => _states[_currState].Handicap();
+            => _states[_currState].RequestHandicap();
         public void  GiveUp()
-            => _states[_currState].GiveUp();
+            => _states[_currState].RequestGiveUp();
         public void  UnDo()
-            => _states[_currState].UnDo();
+            => _states[_currState].RequestUndo();
         private void ChangeState(SessionState next)
         {
             if (_currState == next)
