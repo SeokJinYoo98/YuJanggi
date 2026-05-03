@@ -6,16 +6,15 @@ using Yujanggi.Runtime.Piece;
 namespace Yujanggi.Runtime.GameSession
 {
     /*
-    유지 OK:
-    - BindUI
-    - Check/UnCheck 표시
-    - SelectionChanged
-    - MoveRequest는 세션/상태 경유
+    1. Request~
+아직 확정되지 않은 행동을 모델에 시도시키는 함수
 
-    줄이거나 제거 추천:
-    - OnTurnChanged로 BeginTurn 실행
-    - OnGameEnded로 상태 전환/컨트롤러 종료
-    - PieceMoved로 핵심 흐름 연결
+    2. On~
+모델에서 이미 확정된 결과를 받아 후처리하는 함수
+
+    3. 예외: 선택/하이라이트
+선택은 게임 상태가 아니라 입력 피드백입니다.
+그래서 이건 모델 이벤트가 아니어도 됩니다.
      */
 
     public class GameSession : ISessionTransition, IGameInputReceiver
@@ -58,7 +57,7 @@ namespace Yujanggi.Runtime.GameSession
             _matchModel.InitGame(_sessionInfo.ChoFormation, _sessionInfo.HanFormation);
             _matchView.ResetGame(_matchModel.Board);
             _matchModel.StartGame();
-            HandleTurnChanged(_matchModel.PlayerTurn);
+            OnTurnChanged(_matchModel.PlayerTurn);
             ChangeState(SessionState.Live);
         }
         public void BindEvents()
@@ -68,10 +67,11 @@ namespace Yujanggi.Runtime.GameSession
             _matchView.BindUI(_matchModel);
 
             var events = _matchModel.MatchEvent;
-            events.OnCheckOccurred += HandleCheck;
-            events.OnCheckReleased += HandleCheckReleased;
-            events.OnGameEnded     += HandleGameEnded;
-            events.OnTurnChanged   += HandleTurnChanged;
+            events.OnPieceMoved    += OnPieceMoved;
+            events.OnCheckOccurred += OnCheckOccured;
+            events.OnCheckReleased += OnCheckReleased;
+            events.OnGameEnded     += OnGameEnded;
+            events.OnTurnChanged   += OnTurnChanged;
 
             _playerCho.BindEvents(this); 
             _playerHan.BindEvents(this);
@@ -82,10 +82,11 @@ namespace Yujanggi.Runtime.GameSession
             _matchView.UnBindUI(_matchModel);
 
             var events = _matchModel.MatchEvent;
-            events.OnCheckOccurred -= HandleCheck;
-            events.OnCheckReleased -= HandleCheckReleased;
-            events.OnTurnChanged   -= HandleTurnChanged;
-            events.OnGameEnded     -= HandleGameEnded;
+            events.OnPieceMoved    -= OnPieceMoved;
+            events.OnCheckOccurred -= OnCheckOccured;
+            events.OnCheckReleased -= OnCheckReleased;
+            events.OnTurnChanged   -= OnTurnChanged;
+            events.OnGameEnded     -= OnGameEnded;
 
             _playerCho.UnBindEvents(this); 
             _playerHan.UnBindEvents(this);
@@ -113,13 +114,17 @@ namespace Yujanggi.Runtime.GameSession
 
         #region private Field F
         // Events
-        private void HandleCheckReleased()
+        private void OnPieceMoved(MoveContext moveCtx)
+        {
+
+        }
+        private void OnCheckReleased()
             => _states[_currState].OnCheckReleased();
-        private void HandleCheck(PlayerTeam team)
+        private void OnCheckOccured(PlayerTeam team)
             => _states[_currState].OnCheckOccurred(team);
-        private void HandleTurnChanged(PlayerTeam next)
+        private void OnTurnChanged(PlayerTeam next)
             => _states[_currState].OnTurnChanged(next);
-        private void HandleGameEnded(GameResultInfo info)
+        private void OnGameEnded(GameResultInfo info)
             => _states[_currState].OnGameEnded(in info);
         // Player
         public void RequestMove(Pos from, Pos to)
@@ -152,9 +157,15 @@ namespace Yujanggi.Runtime.GameSession
 
         #region Replay
         public void ToLive()
-            => ChangeState(SessionState.Live);
+        {
+            ChangeState(SessionState.Live);
+            _localInput.Activate();
+        }
         public void ToReplay()
-            => ChangeState(SessionState.Replay);
+        {
+            _localInput.Deactivate();
+            ChangeState(SessionState.Replay);
+        }
         public void ToResult()
             => ChangeState(SessionState.Result);
 

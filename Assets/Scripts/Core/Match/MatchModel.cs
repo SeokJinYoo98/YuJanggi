@@ -6,13 +6,13 @@ namespace Yujanggi.Core.Match
 {
     public class MatchEvents
     {
-        public event Action<MoveRecord>               OnPieceMoved;
+        public event Action<MoveContext>               OnPieceMoved;
         public event Action<PlayerTeam>               OnCheckOccurred;
         public event Action                           OnCheckReleased;
         public event Action<GameResultInfo>           OnGameEnded;
         public event Action<PlayerTeam>               OnTurnChanged;
-        public void PieceMoved(MoveRecord record)
-            => OnPieceMoved?.Invoke(record);
+        public void PieceMoved(MoveContext ctx)
+            => OnPieceMoved?.Invoke(ctx);
         public void CheckOccurred(PlayerTeam team)
             => OnCheckOccurred?.Invoke(team);
         public void CheckReleased()
@@ -36,10 +36,10 @@ namespace Yujanggi.Core.Match
         public PlayerTeam  PlayerTurn { get; }
         public BoardModel  Board { get; }
 
-        public bool TryGiveUp(out GameResultInfo info);
-        public bool TryMove(Pos from, Pos to, out MoveContext moveCtx);
+        public void GiveUp();
+        public bool TryMove(Pos from, Pos to);
         public bool TryUnDo(out MoveContext ctx);
-        public void Handicap(out PlayerTeam nextPlayer); 
+        public void Handicap(); 
     }
 
     public class MatchModel : ILiveMatch, IMatchUIDatas
@@ -60,9 +60,8 @@ namespace Yujanggi.Core.Match
             Board  = board;
             Rule   = rule;
         }
-        public bool     TryMove(Pos from, Pos to, out MoveContext moveCtx)
+        public bool     TryMove(Pos from, Pos to)
         {
-            moveCtx = default;
             if (Turn.IsEnd)
                 return false;
             
@@ -75,7 +74,7 @@ namespace Yujanggi.Core.Match
             if (!Rule.IsLegalMove(Board, from, to))
                 return false;
 
-            moveCtx = ExecuteMove(from, to);
+            ExecuteMove(from, to);
             return true;
         }
         public void InitGame(Formation cho, Formation han)
@@ -93,13 +92,13 @@ namespace Yujanggi.Core.Match
         public void     UnBindEvents()
         {
             this.Turn.OnTurnChanged  -= TurnChanged;
-            this.Turn.OnTurnEnd      -= HandleTimeOut;
+            this.Turn.OnTurnEnd      -= Handicap;
 
         }
         public void     BindEvents()
         {
             this.Turn.OnTurnChanged  += TurnChanged;
-            this.Turn.OnTurnEnd      += HandleTimeOut;
+            this.Turn.OnTurnEnd      += Handicap;
         }
 
         public bool     TryUnDo(out MoveContext ctx)
@@ -109,23 +108,19 @@ namespace Yujanggi.Core.Match
             if (Turn.IsEnd)
                 return false;
 
-            if (!Record.TryPeek(out var lastCtx))
-                return false;
-
-            if (lastCtx.IsHandicap)
-                return false;
-
             if (!Record.TryPop(out ctx))
                 return false;
-
-            var record = ctx.Record;
-
-            Board.UndoMove(record);
-
-            if (record.IsCapture)
+            
+            if (!ctx.IsHandicap)
             {
-                var captured = record.CapturedPiece;
-                Score.ApplyScore(captured.Team, captured.Type, true);
+                var record = ctx.Record;
+                Board.UndoMove(record);
+
+                if (record.IsCapture)
+                {
+                    var captured = record.CapturedPiece;
+                    Score.ApplyScore(captured.Team, captured.Type, true);
+                }
             }
 
             Turn.NextTurn();
@@ -133,28 +128,15 @@ namespace Yujanggi.Core.Match
             return true;
         }
 
-        public void Handicap(out PlayerTeam nextPlayer)
+        public void Handicap()
         {
-            if (Turn.IsEnd)
-            {
-                nextPlayer = PlayerTeam.None;
-                return;
-            }
+            if (Turn.IsEnd) return;
             Record.Push(MoveContext.Handicap);
-            nextPlayer = Turn.NextTurn();
+            Turn.NextTurn();
         }
-        public bool TryGiveUp(out GameResultInfo info)
+        public void GiveUp()
         {
-            if(Turn.IsEnd)
-            {
-                info = default;
-                return false;
-            }
-            Turn.EndGame();
-            info.Loser     = Turn.CurrentTeam;
-            info.MoveCnt    = Record.TotalTurn;
-            info.Type       = GameResult.GiveUp;
-            return true;
+            OnGameEnded(GameResult.GiveUp, Turn.CurrentTeam);
         }
         public void  Update(float deltaTime)
         {
@@ -162,11 +144,6 @@ namespace Yujanggi.Core.Match
         }
 
 
-        private void HandleTimeOut()
-        {
-            Handicap(out var next);
-            MatchEvent.TurnChanged(next);
-        }
         private bool IsCheck(PlayerTeam otherTeam)
         {
             var result = Rule.IsKingInCheck(Board, otherTeam);
@@ -179,19 +156,12 @@ namespace Yujanggi.Core.Match
         {
             int cnt = Rule.CountLegalMove(Board, otherTeam);
             if (cnt == 0)
-            {
-                Turn.EndGame();
-                GameResultInfo info;
-                info.MoveCnt    = Record.TotalTurn;
-                info.Type       = GameResult.CheckMate;
-                info.Loser      = Turn.CurrentTeam;
-                MatchEvent.GameEnded(info);
                 return true;
-            }
+            
 
             return false;
         }
-        private MoveContext ExecuteMove(Pos from, Pos to)
+        private void ExecuteMove(Pos from, Pos to)
         {
             var record = Board.DoMove(from, to);
 
@@ -207,14 +177,22 @@ namespace Yujanggi.Core.Match
             var ctx       = new MoveContext(record, isJanggun, isEnd);
 
             Record.Push(ctx);
-            MatchEvent.PieceMoved(record);
-            Turn.NextTurn();
-            return ctx;
+            MatchEvent.PieceMoved(ctx);
+
+            if (isEnd) OnGameEnded(GameResult.CheckMate, otherTeam);
+            else Turn.NextTurn();
         }
         private void TurnChanged(PlayerTeam next)
         {
             this.MatchEvent.TurnChanged(next);
         }
-
+        private void OnGameEnded(GameResult type, PlayerTeam loser)
+        {
+            var info = new GameResultInfo();
+            info.Type    = type;
+            info.Loser   = loser;
+            info.MoveCnt = Record.TotalTurn;
+            MatchEvent.GameEnded(info);
+        }
     }
 }

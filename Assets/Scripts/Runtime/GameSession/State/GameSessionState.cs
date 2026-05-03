@@ -42,52 +42,38 @@ namespace Yujanggi.Runtime.GameSession
             _cho        = cho;
             _han        = han;
         }
-
-        private readonly MatchView            _matchView;
-        private readonly IPlayerController    _cho;
-        private readonly IPlayerController    _han;
+        protected readonly ISessionTransition   _transition;
+        protected readonly MatchView            _matchView;
+        protected readonly IPlayerController    _cho;
+        protected readonly IPlayerController    _han;
 
         public virtual void Enter() { }
         public virtual void Exit() { }
 
-        // UI 알림 (Match → State) 
-        public virtual void OnTurnChanged(PlayerTeam next)
-        {
-            var nextPlayer = GetPlayer(next);
-            _matchView.OnTurnChanged(nextPlayer.IsLocal());
-        }
-        public virtual void OnGameEnded(in GameResultInfo info)
-        {
-            var loser = GetPlayer(info.Loser);
-            _matchView.OnGameEnded(info, loser.IsLocal());
-            _matchView.ShowResultUI();
-        }
-        public virtual void OnCheckOccurred(PlayerTeam team)
-            => _matchView.CheckOccured(team);
-        public virtual void OnCheckReleased()
-            => _matchView.CheckReleased();
+        // UI 알림 (Match → State)
+        public virtual void OnPieceMoved(MoveContext moveCtx) { }
+        public virtual void OnTurnChanged(PlayerTeam next) { }
+        public virtual void OnGameEnded(in GameResultInfo info) { }
+        public virtual void OnCheckOccurred(PlayerTeam team) { }
+        public virtual void OnCheckReleased() { }
 
         // 입력 (Controller → State)
-        public virtual void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals){ }
+        public virtual void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals) { }
         public virtual void RequestMove(Pos from, Pos to) { }
+        public virtual void RequestUndo() { }
         public virtual void RequestGiveUp() { }
         public virtual void RequestHandicap() { }
         public virtual void RequestStepBackward() { }
         public virtual void RequestStepForward() { }
-        public virtual void RequestUndo(){ }
 
-
-        protected readonly ISessionTransition _transition;
         protected virtual IPlayerController BeginNextTurn(PlayerTeam turn)
         {
+            DisableAllControllers();
             if (turn == PlayerTeam.Cho)
             {
-                _han.EndTurn();
                 _cho.BeginTurn();
                 return _cho;
             }
-
-            _cho.EndTurn();
             _han.BeginTurn();
             return _han;
         }
