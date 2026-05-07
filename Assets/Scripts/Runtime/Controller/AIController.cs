@@ -1,15 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Android.Gradle.Manifest;
 using UnityEngine;
-using Yujanggi.Core.Board;
-using Yujanggi.Core.Domain;
-using Yujanggi.Core.Rule;
-using Yujanggi.Runtime.GameSession;
 
 namespace Yujanggi.Runtime.Controller
 {
+    using Yujanggi.Core.Board;
+    using Yujanggi.Core.Domain;
+    using Yujanggi.Core.Rule;
     public class AIController : IPlayerController, IAIController
     {
         public PlayerTeam Team { get; }

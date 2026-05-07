@@ -179,8 +179,10 @@ namespace Yujanggi.Core.Match
             Record.Push(ctx);
             MatchEvent.PieceMoved(ctx);
 
-            if (isEnd) OnGameEnded(GameResult.CheckMate, otherTeam);
-            else Turn.NextTurn();
+            if (isEnd) 
+                OnGameEnded(GameResult.CheckMate, otherTeam);
+            else 
+                Turn.NextTurn();
         }
         private void TurnChanged(PlayerTeam next)
         {
@@ -188,7 +190,8 @@ namespace Yujanggi.Core.Match
         }
         private void OnGameEnded(GameResult type, PlayerTeam loser)
         {
-            var info = new GameResultInfo();
+            this.Turn.EndGame();
+            var info     = new GameResultInfo();
             info.Type    = type;
             info.Loser   = loser;
             info.MoveCnt = Record.TotalTurn;

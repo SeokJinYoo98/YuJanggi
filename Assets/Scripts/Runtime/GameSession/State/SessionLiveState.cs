@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Match;
-using static UnityEngine.AdaptivePerformance.Provider.AdaptivePerformanceSubsystemDescriptor;
 
 namespace Yujanggi.Runtime.GameSession
 {
@@ -47,13 +46,8 @@ namespace Yujanggi.Runtime.GameSession
             _matchView.ApplyMoveView(moveCtx.Record);
         }
 
-        public override void OnGameEnded(in GameResultInfo info)        
-        {
-            DisableAllControllers();
-            var loser = GetPlayer(info.Loser);
-            _matchView.OnGameEnded(info, loser.IsLocal());
-            _matchView.ShowResultUI();
-        }
+        public override void OnGameEnded(in GameResultInfo info)
+            => _transition.ToEnd();
 
         public override void OnCheckOccurred(PlayerTeam team)
             => _matchView.CheckOccured(team);

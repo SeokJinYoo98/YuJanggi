@@ -17,7 +17,7 @@ namespace Yujanggi.Runtime.GameSession
 그래서 이건 모델 이벤트가 아니어도 됩니다.
      */
 
-    public class GameSession : ISessionTransition, IGameInputReceiver
+    public class GameSession : ISessionTransition, IGameInputReceiver, IGameResultContext
     {
         #region public Field F
         public GameSession(
@@ -47,15 +47,7 @@ namespace Yujanggi.Runtime.GameSession
             _playerCho.BeginTurn();
             _playerHan.EndTurn();
         }
-        public void ResetGame()
-        {
-            _replayView.ResetGame();
-            _matchModel.InitGame(_sessionInfo.ChoFormation, _sessionInfo.HanFormation);
-            _matchView.ResetGame(_matchModel.Board);
-            _matchModel.StartGame();
-            OnTurnChanged(_matchModel.PlayerTurn);
-            ChangeState(SessionState.Live);
-        }
+
         public void BindEvents()
         {
             // 슬슬 이벤트 버스.
@@ -105,6 +97,7 @@ namespace Yujanggi.Runtime.GameSession
         private readonly MatchView              _matchView;
         private readonly MatchModel             _matchModel;
 
+        public GameResultInfo? GameResult { get; private set; }
 
         #endregion
 
@@ -119,11 +112,14 @@ namespace Yujanggi.Runtime.GameSession
         private void OnTurnChanged(PlayerTeam next)
             => _states[_currState].OnTurnChanged(next);
         private void OnGameEnded(GameResultInfo info)
-            => _states[_currState].OnGameEnded(in info);
+        {
+            GameResult = info; 
+            _states[_currState].OnGameEnded(in info);
+        }
         // Player
-        public void RequestMove(Pos from, Pos to)
+        public void  RequestMove(Pos from, Pos to)
             => _states[_currState].RequestMove(from, to);
-        public void ChangeSelection(int? pieceId, IReadOnlyList<Pos> legal, IReadOnlyList<Pos> illegal)
+        public void  ChangeSelection(int? pieceId, IReadOnlyList<Pos> legal, IReadOnlyList<Pos> illegal)
             => _states[_currState].OnSelectionChanged(pieceId, legal, illegal);
         // UI
         public void  StepForward()
@@ -136,7 +132,11 @@ namespace Yujanggi.Runtime.GameSession
             => _states[_currState].RequestGiveUp();
         public void  UnDo()
             => _states[_currState].RequestUndo();
-
+        public void  ResetGame()
+        {
+            GameResult = null;
+            _states[_currState].RequestResetGame(_sessionInfo, _matchModel, _matchView, _replayView);
+        }
         #endregion
 
         #region State
@@ -145,6 +145,8 @@ namespace Yujanggi.Runtime.GameSession
             var states = new Dictionary<SessionState, ISessionState>();
             states[SessionState.Live]   = new SessionLiveState(this, _matchModel, _playerCho, _playerHan, _matchView);
             states[SessionState.Replay] = new SessionReplayState(this, _matchModel, _playerCho, _playerHan, _replayView, _matchView);
+            states[SessionState.End]    = new SessionEndState(this, this, _playerCho, _playerHan, _matchModel, _matchView);
+            states[SessionState.EndReplay] = new SessionEndReplayState(this, _playerCho, _playerHan, _matchModel, _matchView, _replayView);
             return states;
         }
         private void ChangeState(SessionState next)
@@ -168,8 +170,13 @@ namespace Yujanggi.Runtime.GameSession
             _localInput.Deactivate();
             ChangeState(SessionState.Replay);
         }
-        public void ToResult()
-            => ChangeState(SessionState.Result);
+        public void ToEnd()
+        {
+            _localInput.Deactivate();
+            ChangeState(SessionState.End);
+        }
+        public void ToEndReplay()
+            => ChangeState(SessionState.EndReplay);
         #endregion
     }
 }

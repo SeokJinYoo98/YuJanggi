@@ -9,10 +9,10 @@ namespace Yujanggi.Runtime.GameSession
     public enum SessionState
     {
         None,
-        Initializing,
         Live,
         Replay,
-        Result
+        End,
+        EndReplay
     }
     public interface ISessionState
     {
@@ -32,6 +32,8 @@ namespace Yujanggi.Runtime.GameSession
         void RequestUndo();
         void RequestStepForward();
         void RequestStepBackward();
+        // UI 입력
+        void RequestResetGame(GameSessionInfo info, MatchModel matchModel, MatchView matchView, ReplayView replayView);
     }
 
     public abstract class SessionStateBase : ISessionState
@@ -70,6 +72,19 @@ namespace Yujanggi.Runtime.GameSession
         public virtual void RequestHandicap() { }
         public virtual void RequestStepBackward() { }
         public virtual void RequestStepForward() { }
+        #endregion
+
+        #region UIRequest
+        // UI 입력
+        public void RequestResetGame(GameSessionInfo info, MatchModel matchModel, MatchView matchView, ReplayView replayView)
+        {
+            replayView.ResetGame();
+            matchModel.InitGame(info.ChoFormation, info.HanFormation);
+            matchView.ResetGame(matchModel.Board);
+            matchModel.StartGame();
+            BeginNextTurn(matchModel.PlayerTurn);
+            _transition.ToLive();
+        }
         #endregion
 
         protected virtual IPlayerController BeginNextTurn(PlayerTeam turn)

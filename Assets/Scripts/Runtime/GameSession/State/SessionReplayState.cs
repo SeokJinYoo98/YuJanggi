@@ -40,12 +40,7 @@ namespace Yujanggi.Runtime.GameSession
         }
         // public override void OnPieceMoved(in MoveContext moveCtx) { }
         public override void OnGameEnded(in GameResultInfo info)
-        {
-            DisableAllControllers();
-            var loser = GetPlayer(info.Loser);
-            _matchView.OnGameEnded(info, loser.IsLocal());
-            _matchView.ShowResultUI();
-        }
+            => _transition.ToEnd();
         // public override void OnCheckOccurred(PlayerTeam team) { }
         // public override void OnCheckReleased() { }
 
@@ -61,6 +56,7 @@ namespace Yujanggi.Runtime.GameSession
             var result = _replayView.TryReplayBackward();
             Debug.Log($"{result}");
             if (result == ReplayResult.Succeeded) return;
+            if (result == ReplayResult.RecordIsEmpty) _transition.ToLive();
             if (result == ReplayResult.Failed) _transition.ToLive();
         }
         public override void RequestStepForward() 
@@ -70,6 +66,5 @@ namespace Yujanggi.Runtime.GameSession
             if (result == ReplayResult.Succeeded) return;
             if (result == ReplayResult.IdxAtEnd) _transition.ToLive();
         }
-
     }
 }

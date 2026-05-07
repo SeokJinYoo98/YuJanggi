@@ -6,6 +6,10 @@ using Yujanggi.Core.Match;
 using Yujanggi.Runtime.GameSession;
 namespace Yujanggi.Core.Domain
 {
+    public interface IGameResultContext
+    {
+        GameResultInfo? GameResult { get; }
+    }
     public interface IGameInputReceiver
     {
         void RequestMove(Pos from, Pos to);
@@ -15,7 +19,8 @@ namespace Yujanggi.Core.Domain
     {
         void ToLive();
         void ToReplay();
-        void ToResult();
+        void ToEnd();
+        void ToEndReplay();
     }
     public struct GameSessionInfo
     {
