@@ -24,7 +24,7 @@ namespace Yujanggi.Runtime.GameSession
             _playerHan    = han;
             _localInput   = localInput;
             _states       = CreateStates();
-            ChangeState(SessionState.Live);
+            ChangeState(SessionState.LiveState);
         }
         public void StartGame()
         {
@@ -72,7 +72,7 @@ namespace Yujanggi.Runtime.GameSession
         #endregion
 
         #region private Field Member   
-        private SessionState _currState = SessionState.Base;
+        private SessionState _currState = SessionState.BaseState;
         private readonly Dictionary<SessionState, ISessionState> _states;
 
         private readonly GameSessionInfo        _sessionInfo;
@@ -130,10 +130,10 @@ namespace Yujanggi.Runtime.GameSession
         private Dictionary<SessionState, ISessionState> CreateStates()
         {
             var states = new Dictionary<SessionState, ISessionState>();
-            states[SessionState.Live]   = new SessionLiveState(this, _matchModel, _playerCho, _playerHan, _matchView);
-            states[SessionState.Replay] = new SessionReplayState(this, _matchModel, _playerCho, _playerHan, _replayView, _matchView);
-            states[SessionState.End]    = new SessionEndState(this, this, _playerCho, _playerHan, _matchModel, _matchView);
-            states[SessionState.EndReplay] = new SessionEndReplayState(this, _playerCho, _playerHan, _matchModel, _replayView);
+            states[SessionState.LiveState]   = new SessionLiveState(this, _matchModel, _playerCho, _playerHan, _matchView);
+            states[SessionState.ReplayState] = new SessionReplayState(this, _matchModel, _playerCho, _playerHan, _replayView, _matchView);
+            states[SessionState.EndState]    = new SessionEndState(this, this, _playerCho, _playerHan, _matchModel, _matchView);
+            states[SessionState.EndReplayState] = new SessionEndReplayState(this, _playerCho, _playerHan, _matchModel, _replayView);
             return states;
         }
         private void ChangeState(SessionState next)
@@ -149,21 +149,21 @@ namespace Yujanggi.Runtime.GameSession
         }
         public void ToLive()
         {
-            ChangeState(SessionState.Live);
+            ChangeState(SessionState.LiveState);
             _localInput.Activate();
         }
         public void ToReplay()
         {
             _localInput.Deactivate();
-            ChangeState(SessionState.Replay);
+            ChangeState(SessionState.ReplayState);
         }
         public void ToEnd()
         {
             _localInput.Deactivate();
-            ChangeState(SessionState.End);
+            ChangeState(SessionState.EndState);
         }
         public void ToEndReplay()
-            => ChangeState(SessionState.EndReplay);
+            => ChangeState(SessionState.EndReplayState);
         #endregion
     }
 }

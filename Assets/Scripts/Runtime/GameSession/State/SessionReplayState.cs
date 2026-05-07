@@ -76,6 +76,6 @@ namespace Yujanggi.Runtime.GameSession
             if (result == ReplayResult.Succeeded) return;
             if (result == ReplayResult.IdxAtEnd) _transition.ToLive();
         }
-        protected override SessionState StateName() => SessionState.Replay;
+        protected override SessionState StateName() => SessionState.ReplayState;
     }
 }

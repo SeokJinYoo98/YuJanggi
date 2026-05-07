@@ -46,7 +46,7 @@ namespace Yujanggi.Runtime.GameSession
             if (result == ReplayResult.Succeeded) return;
             if (result == ReplayResult.IdxAtEnd) _transition.ToEnd();
         }
-        protected override SessionState StateName() => SessionState.EndReplay;
+        protected override SessionState StateName() => SessionState.EndReplayState;
     }
     public sealed class SessionEndState : SessionStateBase
     {
@@ -86,6 +86,6 @@ namespace Yujanggi.Runtime.GameSession
             base.RequestStepBackward();
             _transition.ToEndReplay();
         }
-        protected override SessionState StateName() => SessionState.End;
+        protected override SessionState StateName() => SessionState.EndState;
     }
 }

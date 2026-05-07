@@ -8,11 +8,11 @@ namespace Yujanggi.Runtime.GameSession
 {
     public enum SessionState
     {
-        Base,
-        Live,
-        Replay,
-        End,
-        EndReplay
+        BaseState,
+        LiveState,
+        ReplayState,
+        EndState,
+        EndReplayState
     }
     public interface ISessionState
     {
@@ -60,11 +60,11 @@ namespace Yujanggi.Runtime.GameSession
             var record = moveCtx.Record;
             var from = record.From;
             var to = record.To;
-            Debug.Log($"{StateName()}_OnPieceMoved: {from} => {to}");
+            Debug.Log($"{StateName()}_OnPieceMoved:{from.X},{from.Z} -> {to.X},{to.Z}");
             if (record.IsCapture)
             {
                 from = record.To;
-                Debug.Log($"{StateName()}_Captured: {from}");
+                Debug.Log($"{StateName()}_Captured: {from.X},{from.Z}");
             }
         }
         public virtual void OnTurnChanged(PlayerTeam next) { Debug.Log($"{StateName()}_OnTurnChanged:{next}"); }
@@ -78,7 +78,7 @@ namespace Yujanggi.Runtime.GameSession
         #endregion
 
         #region Input -> Session -> Model
-        public virtual void RequestMove(Pos from, Pos to) { Debug.Log($"{StateName()}_RequestMove:{from} -> {to}"); }
+        public virtual void RequestMove(Pos from, Pos to) { Debug.Log($"{StateName()}_RequestMove:{from.X},{from.Z} -> {to.X},{to.Z}"); }
         public virtual void RequestUndo() { Debug.Log($"{StateName()}_RequestUndo"); }
         public virtual void RequestGiveUp() { Debug.Log($"{StateName()}_RequestGiveUp"); }
         public virtual void RequestHandicap() { Debug.Log($"{StateName()}_RequestHandicap"); }
@@ -102,14 +102,15 @@ namespace Yujanggi.Runtime.GameSession
 
         protected virtual IPlayerController BeginNextTurn(PlayerTeam turn)
         {
+            DisableAllControllers(); 
             Debug.Log($"{StateName()}_BeginNextTurn:{turn}");
-            DisableAllControllers();
             if (turn == PlayerTeam.Cho)
             {
                 _cho.BeginTurn();
                 return _cho;
             }
             _han.BeginTurn();
+
             return _han;
         }
         protected void DisableAllControllers()
@@ -123,6 +124,6 @@ namespace Yujanggi.Runtime.GameSession
             return team == PlayerTeam.Cho ? _cho : _han;
         }
 
-        protected virtual SessionState StateName() => SessionState.Base;
+        protected virtual SessionState StateName() => SessionState.BaseState;
     }
 }

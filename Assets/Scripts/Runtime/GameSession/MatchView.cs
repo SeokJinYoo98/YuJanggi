@@ -97,7 +97,7 @@ namespace Yujanggi.Runtime.GameSession
         public void OnTurnChanged(bool isLocal)
         {
             if (!isLocal) return;
-            Debug.Log("턴 바뀜");
+            Debug.Log($"Turn UI Update:{isLocal}");
             _audio.PlaySfxOneShot(JanggiSfx.TurnAlert);
         }
 

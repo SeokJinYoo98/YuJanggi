@@ -108,6 +108,6 @@ namespace Yujanggi.Runtime.GameSession
             if (_liveMatch.RecordCnt == 0) return;
             _transition.ToReplay();
         }
-        protected override SessionState StateName() => SessionState.Live;
+        protected override SessionState StateName() => SessionState.LiveState;
     }
 }
