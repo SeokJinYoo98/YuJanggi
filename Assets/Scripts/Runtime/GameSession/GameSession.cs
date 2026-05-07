@@ -25,8 +25,7 @@ namespace Yujanggi.Runtime.GameSession
             MatchView          matchView,
             MatchModel         matchModel,
             ReplayView         replayView,
-            IPlayerController  cho,
-            IPlayerController  han,
+            IPlayerController  cho, IPlayerController  han,
             IInputHandler      localInput)
         {
             _matchView    = matchView;
@@ -36,10 +35,7 @@ namespace Yujanggi.Runtime.GameSession
             _playerCho    = cho;
             _playerHan    = han;
             _localInput   = localInput;
-
-            _states = new Dictionary<SessionState, ISessionState>();
-            _states[SessionState.Live]   = new SessionLiveState(this, _matchModel, _playerCho, _playerHan, _matchView);
-            _states[SessionState.Replay] = new SessionReplayState(this, _matchModel, _playerCho, _playerHan, _replayView, _matchView);
+            _states       = CreateStates();
             ChangeState(SessionState.Live);
         }
         public void StartGame()
@@ -73,7 +69,7 @@ namespace Yujanggi.Runtime.GameSession
             events.OnGameEnded     += OnGameEnded;
             events.OnTurnChanged   += OnTurnChanged;
 
-            _playerCho.BindEvents(this); 
+            _playerCho.BindEvents(this);
             _playerHan.BindEvents(this);
         }
         public void UnBindEvents()
@@ -115,9 +111,7 @@ namespace Yujanggi.Runtime.GameSession
         #region private Field F
         // Events
         private void OnPieceMoved(MoveContext moveCtx)
-        {
-
-        }
+        => _states[_currState].OnPieceMoved(in moveCtx);
         private void OnCheckReleased()
             => _states[_currState].OnCheckReleased();
         private void OnCheckOccured(PlayerTeam team)
@@ -142,6 +136,17 @@ namespace Yujanggi.Runtime.GameSession
             => _states[_currState].RequestGiveUp();
         public void  UnDo()
             => _states[_currState].RequestUndo();
+
+        #endregion
+
+        #region State
+        private Dictionary<SessionState, ISessionState> CreateStates()
+        {
+            var states = new Dictionary<SessionState, ISessionState>();
+            states[SessionState.Live]   = new SessionLiveState(this, _matchModel, _playerCho, _playerHan, _matchView);
+            states[SessionState.Replay] = new SessionReplayState(this, _matchModel, _playerCho, _playerHan, _replayView, _matchView);
+            return states;
+        }
         private void ChangeState(SessionState next)
         {
             if (_currState == next)
@@ -153,9 +158,6 @@ namespace Yujanggi.Runtime.GameSession
             _currState = next;
             _states[_currState].Enter();
         }
-        #endregion
-
-        #region Replay
         public void ToLive()
         {
             ChangeState(SessionState.Live);
@@ -168,8 +170,6 @@ namespace Yujanggi.Runtime.GameSession
         }
         public void ToResult()
             => ChangeState(SessionState.Result);
-
-
         #endregion
     }
 }

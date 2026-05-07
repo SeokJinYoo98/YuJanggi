@@ -12,49 +12,39 @@ namespace Yujanggi.Runtime.UI
 
         public void EndGame(in GameResultInfo result)
         {
-            switch(result.Type)
+            SetWinnerType(result.Loser);
+            SetWinType(result.Type);
+            SetMoveCnt(result.MoveCnt);
+        }
+        private void SetWinnerType(PlayerTeam loser)
+        {
+            if (loser == PlayerTeam.Cho)
+            {
+                _winner.color = Color.red;
+                _winner.SetText("한");
+            }
+            else
+            {
+                _winner.color = Color.green;
+                _winner.SetText("초");
+            }
+            
+        }
+        private void SetWinType(GameResult result)
+        {
+            switch (result)
             {
                 case GameResult.CheckMate:
-                    CheckMate(in result);
+                    _result.SetText("[외통수]");
                     break;
                 case GameResult.GiveUp:
-                    GiveUp(in result);
+                    _result.SetText("[기권승]");
                     break;
                 default:
                     break;
             }
-
         }
-        private void CheckMate(in GameResultInfo result)
-        {
-            if (result.Loser == PlayerTeam.Cho)
-            {
-                _winner.color = Color.green;
-                _winner.SetText("초");
-            }
-            else
-            {
-                _winner.color = Color.red;
-                _winner.SetText("한");
-
-            }
-            _result.SetText("[외통수]");
-            _cnt.SetText("{0}", result.MoveCnt);
-        }
-        private void GiveUp(in GameResultInfo result)
-        {
-            if (result.Loser == PlayerTeam.Cho)
-            {
-                _winner.color = Color.red;
-                _winner.SetText("한");
-            }
-            else
-            {
-                _winner.color = Color.green;
-                _winner.SetText("초");
-            }
-            _result.SetText("[기권승]");
-            _cnt.SetText("{0}", result.MoveCnt);
-        }
+        private void SetMoveCnt(int moveCnt)
+            => _cnt.SetText("{0}", moveCnt);
     }
 }

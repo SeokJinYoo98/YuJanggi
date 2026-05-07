@@ -1,39 +1,36 @@
 using System.Collections.Generic;
+using UnityEngine;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Match;
-using UnityEngine;
+using static UnityEngine.AdaptivePerformance.Provider.AdaptivePerformanceSubsystemDescriptor;
 
 namespace Yujanggi.Runtime.GameSession
 {
 
     public sealed class SessionLiveState : SessionStateBase
     {
-        private readonly ILiveMatch _matchModel;
+        private readonly MatchView  _matchView;
         public SessionLiveState(
             ISessionTransition sessionFsm, 
-            ILiveMatch matchModel, 
+            ILiveMatch         matchModel, 
             IPlayerController cho, IPlayerController han, 
             MatchView matchView)
-            : base(sessionFsm, cho, han, matchView)
+            : base(sessionFsm, cho, han, matchModel)
         {
-            _matchModel = matchModel;
+            _matchView = matchView;
         }
+        // 라이브가 필요한걸 준비
         public override  void Enter() 
         {
+            Debug.Log("라이브 진입");
             _matchView.UnHighlight();
-            _matchView.SyncBoardState(_matchModel);
+            _matchView.SyncBoardState(_liveMatch);
         }
+        // 라이브를 정리한다.
         public override  void Exit() 
         {
+            Debug.Log("라이브 종료");
             _matchView.UnHighlight();
-        }
-
-        public override void OnPieceMoved(MoveContext moveCtx)
-        {
-            _matchView.UnHighlight();
-            if (moveCtx.IsHandicap) return;
-
-            _matchView.ApplyMoveView(moveCtx.Record);
         }
         public override void OnTurnChanged(PlayerTeam next)
         {
@@ -41,13 +38,23 @@ namespace Yujanggi.Runtime.GameSession
             _matchView.OnTurnChanged(nextPlayer.IsLocal());
             BeginNextTurn(next);
         }
-        public override void OnGameEnded(in GameResultInfo info)
+
+        public override void OnPieceMoved(in MoveContext moveCtx)
+        {
+            _matchView.UnHighlight();
+            if (moveCtx.IsHandicap) return;
+
+            _matchView.ApplyMoveView(moveCtx.Record);
+        }
+
+        public override void OnGameEnded(in GameResultInfo info)        
         {
             DisableAllControllers();
             var loser = GetPlayer(info.Loser);
             _matchView.OnGameEnded(info, loser.IsLocal());
             _matchView.ShowResultUI();
         }
+
         public override void OnCheckOccurred(PlayerTeam team)
             => _matchView.CheckOccured(team);
         public override void OnCheckReleased()
@@ -55,37 +62,36 @@ namespace Yujanggi.Runtime.GameSession
         //
         public override void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals)
         {
-            if (!pieceId.HasValue)
-            {
-                _matchView.UnHighlight();
-                return;
-            }
+            _matchView.UnHighlight();
+            if (!pieceId.HasValue) return;
             _matchView.HighlightPiece(pieceId.Value);
             _matchView.HighlightWays(legals, illegals);
         }
 
-        public override void RequestGiveUp()
-            => _matchModel.GiveUp();
-        public override void RequestHandicap()
-        {
-            _matchView.UnHighlight();
-            _matchModel.Handicap();
-        }
-
+        //
         public override void RequestMove(Pos from, Pos to)
-            => _matchModel.TryMove(from, to);
-        public override void RequestStepBackward() 
+            => _liveMatch.TryMove(from, to);
+        public override void RequestUndo()
         {
-            if (_matchModel.RecordCnt == 0) return;
-            _transition.ToReplay();
-        }
-        public override void RequestUndo() 
-        {
-            if (!_matchModel.TryUnDo(out var moveCtx)) 
+            // 이거 뷰를 직접 조작하는게 좀 이상함 *************************
+            if (!_liveMatch.TryUnDo(out var moveCtx))
                 return;
 
-            if (!moveCtx.IsHandicap) 
+            if (!moveCtx.IsHandicap)
                 _matchView.RevertMoveView(moveCtx.Record);
         }
+        public override void RequestGiveUp()
+            => _liveMatch.GiveUp();
+        public override void RequestHandicap()
+        {
+            _liveMatch.Handicap();
+            _matchView.UnHighlight();
+        }
+        public override void RequestStepBackward() 
+        {
+            if (_liveMatch.RecordCnt == 0) return;
+            _transition.ToReplay();
+        }
+ 
     }
 }

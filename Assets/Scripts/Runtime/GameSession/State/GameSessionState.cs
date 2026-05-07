@@ -19,6 +19,7 @@ namespace Yujanggi.Runtime.GameSession
         void Enter();
         void Exit();
         // UI 알림 (Match → State) 
+        void OnPieceMoved(in MoveContext moveCtx);
         void OnTurnChanged(PlayerTeam next);
         void OnGameEnded(in GameResultInfo info);
         void OnCheckOccurred(PlayerTeam team);
@@ -35,36 +36,41 @@ namespace Yujanggi.Runtime.GameSession
 
     public abstract class SessionStateBase : ISessionState
     {
-        protected SessionStateBase(ISessionTransition sessionFsm, IPlayerController cho, IPlayerController han, MatchView matchView)
+        protected SessionStateBase(ISessionTransition sessionFsm, IPlayerController cho, IPlayerController han, ILiveMatch liveMatch)
         {
+            _liveMatch  =  liveMatch;
             _transition = sessionFsm;
-            _matchView  = matchView;
             _cho        = cho;
             _han        = han;
         }
+        protected readonly ILiveMatch           _liveMatch;
         protected readonly ISessionTransition   _transition;
-        protected readonly MatchView            _matchView;
         protected readonly IPlayerController    _cho;
         protected readonly IPlayerController    _han;
 
         public virtual void Enter() { }
         public virtual void Exit() { }
 
-        // UI 알림 (Match → State)
-        public virtual void OnPieceMoved(MoveContext moveCtx) { }
+        #region Match -> Session -> View
+        public virtual void OnPieceMoved(in MoveContext moveCtx) { }
         public virtual void OnTurnChanged(PlayerTeam next) { }
         public virtual void OnGameEnded(in GameResultInfo info) { }
         public virtual void OnCheckOccurred(PlayerTeam team) { }
         public virtual void OnCheckReleased() { }
+        #endregion
 
-        // 입력 (Controller → State)
+        #region Input -> Session -> View
         public virtual void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals) { }
+        #endregion
+
+        #region Input -> Session -> Model
         public virtual void RequestMove(Pos from, Pos to) { }
         public virtual void RequestUndo() { }
         public virtual void RequestGiveUp() { }
         public virtual void RequestHandicap() { }
         public virtual void RequestStepBackward() { }
         public virtual void RequestStepForward() { }
+        #endregion
 
         protected virtual IPlayerController BeginNextTurn(PlayerTeam turn)
         {

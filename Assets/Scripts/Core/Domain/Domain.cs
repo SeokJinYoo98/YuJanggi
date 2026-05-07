@@ -11,7 +11,7 @@ namespace Yujanggi.Core.Domain
         void RequestMove(Pos from, Pos to);
         void ChangeSelection(int? pieceId, IReadOnlyList<Pos> legal, IReadOnlyList<Pos> illegal);
     }
-        public interface ISessionTransition
+    public interface ISessionTransition
     {
         void ToLive();
         void ToReplay();
