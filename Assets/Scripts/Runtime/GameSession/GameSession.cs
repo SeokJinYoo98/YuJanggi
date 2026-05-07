@@ -5,18 +5,6 @@ using Yujanggi.Runtime.Piece;
 
 namespace Yujanggi.Runtime.GameSession
 {
-    /*
-    1. Request~
-아직 확정되지 않은 행동을 모델에 시도시키는 함수
-
-    2. On~
-모델에서 이미 확정된 결과를 받아 후처리하는 함수
-
-    3. 예외: 선택/하이라이트
-선택은 게임 상태가 아니라 입력 피드백입니다.
-그래서 이건 모델 이벤트가 아니어도 됩니다.
-     */
-
     public class GameSession : ISessionTransition, IGameInputReceiver, IGameResultContext
     {
         #region public Field F
@@ -47,7 +35,6 @@ namespace Yujanggi.Runtime.GameSession
             _playerCho.BeginTurn();
             _playerHan.EndTurn();
         }
-
         public void BindEvents()
         {
             // 슬슬 이벤트 버스.
@@ -85,7 +72,7 @@ namespace Yujanggi.Runtime.GameSession
         #endregion
 
         #region private Field Member   
-        private SessionState _currState = SessionState.None;
+        private SessionState _currState = SessionState.Base;
         private readonly Dictionary<SessionState, ISessionState> _states;
 
         private readonly GameSessionInfo        _sessionInfo;
@@ -146,7 +133,7 @@ namespace Yujanggi.Runtime.GameSession
             states[SessionState.Live]   = new SessionLiveState(this, _matchModel, _playerCho, _playerHan, _matchView);
             states[SessionState.Replay] = new SessionReplayState(this, _matchModel, _playerCho, _playerHan, _replayView, _matchView);
             states[SessionState.End]    = new SessionEndState(this, this, _playerCho, _playerHan, _matchModel, _matchView);
-            states[SessionState.EndReplay] = new SessionEndReplayState(this, _playerCho, _playerHan, _matchModel, _matchView, _replayView);
+            states[SessionState.EndReplay] = new SessionEndReplayState(this, _playerCho, _playerHan, _matchModel, _replayView);
             return states;
         }
         private void ChangeState(SessionState next)

@@ -8,7 +8,7 @@ namespace Yujanggi.Runtime.GameSession
 {
     public enum SessionState
     {
-        None,
+        Base,
         Live,
         Replay,
         End,
@@ -34,6 +34,7 @@ namespace Yujanggi.Runtime.GameSession
         void RequestStepBackward();
         // UI 입력
         void RequestResetGame(GameSessionInfo info, MatchModel matchModel, MatchView matchView, ReplayView replayView);
+
     }
 
     public abstract class SessionStateBase : ISessionState
@@ -45,39 +46,51 @@ namespace Yujanggi.Runtime.GameSession
             _cho        = cho;
             _han        = han;
         }
-        protected readonly ILiveMatch           _liveMatch;
-        protected readonly ISessionTransition   _transition;
-        protected readonly IPlayerController    _cho;
-        protected readonly IPlayerController    _han;
+        protected readonly ILiveMatch _liveMatch;
+        protected readonly ISessionTransition _transition;
+        protected readonly IPlayerController _cho;
+        protected readonly IPlayerController _han;
 
-        public virtual void Enter() { }
-        public virtual void Exit() { }
+        public virtual void Enter() { Debug.Log($"{StateName()}_Start"); }
+        public virtual void Exit() { Debug.Log($"{StateName()}_End"); }
 
         #region Match -> Session -> View
-        public virtual void OnPieceMoved(in MoveContext moveCtx) { }
-        public virtual void OnTurnChanged(PlayerTeam next) { }
-        public virtual void OnGameEnded(in GameResultInfo info) { }
-        public virtual void OnCheckOccurred(PlayerTeam team) { }
-        public virtual void OnCheckReleased() { }
+        public virtual void OnPieceMoved(in MoveContext moveCtx)
+        {
+            var record = moveCtx.Record;
+            var from = record.From;
+            var to = record.To;
+            Debug.Log($"{StateName()}_OnPieceMoved: {from} => {to}");
+            if (record.IsCapture)
+            {
+                from = record.To;
+                Debug.Log($"{StateName()}_Captured: {from}");
+            }
+        }
+        public virtual void OnTurnChanged(PlayerTeam next) { Debug.Log($"{StateName()}_OnTurnChanged:{next}"); }
+        public virtual void OnGameEnded(in GameResultInfo info) { Debug.Log($"{StateName()}_OnGameEnded"); }
+        public virtual void OnCheckOccurred(PlayerTeam team) { Debug.Log($"{StateName()}_OnCheckOccured"); }
+        public virtual void OnCheckReleased() { Debug.Log($"{StateName()}_OnCheckReleased"); }
         #endregion
 
         #region Input -> Session -> View
-        public virtual void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals) { }
+        public virtual void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals) { Debug.Log($"{StateName()}_OnSelectionChanged"); }
         #endregion
 
         #region Input -> Session -> Model
-        public virtual void RequestMove(Pos from, Pos to) { }
-        public virtual void RequestUndo() { }
-        public virtual void RequestGiveUp() { }
-        public virtual void RequestHandicap() { }
-        public virtual void RequestStepBackward() { }
-        public virtual void RequestStepForward() { }
+        public virtual void RequestMove(Pos from, Pos to) { Debug.Log($"{StateName()}_RequestMove:{from} -> {to}"); }
+        public virtual void RequestUndo() { Debug.Log($"{StateName()}_RequestUndo"); }
+        public virtual void RequestGiveUp() { Debug.Log($"{StateName()}_RequestGiveUp"); }
+        public virtual void RequestHandicap() { Debug.Log($"{StateName()}_RequestHandicap"); }
+        public virtual void RequestStepBackward() { Debug.Log($"{StateName()}_RequestStepBackward"); }
+        public virtual void RequestStepForward() { Debug.Log($"{StateName()}_RequestStepForward"); }
         #endregion
 
         #region UIRequest
         // UI 입력
         public void RequestResetGame(GameSessionInfo info, MatchModel matchModel, MatchView matchView, ReplayView replayView)
         {
+            Debug.Log($"{StateName()}_ResetGame");
             replayView.ResetGame();
             matchModel.InitGame(info.ChoFormation, info.HanFormation);
             matchView.ResetGame(matchModel.Board);
@@ -89,6 +102,7 @@ namespace Yujanggi.Runtime.GameSession
 
         protected virtual IPlayerController BeginNextTurn(PlayerTeam turn)
         {
+            Debug.Log($"{StateName()}_BeginNextTurn:{turn}");
             DisableAllControllers();
             if (turn == PlayerTeam.Cho)
             {
@@ -98,11 +112,17 @@ namespace Yujanggi.Runtime.GameSession
             _han.BeginTurn();
             return _han;
         }
-        protected void                      DisableAllControllers()
+        protected void DisableAllControllers()
         {
+            Debug.Log($"{StateName()}_DisableAllControllers");
             _cho.EndTurn(); _han.EndTurn();
         }
-        protected IPlayerController         GetPlayer(PlayerTeam team)
-            => team == PlayerTeam.Cho ? _cho : _han;
+        protected IPlayerController GetPlayer(PlayerTeam team)
+        {
+            Debug.Log($"{StateName()}_GetPlayer: {team}");
+            return team == PlayerTeam.Cho ? _cho : _han;
+        }
+
+        protected virtual SessionState StateName() => SessionState.Base;
     }
 }

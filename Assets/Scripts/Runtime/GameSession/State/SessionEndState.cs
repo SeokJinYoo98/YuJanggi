@@ -7,31 +7,31 @@ namespace Yujanggi.Runtime.GameSession
 {
     public sealed class SessionEndReplayState : SessionStateBase
     {
-        private readonly MatchView  _matchView;
         private readonly ReplayView _replayView;
         public SessionEndReplayState(
             ISessionTransition sessionFsm,
             IPlayerController cho, IPlayerController han,
             ILiveMatch liveMatch,
-            MatchView matchView,
             ReplayView replayView)
                 : base(sessionFsm, cho, han, liveMatch)
         {
             _replayView = replayView;
-            _matchView  = matchView;
         }
         public override void Enter()
         {
-            Debug.Log("엔드 리플레이진입");
+            base.Enter();
+            if (_liveMatch.RecordCnt == 0) 
+                _transition.ToEnd();
             _replayView.EnterReplayView();
         }
         public override void Exit()
         {
-            Debug.Log("엔드 리플레이 종료");
+            base.Exit();
             _replayView.ExitReplayView();
         }
         public override void RequestStepBackward()
         {
+            base.RequestStepBackward();
             var result = _replayView.TryReplayBackward();
             Debug.Log($"{result}");
             if (result == ReplayResult.Succeeded) return;
@@ -40,11 +40,13 @@ namespace Yujanggi.Runtime.GameSession
         }
         public override void RequestStepForward()
         {
+            base.RequestStepForward();
             var result = _replayView.TryReplayForward();
             Debug.Log($"{result}");
             if (result == ReplayResult.Succeeded) return;
             if (result == ReplayResult.IdxAtEnd) _transition.ToEnd();
         }
+        protected override SessionState StateName() => SessionState.EndReplay;
     }
     public sealed class SessionEndState : SessionStateBase
     {
@@ -64,9 +66,9 @@ namespace Yujanggi.Runtime.GameSession
 
         public override void Enter()
         {
+            base.Enter();
             _matchView.SyncBoardState(_liveMatch);
             if (!_resultCtx.GameResult.HasValue) _transition.ToLive();
-            Debug.Log("엔드 진입");
             DisableAllControllers();
             var result          = _resultCtx.GameResult.Value;
             var isLocalLose     = GetPlayer(result.Loser).IsLocal();
@@ -76,10 +78,14 @@ namespace Yujanggi.Runtime.GameSession
         }
         public override void Exit()
         {
-            Debug.Log("엔드 종료");
+            base.Exit();
             _matchView.HideResultUI();
         }
         public override void RequestStepBackward()
-            => _transition.ToEndReplay();
+        {
+            base.RequestStepBackward();
+            _transition.ToEndReplay();
+        }
+        protected override SessionState StateName() => SessionState.End;
     }
 }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Match;
+using Yujanggi.Runtime.Piece;
 
 namespace Yujanggi.Runtime.GameSession
 {
@@ -21,18 +22,19 @@ namespace Yujanggi.Runtime.GameSession
         // 라이브가 필요한걸 준비
         public override  void Enter() 
         {
-            Debug.Log("라이브 진입");
+            base.Enter();
             _matchView.UnHighlight();
             _matchView.SyncBoardState(_liveMatch);
         }
         // 라이브를 정리한다.
         public override  void Exit() 
         {
-            Debug.Log("라이브 종료");
+            base.Exit();
             _matchView.UnHighlight();
         }
         public override void OnTurnChanged(PlayerTeam next)
         {
+            base.OnTurnChanged(next);
             var nextPlayer = GetPlayer(next);
             _matchView.OnTurnChanged(nextPlayer.IsLocal());
             BeginNextTurn(next);
@@ -40,6 +42,7 @@ namespace Yujanggi.Runtime.GameSession
 
         public override void OnPieceMoved(in MoveContext moveCtx)
         {
+            base.OnPieceMoved(moveCtx);
             _matchView.UnHighlight();
             if (moveCtx.IsHandicap) return;
 
@@ -47,15 +50,25 @@ namespace Yujanggi.Runtime.GameSession
         }
 
         public override void OnGameEnded(in GameResultInfo info)
-            => _transition.ToEnd();
+        {
+            base.OnGameEnded(info); 
+            _transition.ToEnd();
+        }
 
         public override void OnCheckOccurred(PlayerTeam team)
-            => _matchView.CheckOccured(team);
+        {
+            base.OnCheckOccurred(team);
+            _matchView.CheckOccured(team);
+        }
         public override void OnCheckReleased()
-            => _matchView.CheckReleased();
+        {
+            base.OnCheckReleased(); 
+            _matchView.CheckReleased();
+        }
         //
         public override void OnSelectionChanged(int? pieceId, IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals)
         {
+            base.OnSelectionChanged(pieceId, legals, illegals);
             _matchView.UnHighlight();
             if (!pieceId.HasValue) return;
             _matchView.HighlightPiece(pieceId.Value);
@@ -64,9 +77,13 @@ namespace Yujanggi.Runtime.GameSession
 
         //
         public override void RequestMove(Pos from, Pos to)
-            => _liveMatch.TryMove(from, to);
+        {
+            base.RequestMove(from, to);
+            _liveMatch.TryMove(from, to);
+        }
         public override void RequestUndo()
         {
+            base.RequestUndo();
             // 이거 뷰를 직접 조작하는게 좀 이상함 *************************
             if (!_liveMatch.TryUnDo(out var moveCtx))
                 return;
@@ -75,17 +92,22 @@ namespace Yujanggi.Runtime.GameSession
                 _matchView.RevertMoveView(moveCtx.Record);
         }
         public override void RequestGiveUp()
-            => _liveMatch.GiveUp();
+        {
+            base.RequestGiveUp();
+            _liveMatch.GiveUp();
+        }
         public override void RequestHandicap()
         {
+            base.RequestHandicap();
             _liveMatch.Handicap();
             _matchView.UnHighlight();
         }
-        public override void RequestStepBackward() 
+        public override void RequestStepBackward()
         {
+            base.RequestStepBackward();
             if (_liveMatch.RecordCnt == 0) return;
             _transition.ToReplay();
         }
- 
+        protected override SessionState StateName() => SessionState.Live;
     }
 }
