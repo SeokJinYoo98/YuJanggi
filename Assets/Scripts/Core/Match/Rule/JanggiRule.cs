@@ -1,9 +1,10 @@
+
 namespace Yujanggi.Core.Rule
 {
     using Domain;
-    using System;
-    using Yujanggi.Core.Board;
     using System.Collections.Generic;
+    using Yujanggi.Core.Board;
+
     public interface IJanggiRule
     {
         public void FindWays(
@@ -37,8 +38,14 @@ namespace Yujanggi.Core.Rule
         public void  FindWays(IBoardModel board, Selection selection)
         {
             ClearBuffer();
-            FindCandidates(board, selection.FromPos, _candidatesBuffer);
+
+            var fromPos = selection.FromPos;
+
+            _movementRule.FindCandidateWays(board, fromPos, _candidatesBuffer);
+            _palaceRule.ApplyPalaceRule(board, fromPos, _candidatesBuffer);
+
             FilterLegalMoves(board, selection.FromPos, _candidatesBuffer);
+
             selection.SetMovable(_legalBuffer, _illegalBuffer);
         }
         private void FindCandidates(IBoardModel board, Pos from, List<Pos> buffer)
@@ -48,6 +55,7 @@ namespace Yujanggi.Core.Rule
         }
         private void ClearBuffer()
         {
+
             _illegalBuffer.Clear();
             _legalBuffer.Clear();
             _candidatesBuffer.Clear();
@@ -68,6 +76,7 @@ namespace Yujanggi.Core.Rule
 
                 board.UndoMove(moveRecord);
             }
+
         }
         public bool IsKingInCheck(IBoardModel board, PlayerTeam team)
         {

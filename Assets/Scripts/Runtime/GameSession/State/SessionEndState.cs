@@ -33,7 +33,8 @@ namespace Yujanggi.Runtime.GameSession
         {
             base.RequestStepBackward();
             var result = _replayView.TryReplayBackward();
-            Debug.Log($"{result}");
+            if (_debug)
+                Debug.Log($"{result}");
             if (result == ReplayResult.Succeeded) return;
             if (result == ReplayResult.RecordIsEmpty) _transition.ToEnd();
             if (result == ReplayResult.Failed) _transition.ToEnd();
@@ -42,7 +43,8 @@ namespace Yujanggi.Runtime.GameSession
         {
             base.RequestStepForward();
             var result = _replayView.TryReplayForward();
-            Debug.Log($"{result}");
+            if (_debug)
+                Debug.Log($"{result}");
             if (result == ReplayResult.Succeeded) return;
             if (result == ReplayResult.IdxAtEnd) _transition.ToEnd();
         }

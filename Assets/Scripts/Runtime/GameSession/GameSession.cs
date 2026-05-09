@@ -37,7 +37,6 @@ namespace Yujanggi.Runtime.GameSession
         }
         public void BindEvents()
         {
-            // 슬슬 이벤트 버스.
             _matchModel.BindEvents();
             _matchView.BindUI(_matchModel);
 
@@ -48,8 +47,8 @@ namespace Yujanggi.Runtime.GameSession
             events.OnGameEnded     += OnGameEnded;
             events.OnTurnChanged   += OnTurnChanged;
 
-            _playerCho.BindEvents(this);
-            _playerHan.BindEvents(this);
+            _playerCho.BindEvents(this); // this = IGameInputReceiver
+            _playerHan.BindEvents(this); // this = IGameInputReceiver
         }
         public void UnBindEvents()
         {

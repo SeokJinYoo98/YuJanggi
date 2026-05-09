@@ -103,7 +103,7 @@ namespace Yujanggi.Runtime.UI
             if (team == PlayerTeam.Cho)
                 _choScoreText.SetText("점수:{0}", score);
             else
-                _hanScoreText.SetText("점수:{0}", score);
+                _hanScoreText.SetText("{0}:점수", score);
         }
         public void UpdateTimer((PlayerTeam team, int time) info)
         {

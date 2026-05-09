@@ -121,7 +121,10 @@ namespace Yujanggi.Core.Domain
             => obj is Pos other && Equals(other);
         public override int GetHashCode()
             => HashCode.Combine(X, Z);
-
+        public override string ToString()
+        {
+            return $"({X}, {Z})";
+        }
         public static readonly Pos Up = new Pos(+0, +1);
         public static readonly Pos Down = new Pos(+0, -1);
         public static readonly Pos Left = new Pos(-1, +0);
