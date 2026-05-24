@@ -1,3 +1,4 @@
+
 # YuJanggi
 
 Unity 기반 장기 게임 프로젝트입니다.
@@ -22,6 +23,7 @@ Live 게임과 Replay 화면 흐름이 서로 간섭하지 않는 구조 설계�
 - Event Driven Architecture
 
 ## 핵심 구조
+<img width="1452" height="993" alt="흐름도" src="https://github.com/user-attachments/assets/06d0137e-378d-46d4-843b-3f4b44bd31bf" /><img width="821" height="672" alt="StateFlow" src="https://github.com/user-attachments/assets/c266e36d-b741-47f4-b2a2-c2f5fe034da6" />
 
 Input
 → Controller
