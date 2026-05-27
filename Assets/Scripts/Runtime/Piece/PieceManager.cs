@@ -9,7 +9,7 @@ namespace Yujanggi.Runtime.Piece
     public class PieceManager : MonoBehaviour
     {
         [SerializeField] private PieceSpawner _pieceSpawner;
-        private readonly Dictionary<int, Piece> _views = new();
+        private readonly Dictionary<int, PieceView> _views = new();
         private int _currPiece;
         public void HighlightPiece(int id)
         {
@@ -70,13 +70,23 @@ namespace Yujanggi.Runtime.Piece
                         continue;
 
                     var pieceInfo = boardModel.GetPiece(pos);
-                    var piece = _pieceSpawner.SpawnPiece(pieceInfo, pos);
+                    var piece     = _pieceSpawner.SpawnPiece(pieceInfo, pos);
                     _views[pieceInfo.Id] = piece;
                 }
             }
         }
-        public void DoMove(int id, Vector3 to)
-            => _views[id].MoveTo(to);
+        public void RestoreCapturedPiece(int id, Pos to)
+        {
+            var view = _views[id];
+            view.MoveTo(to);
+            view.SetDead(false);
+        }
+        public void PlaceCapturedPiece(int id, Vector3 to)
+        {
+            var view = _views[id];
+            view.MoveTo(to);
+            view.SetDead(true);
+        }
 
         public void DoMove(int id, Pos to)
             => _views[id].MoveTo(to);

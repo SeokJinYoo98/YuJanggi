@@ -8,20 +8,38 @@ namespace Yujanggi.Data.Board
     [CreateAssetMenu(fileName = "PieceDataBase", menuName = "Piece/PieceDataBase")]
     public class PieceDataBase : ScriptableObject
     {
-        [SerializeField] private List<Piece>     _prefabs;
-        [SerializeField] private Vector3         _baseScale;
+        [SerializeField] private List<PieceView>    _prefabs;
+        [SerializeField] private Vector3            _baseScale;
 
         [SerializeField] private List<PieceData> _chos;
         [SerializeField] private List<PieceData> _hans;
 
         public Vector3 BaseScale => _baseScale;
-        public Piece GetPrefab(PlayerTeam type)
-            => _prefabs[(int)type];
+        public PieceView GetPrefab(PlayerTeam type)
+        {
+            int index = (int)type;
+
+            if (_prefabs == null || index < 0 || index >= _prefabs.Count || _prefabs[index] == null)
+            {
+                Debug.LogError($"[PieceDataBase] Invalid prefab for team: {type}");
+                return null;
+            }
+
+            return _prefabs[index];
+        }
 
         public PieceData GetData(PlayerTeam playerType, PieceType pieceType)
         {
             var list = playerType == PlayerTeam.Cho ? _chos : _hans;
-            return list[(int)pieceType];
+            int index = (int)pieceType;
+
+            if (list == null || index < 0 || index >= list.Count || list[index] == null)
+            {
+                Debug.LogError($"[PieceDataBase] Invalid piece data. Team: {playerType}, Type: {pieceType}");
+                return null;
+            }
+
+            return list[index];
         }
     }
 }

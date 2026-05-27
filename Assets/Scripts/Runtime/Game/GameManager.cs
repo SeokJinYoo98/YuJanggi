@@ -17,7 +17,7 @@ namespace Yujanggi.Runtime.Game
     public class GameManager : MonoBehaviour
     {
         [SerializeField] private TMP_Text        _currDisplayMode;
-        [SerializeField] private BoardPresenter  _boardPresenter;
+        [SerializeField] private BoardView  _boardPresenter;
         [SerializeField] private CoroutineRunner _runner;
         [SerializeField] private ResultUI        _resultUI;
         [SerializeField] private MatchUI         _matchUI;
@@ -28,13 +28,11 @@ namespace Yujanggi.Runtime.Game
 
         private void Awake()
         {
-            _audio            = AudioManager.Instance;
-
+            _audio = AudioManager.Instance;
             var sessionInfo   = GetSessionInfo();
             var matchView     = CreateMatchView();
             var matchModel    = CreateMatchModel(sessionInfo.TurnTime, out var record);
             var replayView    = CreateReplayView(record);
-
             var sessionCho    = CreateController(sessionInfo.Cho, PlayerTeam.Cho, _localInput, matchModel, _runner);
             var sessionHan    = CreateController(sessionInfo.Han, PlayerTeam.Han, _localInput, matchModel, _runner);
 
@@ -42,18 +40,21 @@ namespace Yujanggi.Runtime.Game
 
             SetCamera(in sessionInfo);
         }
+        private void OnEnable()
+        {
+            _session?.BindEvents();
+        }
         private void Start()
         {
-            _session.BindEvents();
             _session.StartGame();
         }
-        private void OnDestroy()
+        private void OnDisable()
         {
-            _session.UnBindEvents();
+            _session?.UnBindEvents();
         }
         private void Update()
         {
-            _session.Update(Time.deltaTime);
+            _session?.Tick(Time.deltaTime);
         }
 
         private void SetCamera(in GameSessionInfo sessionInfo)
@@ -85,7 +86,7 @@ namespace Yujanggi.Runtime.Game
                 cho, han, 
                 _localInput);
         }
-        private ReplayView        CreateReplayView(Record record)
+        private ReplayView           CreateReplayView(Record record)
         {
             return new ReplayView(_boardPresenter, record, _runner, _audio, _currDisplayMode);
         }
@@ -98,9 +99,9 @@ namespace Yujanggi.Runtime.Game
             var janggiRule = new JanggiRule();
             return new MatchModel(turn, record, score, boardModel, janggiRule);
         }
-        private MatchView   CreateMatchView()
+        private MatchView            CreateMatchView()
             => new MatchView(_boardPresenter, _resultUI, _matchUI, _audio);
-        private IPlayerController      CreateController(
+        private IPlayerController    CreateController(
            PlayerType type,
            PlayerTeam team,
            PcInputHandler input,

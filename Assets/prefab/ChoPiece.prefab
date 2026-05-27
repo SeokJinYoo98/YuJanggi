@@ -11,8 +11,9 @@ GameObject:
   - component: {fileID: 5612040085615250774}
   - component: {fileID: 8465908970076422818}
   - component: {fileID: 6689188971612979228}
-  - component: {fileID: 6487185035515978331}
-  m_Layer: 0
+  - component: {fileID: 7166047774186751539}
+  - component: {fileID: -6691866893418287741}
+  m_Layer: 3
   m_Name: ChoPiece
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -92,7 +93,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &6487185035515978331
+--- !u!114 &7166047774186751539
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -101,7 +102,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 3486821277962072781}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f7eb59bfcda23fd44a4c6fed901cf400, type: 3}
+  m_Script: {fileID: 11500000, guid: 3e4299a6802ae3a4d92a344c78c4554d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.Board.Piece
-  _data: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.Piece.PieceView
+--- !u!64 &-6691866893418287741
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3486821277962072781}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}

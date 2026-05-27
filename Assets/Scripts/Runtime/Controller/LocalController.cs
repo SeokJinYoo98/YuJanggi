@@ -1,13 +1,14 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
-using Yujanggi.Core.Board;
-using Yujanggi.Core.Domain;
-using Yujanggi.Core.Rule;
-using Yujanggi.Runtime.GameSession;
-using Yujanggi.Runtime.Piece;
+using System.Collections.Generic;
+
+
+
 namespace Yujanggi.Runtime.Controller
 {
+    using Core.Board;
+    using Core.Domain;
+    using Core.Rule;
     public class LocalController : IPlayerController, ILocalPlayer
     {
         public  PlayerTeam              Team { get; }
@@ -33,31 +34,33 @@ namespace Yujanggi.Runtime.Controller
         }
         public void BindEvents(IGameInputReceiver receiver)
         {
-            _input.OnBoardClicked += HandleClick;
+            _input.OnBoardClicked += HandleBoardClicked;
+            _input.OnEmptyClicked += HandleEmptyClicked;
             OnSelectionChanged    += receiver.ChangeSelection;
             OnMoveRequest         += receiver.RequestMove;
         }
 
         public void UnBindEvents(IGameInputReceiver receiver)
         {
-            _input.OnBoardClicked -= HandleClick;
+            if (_input != null)
+            {
+                _input.OnBoardClicked -= HandleBoardClicked;
+                _input.OnEmptyClicked -= HandleEmptyClicked;
+            }
+
             OnSelectionChanged    -= receiver.ChangeSelection;
             OnMoveRequest         -= receiver.RequestMove;
         }
 
         public void BeginTurn()
-        {
-            _isTurn = true;
-        }
-
+            => _isTurn = true;
         public void EndTurn()
+            => _isTurn = false;
+        private void HandleBoardClicked(Pos pos)
         {
-            _isTurn = false;
-        }
-        private void HandleClick(Pos pos)
-        {
-            if (!CanHandleClick(pos))
+            if (!_isTurn)
                 return;
+
             if (!_selection.HasSelection)
             {
                 TrySelectPiece(pos);
@@ -72,11 +75,12 @@ namespace Yujanggi.Runtime.Controller
                 return;
 
             ClearSelection();
-            
-        }
 
-        private bool CanHandleClick(Pos pos)
-            => _isTurn && _board.IsInside(pos);
+        }
+        private void HandleEmptyClicked()
+        {
+            ClearSelection();
+        }
         private bool TrySelectPiece(Pos pos)
         {
             if (!TryGetOwnPiece(pos, out var piece))
@@ -118,6 +122,7 @@ namespace Yujanggi.Runtime.Controller
         }
         private void ClearSelection()
         {
+            if (!_selection.HasSelection) return;
             _selection.Clear();
             _selection.FromPos = Pos.Invalid;
             OnSelectionChanged?.Invoke(null, _selection.LegalCells, _selection.IllegalCells);
@@ -131,5 +136,7 @@ namespace Yujanggi.Runtime.Controller
 
             OnSelectionChanged?.Invoke(idx, _selection.LegalCells, _selection.IllegalCells);
         }
+
+
     }
 }

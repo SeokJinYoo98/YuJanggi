@@ -11,7 +11,7 @@ namespace Yujanggi.Runtime.Piece
         [SerializeField] private Transform _cho;
         [SerializeField] private Transform _han;
         
-        public Piece SpawnPiece(PieceModel pieceInfo, Pos pos)
+        public PieceView SpawnPiece(PieceModel pieceInfo, Pos pos)
         {
             var team = pieceInfo.Team;
             var type = pieceInfo.Type;
