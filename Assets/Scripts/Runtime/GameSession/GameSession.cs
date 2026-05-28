@@ -24,10 +24,11 @@ namespace Yujanggi.Runtime.GameSession
             _playerHan    = han;
             _localInput   = localInput;
             _states       = CreateStates();
-            ChangeState(SessionState.LiveState);
         }
         public void StartGame()
         {
+            ChangeState(SessionState.LiveState);
+
             _matchModel.InitGame(_sessionInfo.ChoFormation, _sessionInfo.HanFormation);
             _matchView.StartGame(_matchModel.Board);
             _matchModel.StartGame();
@@ -66,8 +67,8 @@ namespace Yujanggi.Runtime.GameSession
             _playerHan.UnBindEvents(this);
         }
 
-        public void Update(float deltaTime)
-            => _matchModel.Update(deltaTime);
+        public void Tick(float deltaTime)
+            => _matchModel.Tick(deltaTime);
         #endregion
 
         #region private Field Member   

@@ -138,7 +138,7 @@ namespace Yujanggi.Core.Match
         {
             OnGameEnded(GameResult.GiveUp, Turn.CurrentTeam);
         }
-        public void  Update(float deltaTime)
+        public void  Tick(float deltaTime)
         {
             Turn.Update(deltaTime);
         }

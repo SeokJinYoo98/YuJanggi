@@ -48,6 +48,7 @@ namespace Yujanggi.Core.Domain
     public interface IInputHandler
     {
         public event Action<Pos> OnBoardClicked;
+        public event Action      OnEmptyClicked;
         public void RotateCamera(PlayerTeam team);
         public void Activate();
         public void Deactivate();
@@ -72,16 +73,6 @@ namespace Yujanggi.Core.Domain
         public void UnBindEvents(IGameInputReceiver receiver);
     }
 
-    public enum BoardActionResult
-    {
-        None,
-        SelectSuccess,
-        SelectFailed,
-        MoveSuccess,
-        MoveFailed,
-        CaptureSuccess,
-        Reselect
-    }
     public enum             PlayerTeam
     { Cho, Han, None }
     public enum             PieceType

@@ -14,7 +14,7 @@ namespace Yujanggi.Runtime.GameSession
     public class MatchView 
     {
         public MatchView(
-            BoardPresenter  board,
+            BoardView  board,
             ResultUI        resultUI,
             MatchUI         matchUI,
             AudioManager    audio)
@@ -114,7 +114,7 @@ namespace Yujanggi.Runtime.GameSession
 
         
 
-        private readonly BoardPresenter _board;
+        private readonly BoardView _board;
         private readonly ResultUI       _resultUI;
         private readonly MatchUI        _matchUI;
         private readonly AudioManager   _audio;

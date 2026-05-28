@@ -36,7 +36,7 @@ namespace Yujanggi.Runtime.Board
                 var pos = cells[i];
                 var highlight = _pool.Get();
                 highlight.Show(isLegal);
-                highlight.MoveTo(new Vector3(pos.X, transform.position.y, pos.Z));
+                highlight.MoveTo(pos);
                 _active.Add(highlight);
             }
         }

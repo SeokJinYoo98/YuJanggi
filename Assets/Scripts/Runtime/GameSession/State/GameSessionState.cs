@@ -39,7 +39,7 @@ namespace Yujanggi.Runtime.GameSession
 
     public abstract class SessionStateBase : ISessionState
     {
-        protected bool _debug = true;
+        protected bool _debug = false;
         protected SessionStateBase(ISessionTransition sessionFsm, IPlayerController cho, IPlayerController han, ILiveMatch liveMatch)
         {
             _liveMatch  =  liveMatch;

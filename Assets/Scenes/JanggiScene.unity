@@ -537,6 +537,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.Input.PcInputHandler
   _camera: {fileID: 135010638}
+  _clickableLayer:
+    serializedVersion: 2
+    m_Bits: 8
 --- !u!1 &135010635
 GameObject:
   m_ObjectHideFlags: 0
@@ -1911,14 +1914,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 509507441}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.81827, y: 5.18694, z: 14.34607}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: 0.00053782546, y: -0.9999996, z: -0.00073765655, w: 0.000033442295}
+  m_LocalPosition: {x: -2.8245137, y: 5.1984253, z: -8.943836}
+  m_LocalScale: {x: 1, y: 1, z: 0.9090911}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1442720190}
   - {fileID: 1161876143}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2126822362}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &509507443
 MonoBehaviour:
@@ -4268,7 +4271,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1524079746}
   - component: {fileID: 1524079747}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: BoardHighlighter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5477,7 +5480,7 @@ GameObject:
   - component: {fileID: 2126822360}
   - component: {fileID: 2126822359}
   - component: {fileID: 2126822363}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Board
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5577,6 +5580,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1524079746}
+  - {fileID: 509507442}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: -0.085, y: 179.996, z: -0.062}
 --- !u!114 &2126822363
@@ -5588,7 +5592,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2126822358}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d47369a604ff30041b502cf54a5833e2, type: 3}
+  m_Script: {fileID: 11500000, guid: a4aa45871e93674409a672bf74cd2644, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.View.Board.BoardView
   _highlighter: {fileID: 1524079747}
@@ -5783,7 +5787,6 @@ SceneRoots:
   m_Roots:
   - {fileID: 2126822362}
   - {fileID: 1678781763}
-  - {fileID: 509507442}
   - {fileID: 1424797982}
   - {fileID: 2070058882}
   - {fileID: 135010639}
