@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace Yujanggi.Runtime.Piece
 {
-
+    using DG.Tweening;
     using Yujanggi.Core.Domain;
     using Yujanggi.Data.Board;
     using Yujanggi.Runtime.Input;
@@ -16,15 +16,15 @@ namespace Yujanggi.Runtime.Piece
 
     public class PieceView : MonoBehaviour, IPieceView, IBoardClickable
     {
+        [SerializeField] private float _moveDuration = 0.16f;
         public Pos BoardPos => _boardPos;
         
         private Pos          _boardPos;
         private BoxCollider  _boxCollider;
         private MeshFilter   _meshFilter;
         private MeshRenderer _meshRenderer;
-        private Coroutine    _moveRoutine;
         private bool         _highlight;
-
+        private Tween        _moveTween;
         void Awake()
         {
             _boxCollider  = GetComponent<BoxCollider>();
@@ -45,14 +45,34 @@ namespace Yujanggi.Runtime.Piece
         }
         public void  MoveTo(Vector3 toPos)
         {
-            if (_moveRoutine != null) StopCoroutine(_moveRoutine);
-            _moveRoutine = StartCoroutine(CoMove(toPos, 0.16f)); 
+            _moveTween?.Kill();
+
+            _moveTween = transform
+                .DOMove(toPos, _moveDuration)
+                .SetEase(Ease.Linear)
+                .OnComplete(() =>
+                {
+                    transform.position = toPos;
+                    _moveTween         = null;
+                });
         }
         public void  MoveTo(Pos toPos)
         {
-            _boardPos = toPos;
-            MoveTo(new Vector3(toPos.X, 1, toPos.Z));
+            Vector3 worldPos = new Vector3(toPos.X, 1f, toPos.Z);
+
+            _moveTween?.Kill();
+
+            _moveTween = transform
+                .DOMove(worldPos, _moveDuration)
+                .SetEase(Ease.Linear)
+                .OnComplete(() =>
+                {
+                    _boardPos           = toPos;
+                    transform.position  = worldPos;
+                    _moveTween          = null;
+                });
         }
+
         public void SetDead(bool dead)
         {
             _boxCollider.enabled = !dead;
@@ -98,22 +118,7 @@ namespace Yujanggi.Runtime.Piece
             (mats[0], mats[1]) = (mats[1], mats[0]);
             _meshRenderer.sharedMaterials = mats;
         }
-        private IEnumerator CoMove(Vector3 targetPos, float duration)
-        {
-            Vector3 startPos = transform.position;
-            float elapsed = 0f;
 
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
-                transform.position = Vector3.Lerp(startPos, targetPos, t);
-                yield return null;
-            }
-
-            transform.position = targetPos;
-            _moveRoutine = null;
-        }
     }
 
 }

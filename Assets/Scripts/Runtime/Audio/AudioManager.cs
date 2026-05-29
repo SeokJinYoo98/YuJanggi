@@ -18,6 +18,10 @@ namespace Yujanggi.Runtime.Audio
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
+        public void OnApplicationQuit()
+        {
+            Instance = null;
+        }
         private float _sfxVolume = 1.0f;
         private float _uiVolume  = 1.0f;
         public void PlaySfxOneShot(JanggiSfx type)
