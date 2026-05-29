@@ -2,8 +2,6 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 
-
-
 namespace Yujanggi.Runtime.Controller
 {
     using Core.Board;

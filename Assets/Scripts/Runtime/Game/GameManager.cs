@@ -44,8 +44,8 @@ namespace Yujanggi.Runtime.Game
             var matchView     = CreateMatchView();
             var matchModel    = CreateMatchModel(sessionInfo.TurnTime, out var record);
             var replayView    = CreateReplayView(record);
-            var sessionCho    = CreateController(sessionInfo.Cho, PlayerTeam.Cho, _localInput, matchModel, _runner);
-            var sessionHan    = CreateController(sessionInfo.Han, PlayerTeam.Han, _localInput, matchModel, _runner);
+            var sessionCho    = CreateController(sessionInfo.Cho, PlayerTeam.Cho, _localInput, matchModel);
+            var sessionHan    = CreateController(sessionInfo.Han, PlayerTeam.Han, _localInput, matchModel);
 
             _session          = CreateSession(in sessionInfo, matchView, matchModel, replayView, sessionCho, sessionHan);
 
@@ -116,14 +116,12 @@ namespace Yujanggi.Runtime.Game
            PlayerType type,
            PlayerTeam team,
            PcInputHandler input,
-           MatchModel match,
-           ICoroutineRunner runner)
+           MatchModel match)
         {
-            // 매치를 참조하지 말고 그냥 룰과 보드를 보내주는 방향으로
             return type switch
             {
                 PlayerType.Local => new LocalController(match.Rule, match.Board, team, input),
-                PlayerType.AI => new AIController(match.Rule, match.Board, team, runner),
+                PlayerType.AI => new AIController(match.Rule, match.Board, team),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
