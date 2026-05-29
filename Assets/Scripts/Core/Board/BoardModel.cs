@@ -4,10 +4,7 @@ using Yujanggi.Core.Domain;
 namespace Yujanggi.Core.Board
 {
 
-    public interface IReadOnlyBoard
-    {
-    }
-    public interface IBoardModel : IReadOnlyBoard
+    public interface IBoardModel 
     {
 
         public int WIDTH { get; }
