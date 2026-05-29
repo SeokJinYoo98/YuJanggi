@@ -16,7 +16,6 @@ namespace Yujanggi.Runtime.Board
 
     public class BoardView : MonoBehaviour, IReplayBoardRenderer
     {
-        [SerializeField] private BoardHighlighter _highlighter;
         [SerializeField] private PieceManager _pieces;
 
         private bool    _isHighlighted = false;
@@ -27,13 +26,8 @@ namespace Yujanggi.Runtime.Board
             => _pieces.UnHighlightPiece();
         public void HighlightPiece(int pieceId)
             => _pieces.HighlightPiece(pieceId);
-        public void HighlightWays(IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals)
-        {
-            _highlighter.ShowHighlight(legals, true);
-            _highlighter.ShowHighlight(illegals, false);
-        }
-        public void UnHighlightWays()
-            => _highlighter.HideHighlight();
+
+ 
 
         public void StartGame(IBoardModel model)
         {
@@ -70,17 +64,9 @@ namespace Yujanggi.Runtime.Board
             if (!_isHighlighted) return;
 
             _pieces.UnHighlightPiece();
-            _highlighter.HideHighlight();
             _isHighlighted = false;
         }
-        public void  Highlight(int id, IReadOnlyList<Pos> legalWays, IReadOnlyList<Pos> illegalWays)
-        {
-            if (_isHighlighted) UnHighlight();
-            _pieces.HighlightPiece(id);
-            _highlighter.ShowHighlight(legalWays, true);
-            _highlighter.ShowHighlight(illegalWays, false);
-            _isHighlighted = true;
-        }
+        
         public void  ResetGame(IBoardModel model)
         {
             UnHighlight();

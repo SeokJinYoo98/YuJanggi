@@ -70,21 +70,36 @@ namespace Yujanggi.Runtime.Input
             pos = default;
 
             if (_camera == null)
+            {
+                Debug.LogError("Camera is null");
                 return false;
-            
+            }
 
             Vector2 mousePos = _actions.MousePos.ReadValue<Vector2>();
+
+            Debug.Log($"MousePos: {mousePos}");
+            Debug.Log($"Camera: {_camera.name}, Pos: {_camera.transform.position}");
+            Debug.Log($"ClickableLayer: {_clickableLayer.value}");
+
             Ray ray = _camera.ScreenPointToRay(mousePos);
 
             if (!Physics.Raycast(ray, out RaycastHit hit, 1000f, _clickableLayer))
+            {
+                Debug.LogWarning("Raycast failed");
                 return false;
+            }
 
+            Debug.Log($"Hit: {hit.collider.name}, Layer: {LayerMask.LayerToName(hit.collider.gameObject.layer)}");
 
             if (!hit.collider.TryGetComponent(out IBoardClickable clickable))
+            {
+                Debug.LogWarning($"IBoardClickable not found on {hit.collider.name}");
                 return false;
-
+            }
 
             pos = clickable.BoardPos;
+            Debug.Log($"BoardPos: {pos}");
+
             return true;
         }
     }

@@ -8,8 +8,8 @@ namespace Yujanggi.Runtime.Piece
     public class PieceSpawner : MonoBehaviour
     {
         [SerializeField] private PieceDataBase _pieceDB;
-        [SerializeField] private Transform _cho;
-        [SerializeField] private Transform _han;
+        [SerializeField] private Transform     _cho;
+        [SerializeField] private Transform     _han;
         
         public PieceView SpawnPiece(PieceModel pieceInfo, Pos pos)
         {

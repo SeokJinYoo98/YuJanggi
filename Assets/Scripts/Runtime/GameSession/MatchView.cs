@@ -1,82 +1,88 @@
 using System.Collections.Generic;
-using Yujanggi.Core.Board;
-using Yujanggi.Core.Domain;
-using Yujanggi.Core.Match;
-using Yujanggi.Runtime.Audio;
-using Yujanggi.Runtime.Board;
-
-using Yujanggi.Runtime.UI;
-
 using UnityEngine;
+
 
 namespace Yujanggi.Runtime.GameSession
 {
+    using Core.Board;
+    using Core.Domain;
+    using Core.Match;
+    using Particle;
+    using Audio;
+    using UI;
+    using Board;
     public class MatchView 
     {
         public MatchView(
-            BoardView       board,
+            ParticleView    particleView,
+            MoveGuideView   moveGuideView,
+            BoardView       boardView,
             ResultUI        resultUI,
-            MatchUI         matchUI,
-            AudioManager    audio)
+            MatchUI         matchUI)
         {
-            _board      = board;
-            _resultUI   = resultUI;
-            _matchUI    = matchUI;
-            _audio      = audio;
+            _particleView   = particleView;
+            _moveGuideView  = moveGuideView;
+            _boardView      = boardView;
+            _resultUI       = resultUI;
+            _matchUI        = matchUI;
+            _audioManager   = AudioManager.Instance;
         }
         public void CheckOccured(PlayerTeam team)
         {
-            _audio.PlaySfxOneShot(JanggiSfx.Check);
+            _audioManager.PlaySfxOneShot(JanggiSfx.Check);
             _matchUI.PlayJanggun(team);
         }
         public void CheckReleased()
-            => _audio.PlaySfxOneShot(JanggiSfx.UnCheck);
+            => _audioManager.PlaySfxOneShot(JanggiSfx.UnCheck);
         public void SyncBoardState(ILiveMatch match)
         {
             var board = match.Board;
-            _board.SyncBoardState(board);
+            _boardView.SyncBoardState(board);
         }
-        public void Clear()
-            => _board.UnHighlight();
         public void HighlightPiece(int pieceId)
         {
-            _audio.PlaySfxOneShot(JanggiSfx.Select);
-            _board.HighlightOnlyPiece(pieceId);
+            _audioManager.PlaySfxOneShot(JanggiSfx.Select);
+            _boardView.HighlightOnlyPiece(pieceId);
         }
         public void HighlightWays(IReadOnlyList<Pos> legals, IReadOnlyList<Pos> illegals)
-            => _board.HighlightWays(legals, illegals);
+        {
+            _moveGuideView.ShowHighlight(legals, true);
+            _moveGuideView.ShowHighlight(illegals, false);
+        }
         public void UnHighlight()
         {
-            _board.UnHighlightPiece();
-            _board.UnHighlightWays();
+            _boardView.UnHighlightPiece();
+            _moveGuideView.HideHighlight();
         }
-        public void ApplyMoveView(MoveRecord record)
+        public void ApplyMovement(MoveRecord record)
         {
-            _board.MovePiece(record.MovedPiece.Id, record.To);
-            _audio.PlaySfxOneShot(JanggiSfx.Move);
+            var toPos = record.To;
+            _boardView.MovePiece(record.MovedPiece.Id, toPos);
+            _audioManager.PlaySfxOneShot(JanggiSfx.Move);
             if (record.IsCapture)
             {
-                _board.PlaceCapturedPiece(record.CapturedPiece.Id, record.CapturedPiece.Team);
-                _audio.PlaySfxOneShot(JanggiSfx.Capture);
+                _particleView.PlayCapture(new Vector3(toPos.X, 0f, toPos.Z));
+                _boardView.PlaceCapturedPiece(record.CapturedPiece.Id, record.CapturedPiece.Team);
+                _audioManager.PlaySfxOneShot(JanggiSfx.Capture);
             }
         }
-        public void RevertMoveView(MoveRecord record)
+        public void RevertMovement(MoveRecord record)
         {
             var movedPiece = record.MovedPiece;
             var to = record.From;
-            _board.MovePiece(movedPiece.Id, to);
+            _boardView.MovePiece(movedPiece.Id, to);
 
             if (record.IsCapture)
             {
                 to = record.To;
                 var captured = record.CapturedPiece;
-                _board.RestoreCapturedPiece(captured.Id, captured.Team, to);
+                _boardView.RestoreCapturedPiece(captured.Id, captured.Team, to);
             }
         }
         public void OnGameEnded(in GameResultInfo info, bool loserIsLocal)
         {
-            if (loserIsLocal) _audio.PlaySfxOneShot(JanggiSfx.Lose);
-            else _audio.PlaySfxOneShot(JanggiSfx.Win);
+            if (loserIsLocal) _audioManager.PlaySfxOneShot(JanggiSfx.Lose);
+            else _audioManager.PlaySfxOneShot(JanggiSfx.Win);
             _resultUI.EndGame(info);
         }
         public void ShowResultUI()
@@ -98,26 +104,27 @@ namespace Yujanggi.Runtime.GameSession
         {
             if (!isLocal) return;
             // Debug.Log($"Turn UI Update:{isLocal}");
-            _audio.PlaySfxOneShot(JanggiSfx.TurnAlert);
+            _audioManager.PlaySfxOneShot(JanggiSfx.TurnAlert);
         }
 
 
         public void ResetGame(IBoardModel boardModel)
         {
             _resultUI.Hide();
-            _board.SyncBoardState(boardModel);
+            _boardView.SyncBoardState(boardModel);
         }
         public void StartGame(IBoardModel boardModel)
         {
-            _board.StartGame(boardModel);
+            _boardView.StartGame(boardModel);
         }
 
-        
 
-        private readonly BoardView      _board;
+        private readonly ParticleView   _particleView;
+        private readonly MoveGuideView  _moveGuideView;
+        private readonly BoardView      _boardView;
+
         private readonly ResultUI       _resultUI;
         private readonly MatchUI        _matchUI;
-        private readonly AudioManager   _audio;
-
+        private readonly AudioManager   _audioManager;
     }
 }

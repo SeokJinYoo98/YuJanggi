@@ -17,7 +17,7 @@ namespace Yujanggi.Runtime.Piece
         public Pos BoardPos => _boardPos;
         
         private Pos          _boardPos;
-        private MeshCollider _meshCollider;
+        private BoxCollider  _boxCollider;
         private MeshFilter   _meshFilter;
         private MeshRenderer _meshRenderer;
         private Coroutine    _moveRoutine;
@@ -25,14 +25,13 @@ namespace Yujanggi.Runtime.Piece
 
         void Awake()
         {
-            _meshCollider = GetComponent<MeshCollider>();
+            _boxCollider  = GetComponent<BoxCollider>();
             _meshFilter   = GetComponent<MeshFilter>();
             _meshRenderer = GetComponent<MeshRenderer>();
         }
         public void Init(PieceData data, Pos pos)
         {
             _boardPos                = pos;
-            _meshCollider.sharedMesh = data.PieceMesh;
             _meshFilter.sharedMesh   = data.PieceMesh;
 
             var team = data.Team;
@@ -54,7 +53,7 @@ namespace Yujanggi.Runtime.Piece
         }
         public void SetDead(bool dead)
         {
-            _meshCollider.enabled = !dead;
+            _boxCollider.enabled = !dead;
             UnHighlight();
         }
         public void  Highlight()
