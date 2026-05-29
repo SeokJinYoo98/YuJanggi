@@ -46,7 +46,7 @@ namespace Yujanggi.Runtime.GameSession
             _matchView.UnHighlight();
             if (moveCtx.IsHandicap) return;
 
-            _matchView.ApplyMoveView(moveCtx.Record);
+            _matchView.ApplyMovement(moveCtx.Record);
         }
 
         public override void OnGameEnded(in GameResultInfo info)
@@ -89,7 +89,7 @@ namespace Yujanggi.Runtime.GameSession
                 return;
 
             if (!moveCtx.IsHandicap)
-                _matchView.RevertMoveView(moveCtx.Record);
+                _matchView.RevertMovement(moveCtx.Record);
         }
         public override void RequestGiveUp()
         {

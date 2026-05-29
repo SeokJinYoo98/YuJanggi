@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1838582484300104116}
   - component: {fileID: 8253377024136437413}
   - component: {fileID: 7858290100333825243}
-  - component: {fileID: -4051455840173657664}
+  - component: {fileID: 5546104078667275153}
   m_Layer: 3
   m_Name: HanPiece
   m_TagString: Untagged
@@ -105,8 +105,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e4299a6802ae3a4d92a344c78c4554d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.Piece.PieceView
---- !u!64 &-4051455840173657664
-MeshCollider:
+--- !u!65 &5546104078667275153
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -123,7 +123,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
+  serializedVersion: 3
+  m_Size: {x: 0.3, y: 0.1, z: 0.3}
+  m_Center: {x: 0, y: 0, z: 0}

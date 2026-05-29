@@ -8,9 +8,13 @@ namespace Yujanggi.Runtime.Piece
 {
     public class PieceManager : MonoBehaviour
     {
-        [SerializeField] private PieceSpawner _pieceSpawner;
+        private PieceSpawner _pieceSpawner;
         private readonly Dictionary<int, PieceView> _views = new();
         private int _currPiece;
+        private void Awake()
+        {
+            _pieceSpawner = GetComponent<PieceSpawner>();
+        }
         public void HighlightPiece(int id)
         {
             if (id == -1)

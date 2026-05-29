@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 namespace Yujanggi.Runtime.Game
 {
-    using Audio;
-    using Board;
+
     using Core.Board;
     using Core.Domain;
     using Core.Match;
@@ -11,17 +11,28 @@ namespace Yujanggi.Runtime.Game
     using GameSession;
     using Input;
     using System;
-    using TMPro;
+    using Audio;
+    using Board;
+    using Controller;
     using UI;
-    using Yujanggi.Runtime.Controller;
+    using Particle;
+
     public class GameManager : MonoBehaviour
     {
-        [SerializeField] private TMP_Text        _currDisplayMode;
-        [SerializeField] private BoardView  _boardPresenter;
-        [SerializeField] private CoroutineRunner _runner;
-        [SerializeField] private ResultUI        _resultUI;
-        [SerializeField] private MatchUI         _matchUI;
+        [Header("Views")]
+        [SerializeField] private BoardView     _boardView;
+        [SerializeField] private MoveGuideView _moveGuideView;
+        [SerializeField] private ParticleView  _particleView;
+
+        [Header("UIs")]
+        [SerializeField] private ResultUI   _resultUI;
+        [SerializeField] private MatchUI    _matchUI;
+        [SerializeField] private TMP_Text   _displayModeText;
+
+
+        [Header("Inputs")]
         [SerializeField] private PcInputHandler  _localInput;
+        [SerializeField] private CoroutineRunner _runner;
 
         private GameSession  _session;
         private AudioManager _audio;
@@ -62,7 +73,7 @@ namespace Yujanggi.Runtime.Game
             if (sessionInfo.Mode == GameModeType.Local) return;
             if (sessionInfo.Cho  == PlayerType.Local) return;
 
-            _boardPresenter.SetDeathPosition(new Vector3(4, 0, 11));
+            _boardView.SetDeathPosition(new Vector3(4, 0, 11));
             _localInput.RotateCamera(PlayerTeam.Han);
         }
         private GameSessionInfo GetSessionInfo()
@@ -88,7 +99,7 @@ namespace Yujanggi.Runtime.Game
         }
         private ReplayView           CreateReplayView(Record record)
         {
-            return new ReplayView(_boardPresenter, record, _runner, _audio, _currDisplayMode);
+            return new ReplayView(_boardView, record, _runner, _audio, _displayModeText);
         }
         private MatchModel           CreateMatchModel(float turnTime, out Record record)
         {
@@ -100,7 +111,7 @@ namespace Yujanggi.Runtime.Game
             return new MatchModel(turn, record, score, boardModel, janggiRule);
         }
         private MatchView            CreateMatchView()
-            => new MatchView(_boardPresenter, _resultUI, _matchUI, _audio);
+            => new MatchView(_particleView, _moveGuideView, _boardView, _resultUI, _matchUI);
         private IPlayerController    CreateController(
            PlayerType type,
            PlayerTeam team,
