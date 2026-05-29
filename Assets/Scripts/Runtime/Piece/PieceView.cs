@@ -1,7 +1,9 @@
 using UnityEngine;
+using System.Collections;
+
 namespace Yujanggi.Runtime.Piece
 {
-    using System.Collections;
+
     using Yujanggi.Core.Domain;
     using Yujanggi.Data.Board;
     using Yujanggi.Runtime.Input;

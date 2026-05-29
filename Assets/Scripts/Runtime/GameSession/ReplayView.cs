@@ -16,7 +16,7 @@ namespace Yujanggi.Runtime.GameSession
     }
     public class ReplayView
     {
-        private Coroutine    _replayRoutine;
+        private Coroutine                     _replayRoutine;
 
         private readonly ICoroutineRunner     _runner;
         private readonly IReplayBoardRenderer _board;

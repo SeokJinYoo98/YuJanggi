@@ -12,7 +12,6 @@ namespace Yujanggi.Runtime.Particle
         private Action<PooledParticle> _onStopped;
         public void Initialize(Action<PooledParticle> onStopped)
         {
-            Debug.Log("Init Particle");
             _onStopped = onStopped;
 
             if (_particleSystem == null)
@@ -42,7 +41,6 @@ namespace Yujanggi.Runtime.Particle
 
         private void OnParticleSystemStopped()
         {
-            Debug.Log("ComebackHome Particle");
             _particleSystem.Clear(true);
             gameObject.SetActive(false);
             _onStopped?.Invoke(this);
