@@ -1,31 +1,43 @@
 using System;
-using System.Collections;
+using Cysharp.Threading.Tasks;
+using System.Threading;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Yujanggi.Runtime.Controller
 {
-    using Yujanggi.Core.Board;
-    using Yujanggi.Core.Domain;
-    using Yujanggi.Core.Rule;
+    using Core.Board;
+    using Core.Domain;
+    using Core.Rule;
+    public struct MoveCandidate
+    {
+        public PieceModel Piece { get; }
+        public Pos From { get; }
+        public List<Pos> Ways { get; }
+
+        public MoveCandidate(PieceModel piece, Pos from, List<Pos> ways)
+        {
+            Piece = piece;
+            From  = from;
+            Ways  = ways;
+        }
+    }
     public class AIController : IPlayerController, IAIController
     {
         public PlayerTeam Team { get; }
         public event Action<Pos, Pos> OnMoveRequest;
         public bool IsLocal() => false;
-       
-        private readonly IJanggiRule        _rule;
-        private readonly IBoardModel        _boardModel;
-        private readonly Selection          _selection;
-        private readonly System.Random      _rand = new();
+
+        private readonly IJanggiRule _rule;
+        private readonly IBoardModel _boardModel;
+        private readonly Selection _selection;
+        private readonly System.Random _rand = new();
 
         private readonly List<MoveCandidate> _candidates = new(17);
         private int _selectedCandidateIndex = -1;
 
-        public AIController(IJanggiRule rule, IBoardModel board, PlayerTeam team, ICoroutineRunner runner)
+        public AIController(IJanggiRule rule, IBoardModel board, PlayerTeam team)
         {
             Team                = team;
-            _runner             = runner;
             _rule               = rule;
             _boardModel         = board;
             _selection          = new Selection();
@@ -37,6 +49,18 @@ namespace Yujanggi.Runtime.Controller
         public void UnBindEvents(IGameInputReceiver receiver)
         {
             OnMoveRequest -= receiver.RequestMove;
+        }
+
+        private Pos SelectPiece()
+        {
+            var selected = _candidates[_selectedCandidateIndex];
+            return selected.From;
+        }
+        private Pos SelectCell()
+        {
+            var selected = _candidates[_selectedCandidateIndex];
+            int random = _rand.Next(0, selected.Ways.Count);
+            return selected.Ways[random];
         }
         public bool TryThink()
         {
@@ -75,7 +99,7 @@ namespace Yujanggi.Runtime.Controller
                     if (movable != null)
                         legalCount += movable.Count;
 
-  
+
                     if (movable == null || movable.Count == 0)
                         continue;
 
@@ -98,62 +122,50 @@ namespace Yujanggi.Runtime.Controller
                 return false;
 
             Pos from = SelectPiece();
-            Pos to   = SelectCell();
+            Pos to = SelectCell();
             OnMoveRequest?.Invoke(from, to);
             return true;
         }
-        private Pos SelectPiece()
-        {  
-            var selected = _candidates[_selectedCandidateIndex];
-            return selected.From;
-        }
-        private Pos SelectCell() 
-        {
-            var selected = _candidates[_selectedCandidateIndex];
-            int random = _rand.Next(0, selected.Ways.Count);
-            return selected.Ways[random];
-        }
-
-        private readonly ICoroutineRunner _runner;
-        private Coroutine                 _aiRoutine;
-        private IEnumerator ProcessAITurn()
-        {
-            if (!TryThink()) yield break;
-
-            yield return new WaitForSeconds(0.5f);
-
-            if (!TryGetSelectedMove()) yield break;
-        }
-
         public void BeginTurn()
-        {
-            if (_aiRoutine != null)
-            {
-                _runner.Stop(_aiRoutine);
-                _aiRoutine = null;
-            }
-            _aiRoutine = _runner.Run(ProcessAITurn());
-        }
-
+            => BeginAITurn();
         public void EndTurn()
-        {
-            _selection.Clear();
-            if (_aiRoutine == null) return;
-      
-            _runner.Stop(_aiRoutine);
-            _aiRoutine = null;
-        }
-        private readonly struct MoveCandidate
-        {
-            public PieceModel   Piece { get; }
-            public Pos          From { get; }
-            public List<Pos>    Ways { get; }
+            => CancelAITurn();
 
-            public MoveCandidate(PieceModel piece, Pos from, List<Pos> ways)
+
+
+        private CancellationTokenSource _aiTurnCts;
+        private void BeginAITurn()
+        {
+            CancelAITurn();
+
+            _aiTurnCts = new CancellationTokenSource();
+            ProcessAITurnAsync(_aiTurnCts.Token).Forget();
+        }
+        private void CancelAITurn()
+        {
+            if (_aiTurnCts == null)
+                return;
+
+            _aiTurnCts.Cancel();
+            _aiTurnCts.Dispose();
+            _aiTurnCts = null;
+        }
+
+        private async UniTask ProcessAITurnAsync(CancellationToken token)
+        {
+            try
             {
-                Piece = piece;
-                From  = from;
-                Ways  = ways;
+                if (!TryThink())
+                    return;
+
+                await UniTask.Delay(500, cancellationToken: token);
+
+                if (!TryGetSelectedMove())
+                    return;
+            }
+            catch (OperationCanceledException)
+            {
+                // 정상 취소
             }
         }
     }
