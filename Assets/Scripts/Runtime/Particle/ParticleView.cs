@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -21,6 +22,9 @@ namespace Yujanggi.Runtime.Particle
         private ObjectPool<PooledParticle> _movePool;
         private ObjectPool<PooledParticle> _capturePool;
 
+        private const float MovementDuration = 0.16f;
+        private const Ease  MovementEase     = Ease.Linear;
+
         private void Awake()
         {
             _movePool = CreatePool(
@@ -39,6 +43,11 @@ namespace Yujanggi.Runtime.Particle
 
         public void PlayMove(Vector3 worldPosition)
             => _movePool.Get().Play(worldPosition);
+
+        public void PlayMovementParticle(Vector3 from, Vector3 to)
+        {
+            _movePool.Get().PlayPath(from, to, MovementDuration, MovementEase);
+        }
 
         public void PlayCapture(Vector3 worldPosition)
             => _capturePool.Get().Play(worldPosition);

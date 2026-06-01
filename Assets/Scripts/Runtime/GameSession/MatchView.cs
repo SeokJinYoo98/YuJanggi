@@ -56,7 +56,11 @@ namespace Yujanggi.Runtime.GameSession
         }
         public void ApplyMovement(MoveRecord record)
         {
+            var fromPos = record.From;
             var toPos = record.To;
+            _particleView.PlayMovementParticle(
+                new Vector3(fromPos.X, 1f, fromPos.Z),
+                new Vector3(toPos.X, 1f, toPos.Z));
             _boardView.MovePiece(record.MovedPiece.Id, toPos);
             _audioManager.PlaySfxOneShot(JanggiSfx.Move);
             if (record.IsCapture)
