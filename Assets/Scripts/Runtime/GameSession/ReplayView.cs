@@ -1,14 +1,16 @@
+using System;
+using System.Collections;
+using UnityEngine;
+using TMPro;
 namespace Yujanggi.Runtime.GameSession
 {
     using Core.Match;
-    using System;
-    using System.Collections;
-    using TMPro;
-    using UnityEngine;
-    using Yujanggi.Core.Domain;
-    using Yujanggi.Runtime.Audio;
-    using Yujanggi.Runtime.Board;
 
+
+    using Core.Domain;
+    using Audio;
+    using Board;
+    using Runtime.Input;
     public enum ReplayResult
     {
         RecordIsEmpty, IdxAtEnd, IdxAtStart,

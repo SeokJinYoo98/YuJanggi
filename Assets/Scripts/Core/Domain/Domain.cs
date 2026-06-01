@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Yujanggi.Core.Domain
 {
@@ -34,11 +33,7 @@ namespace Yujanggi.Core.Domain
     {
         public static GameSessionInfo Current;
     }
-    public interface ICoroutineRunner
-    {
-        Coroutine Run(IEnumerator routine);
-        void Stop(Coroutine routine);
-    }
+
     public enum Formation { HEHE, EHEH, EHHE, HEEH }
     public enum PlayerType { Local, AI, Network }
     public enum GameModeType { Local, AI, Network }

@@ -4,6 +4,11 @@ using Yujanggi.Core.Domain;
 
 namespace Yujanggi.Runtime.Input
 {
+    public interface ICoroutineRunner
+    {
+        Coroutine Run(IEnumerator routine);
+        void Stop(Coroutine routine);
+    }
     public class CoroutineRunner : MonoBehaviour, ICoroutineRunner
     {
         public Coroutine Run(IEnumerator routine)
