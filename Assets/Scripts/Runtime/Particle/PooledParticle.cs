@@ -25,10 +25,10 @@ namespace Yujanggi.Runtime.Particle
                 return;
             }
 
-            var main = _particleSystem.main;
-            main.playOnAwake = false;
-            main.loop = false;
-            main.stopAction = ParticleSystemStopAction.Callback;
+            var main            = _particleSystem.main;
+            main.playOnAwake    = false;
+            main.loop           = false;
+            main.stopAction     = ParticleSystemStopAction.Callback;
         }
         public void Play(Vector3 worldPosition)
         {

@@ -6,24 +6,28 @@ namespace Yujanggi.Runtime.Particle
 {
     public class ParticleView : MonoBehaviour
     {
+        [Header("Prefabs")]
         [SerializeField] private PooledParticle _captureParticlePrefab;
+        [SerializeField] private PooledParticle _moveParticlePrefab;
+
+
         [Header("Pool Settings")]
-        [SerializeField] private int _moveDefaultCapacity = 8;
-        [SerializeField] private int _moveMaxSize = 16;
+        [SerializeField] private int _moveDefaultCapacity   = 8;
+        [SerializeField] private int _moveMaxSize           = 16;
 
         [SerializeField] private int _captureDefaultCapacity = 4;
-        [SerializeField] private int _captureMaxSize = 8;
+        [SerializeField] private int _captureMaxSize         = 8;
 
         private ObjectPool<PooledParticle> _movePool;
         private ObjectPool<PooledParticle> _capturePool;
 
         private void Awake()
         {
-            //_movePool = CreatePool(
-            //    _moveParticlePrefab,
-            //    _moveDefaultCapacity,
-            //    _moveMaxSize
-            //);
+            _movePool = CreatePool(
+                _moveParticlePrefab,
+                _moveDefaultCapacity,
+                _moveMaxSize
+            );
 
             _capturePool = CreatePool(
                 _captureParticlePrefab,
@@ -33,14 +37,11 @@ namespace Yujanggi.Runtime.Particle
             Prewarm(_capturePool, _captureDefaultCapacity);
         }
 
-        //public void PlayMove(Vector3 worldPosition)
-        //{
-        //    _movePool.Get().Play(worldPosition);
-        //}
+        public void PlayMove(Vector3 worldPosition)
+            => _movePool.Get().Play(worldPosition);
 
         public void PlayCapture(Vector3 worldPosition)
             => _capturePool.Get().Play(worldPosition);
-        
 
         private ObjectPool<PooledParticle> CreatePool(
             PooledParticle prefab,
