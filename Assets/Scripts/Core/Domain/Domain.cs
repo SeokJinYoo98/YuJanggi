@@ -2,8 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Yujanggi.Core.Match;
-using Yujanggi.Runtime.GameSession;
+
 namespace Yujanggi.Core.Domain
 {
     public interface IGameResultContext
