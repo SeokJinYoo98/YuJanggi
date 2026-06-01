@@ -1123,6 +1123,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParticleView
   _captureParticlePrefab: {fileID: 7809088595500980869, guid: d676a011454169648b72dc1ef1343b95, type: 3}
+  _moveParticlePrefab: {fileID: 7809088595500980869, guid: 9aa4008f80959754390ac9b38a325952, type: 3}
   _moveDefaultCapacity: 8
   _moveMaxSize: 16
   _captureDefaultCapacity: 4
