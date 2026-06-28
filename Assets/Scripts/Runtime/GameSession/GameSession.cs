@@ -87,6 +87,21 @@ namespace Yujanggi.Runtime.GameSession
         public GameResultInfo? GameResult { get; private set; }
 
         #endregion
+        private void ChangeState(SessionState next)
+        {
+            if (_currState == next)
+                return;
+
+            if (_states.TryGetValue(_currState, out var curr))
+                curr.Exit();
+
+            _currState = next;
+            _states[_currState].Enter();
+        }
+        public void RequestMove(Pos from, Pos to)
+            => _states[_currState].RequestMove(from, to);
+        public void ChangeSelection(int? pieceId, IReadOnlyList<Pos> legal, IReadOnlyList<Pos> illegal)
+            => _states[_currState].OnSelectionChanged(pieceId, legal, illegal);
 
         #region private Field F
         // Events
@@ -104,10 +119,7 @@ namespace Yujanggi.Runtime.GameSession
             _states[_currState].OnGameEnded(in info);
         }
         // Player
-        public void  RequestMove(Pos from, Pos to)
-            => _states[_currState].RequestMove(from, to);
-        public void  ChangeSelection(int? pieceId, IReadOnlyList<Pos> legal, IReadOnlyList<Pos> illegal)
-            => _states[_currState].OnSelectionChanged(pieceId, legal, illegal);
+
         // UI
         public void  StepForward()
             => _states[_currState].RequestStepForward();
@@ -136,17 +148,7 @@ namespace Yujanggi.Runtime.GameSession
             states[SessionState.EndReplayState] = new SessionEndReplayState(this, _playerCho, _playerHan, _matchModel, _replayView);
             return states;
         }
-        private void ChangeState(SessionState next)
-        {
-            if (_currState == next)
-                return;
 
-            if (_states.TryGetValue(_currState, out var curr))
-                curr.Exit();
-
-            _currState = next;
-            _states[_currState].Enter();
-        }
         public void ToLive()
         {
             ChangeState(SessionState.LiveState);

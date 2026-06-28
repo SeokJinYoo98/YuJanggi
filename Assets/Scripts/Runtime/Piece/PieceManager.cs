@@ -57,6 +57,7 @@ namespace Yujanggi.Runtime.Piece
 
                     var pieceInfo = boardModel.GetPiece(pos);
                     _views[pieceInfo.Id].MoveTo(new Pos(x, z));
+                    _views[pieceInfo.Id].SetDead(false);
                 }
             }
         }

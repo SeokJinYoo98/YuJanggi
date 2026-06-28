@@ -3,8 +3,6 @@ using Yujanggi.Core.Domain;
 namespace Yujanggi.Core.Match
 {
     using System;
-    using static UnityEngine.Rendering.DebugUI;
-
     public class Score
     {
         public event Action<PlayerTeam, int> OnScoreChanged;

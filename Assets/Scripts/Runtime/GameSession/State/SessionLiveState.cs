@@ -25,6 +25,7 @@ namespace Yujanggi.Runtime.GameSession
             base.Enter();
             _matchView.UnHighlight();
             _matchView.SyncBoardState(_liveMatch);
+            
         }
         // 라이브를 정리한다.
         public override  void Exit() 

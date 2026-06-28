@@ -34,10 +34,6 @@ namespace Yujanggi.Runtime.Board
             _pieces.SpawnPieces(model);
         }
 
-        private void Awake()
-        {
-           
-        }
 
         public void SetDeathPosition(Vector3 pos)
             => _deathPos = pos;
