@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 namespace Yujanggi.Core.Match.Movement

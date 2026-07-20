@@ -6,8 +6,6 @@ using Yujanggi.Core.Domain;
 namespace Yujanggi.Core.Rule
 {
     using Match.Movement;
-    using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
-
     public class PalaceRule
     {
         private PalaceMovement _palaceMovement;
