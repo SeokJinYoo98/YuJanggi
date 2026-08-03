@@ -122,6 +122,8 @@ Pointer Input
 
 관련 없는 리팩터링을 하지 않는다.
 
+C#, Input Actions, JSON, Markdown, Unity YAML 파일은 LF 줄바꿈을 유지한다. 줄바꿈 정규화 작업에서는 코드와 직렬화 데이터의 내용은 변경하지 않는다.
+
 public API와 직렬화 필드 변경을 최소화한다.
 
 Scene, Prefab, ProjectSettings, Packages는 요청에 포함되거나 반드시 필요한 경우에만 수정한다.
