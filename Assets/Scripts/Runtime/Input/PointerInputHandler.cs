@@ -11,8 +11,8 @@ namespace Yujanggi.Runtime.Input
         [SerializeField] private Camera     _camera;
         [SerializeField] private LayerMask  _clickableLayer;
         private bool _isActivate = true;
-        public event Action<Pos> OnBoardClicked;
-        public event Action      OnEmptyClicked;
+        public override event Action<Pos> OnBoardClicked;
+        public override event Action      OnEmptyClicked;
 
         private PlayerInputs _input;
         private PlayerInputs.PlayerActions _actions;
@@ -49,7 +49,7 @@ namespace Yujanggi.Runtime.Input
             _actions.PointerPress.Disable();
         }
 
-        public void RotateCamera(PlayerTeam team)
+        public override void RotateCamera(PlayerTeam team)
         {
             if (team == PlayerTeam.Han)
             {
@@ -62,8 +62,8 @@ namespace Yujanggi.Runtime.Input
                 _camera.transform.eulerAngles = new Vector3(90, 0, 0);
             }
         }
-        public void Activate()   => _isActivate = true;
-        public void Deactivate() => _isActivate = false;
+        public override void Activate()   => _isActivate = true;
+        public override void Deactivate() => _isActivate = false;
 
         private bool TryRaycastToBoard(out Pos pos)
         {

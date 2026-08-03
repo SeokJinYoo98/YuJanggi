@@ -32,7 +32,7 @@ namespace Yujanggi.Runtime.Game
 
         [Header("Inputs")]
         [SerializeField] private InputHandlerBehaviour _localInput;
-        [SerializeField] private CoroutineRunner _runner;
+        [SerializeField] private CoroutineRunner       _runner;
 
         private GameSession  _session;
         private AudioManager _audio;

@@ -6,23 +6,12 @@ namespace Yujanggi.Runtime.Input
 {
     public abstract class InputHandlerBehaviour : MonoBehaviour, IInputHandler
     {
-        public event Action<Pos> OnBoardClicked;
-        public event Action OnEmptyClicked;
+        public abstract event Action<Pos> OnBoardClicked;
+        public abstract event Action OnEmptyClicked;
 
-        public void Activate()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Deactivate()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void RotateCamera(PlayerTeam team)
-        {
-            throw new NotImplementedException();
-        }
+        public abstract void Activate();
+        public abstract void Deactivate();
+        public abstract void RotateCamera(PlayerTeam team);
     }
 
     public interface IBoardClickable
