@@ -6,7 +6,7 @@ namespace Yujanggi.Runtime.Input
 {
     using Core.Domain;
 
-    public class PcInputHandler : MonoBehaviour, IInputHandler
+    public class PointerInputHandler : InputHandlerBehaviour
     {
         [SerializeField] private Camera     _camera;
         [SerializeField] private LayerMask  _clickableLayer;
@@ -16,7 +16,7 @@ namespace Yujanggi.Runtime.Input
 
         private PlayerInputs _input;
         private PlayerInputs.PlayerActions _actions;
-        private void OnPressPerformed(InputAction.CallbackContext context)
+        private void OnPointerPressPerformed(InputAction.CallbackContext context)
         {
             if (!_isActivate) 
                 return;
@@ -37,16 +37,16 @@ namespace Yujanggi.Runtime.Input
         }    
         private void OnEnable()
         {
-            _actions.Mouse.Enable();
-            _actions.MousePos.Enable();
-            _actions.Mouse.performed += OnPressPerformed;
+            _actions.PointerPress.Enable();
+            _actions.PointerPosition.Enable();
+            _actions.PointerPress.performed += OnPointerPressPerformed;
 
         }
         private void OnDisable()
         {
-            _actions.Mouse.performed -= OnPressPerformed;
-            _actions.MousePos.Disable();
-            _actions.Mouse.Disable();
+            _actions.PointerPress.performed -= OnPointerPressPerformed;
+            _actions.PointerPosition.Disable();
+            _actions.PointerPress.Disable();
         }
 
         public void RotateCamera(PlayerTeam team)
@@ -72,9 +72,9 @@ namespace Yujanggi.Runtime.Input
             if (_camera == null)
                 return false;
 
-            Vector2 mousePos = _actions.MousePos.ReadValue<Vector2>();
+            Vector2 pointerPosition = _actions.PointerPosition.ReadValue<Vector2>();
 
-            Ray ray = _camera.ScreenPointToRay(mousePos);
+            Ray ray = _camera.ScreenPointToRay(pointerPosition);
 
             if (!Physics.Raycast(ray, out RaycastHit hit, 1000f, _clickableLayer))
                 return false;

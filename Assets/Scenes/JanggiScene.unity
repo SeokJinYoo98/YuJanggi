@@ -503,7 +503,7 @@ GameObject:
   - component: {fileID: 133238876}
   - component: {fileID: 133238877}
   m_Layer: 0
-  m_Name: PcInputHandler
+  m_Name: PointerInputHandler
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -535,7 +535,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8f6455ef257d7fa4c8b539be211aa7dd, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.Input.PcInputHandler
+  m_EditorClassIdentifier: Assembly-CSharp::Yujanggi.Runtime.Input.PointerInputHandler
   _camera: {fileID: 135010638}
   _clickableLayer:
     serializedVersion: 2

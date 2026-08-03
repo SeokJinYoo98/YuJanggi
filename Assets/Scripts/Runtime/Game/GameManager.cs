@@ -31,7 +31,7 @@ namespace Yujanggi.Runtime.Game
 
 
         [Header("Inputs")]
-        [SerializeField] private PcInputHandler  _localInput;
+        [SerializeField] private InputHandlerBehaviour _localInput;
         [SerializeField] private CoroutineRunner _runner;
 
         private GameSession  _session;
@@ -115,7 +115,7 @@ namespace Yujanggi.Runtime.Game
         private IPlayerController    CreateController(
            PlayerType type,
            PlayerTeam team,
-           PcInputHandler input,
+           IInputHandler input,
            MatchModel match)
         {
             return type switch

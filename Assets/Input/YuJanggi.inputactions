@@ -7,7 +7,7 @@
             "id": "85eca509-71d2-49c6-b4cb-cc515c3cd0df",
             "actions": [
                 {
-                    "name": "Mouse",
+                    "name": "PointerPress",
                     "type": "Button",
                     "id": "e48b8788-6dda-4987-b26d-f1b155d61298",
                     "expectedControlType": "",
@@ -16,7 +16,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "MousePos",
+                    "name": "PointerPosition",
                     "type": "Value",
                     "id": "710591ca-45fd-41c2-9269-48b64baa4311",
                     "expectedControlType": "Vector2",
@@ -33,7 +33,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";PC",
-                    "action": "Mouse",
+                    "action": "PointerPress",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "660a3c6c-afc3-49d2-864e-2be89c10da19",
+                    "path": "<Touchscreen>/primaryTouch/press",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PointerPress",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -44,7 +55,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";PC",
-                    "action": "MousePos",
+                    "action": "PointerPosition",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c897c189-d2df-4d75-87d0-41c27de5efbe",
+                    "path": "<Touchscreen>/primaryTouch/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PointerPosition",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

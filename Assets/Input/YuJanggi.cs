@@ -61,8 +61,7 @@ namespace Yujanggi.Runtime.Input
     ///     // Invoked when "Move" action is either started, performed or canceled.
     ///     public void OnMove(InputAction.CallbackContext context)
     ///     {
-    ///         
-    /// .Log($"OnMove: {context.ReadValue&lt;Vector2&gt;()}");
+    ///         Debug.Log($"OnMove: {context.ReadValue&lt;Vector2&gt;()}");
     ///     }
     ///
     ///     // Invoked when "Attack" action is either started, performed or canceled.
@@ -96,7 +95,7 @@ namespace Yujanggi.Runtime.Input
             ""id"": ""85eca509-71d2-49c6-b4cb-cc515c3cd0df"",
             ""actions"": [
                 {
-                    ""name"": ""Mouse"",
+                    ""name"": ""PointerPress"",
                     ""type"": ""Button"",
                     ""id"": ""e48b8788-6dda-4987-b26d-f1b155d61298"",
                     ""expectedControlType"": """",
@@ -105,7 +104,7 @@ namespace Yujanggi.Runtime.Input
                     ""initialStateCheck"": true
                 },
                 {
-                    ""name"": ""MousePos"",
+                    ""name"": ""PointerPosition"",
                     ""type"": ""Value"",
                     ""id"": ""710591ca-45fd-41c2-9269-48b64baa4311"",
                     ""expectedControlType"": ""Vector2"",
@@ -122,7 +121,18 @@ namespace Yujanggi.Runtime.Input
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";PC"",
-                    ""action"": ""Mouse"",
+                    ""action"": ""PointerPress"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""660a3c6c-afc3-49d2-864e-2be89c10da19"",
+                    ""path"": ""<Touchscreen>/primaryTouch/press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PointerPress"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -133,7 +143,18 @@ namespace Yujanggi.Runtime.Input
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";PC"",
-                    ""action"": ""MousePos"",
+                    ""action"": ""PointerPosition"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c897c189-d2df-4d75-87d0-41c27de5efbe"",
+                    ""path"": ""<Touchscreen>/primaryTouch/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PointerPosition"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -161,8 +182,8 @@ namespace Yujanggi.Runtime.Input
 }");
             // Player
             m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
-            m_Player_Mouse = m_Player.FindAction("Mouse", throwIfNotFound: true);
-            m_Player_MousePos = m_Player.FindAction("MousePos", throwIfNotFound: true);
+            m_Player_PointerPress = m_Player.FindAction("PointerPress", throwIfNotFound: true);
+            m_Player_PointerPosition = m_Player.FindAction("PointerPosition", throwIfNotFound: true);
         }
 
         ~@PlayerInputs()
@@ -243,8 +264,8 @@ namespace Yujanggi.Runtime.Input
         // Player
         private readonly InputActionMap m_Player;
         private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
-        private readonly InputAction m_Player_Mouse;
-        private readonly InputAction m_Player_MousePos;
+        private readonly InputAction m_Player_PointerPress;
+        private readonly InputAction m_Player_PointerPosition;
         /// <summary>
         /// Provides access to input actions defined in input action map "Player".
         /// </summary>
@@ -257,13 +278,13 @@ namespace Yujanggi.Runtime.Input
             /// </summary>
             public PlayerActions(@PlayerInputs wrapper) { m_Wrapper = wrapper; }
             /// <summary>
-            /// Provides access to the underlying input action "Player/Mouse".
+            /// Provides access to the underlying input action "Player/PointerPress".
             /// </summary>
-            public InputAction @Mouse => m_Wrapper.m_Player_Mouse;
+            public InputAction @PointerPress => m_Wrapper.m_Player_PointerPress;
             /// <summary>
-            /// Provides access to the underlying input action "Player/MousePos".
+            /// Provides access to the underlying input action "Player/PointerPosition".
             /// </summary>
-            public InputAction @MousePos => m_Wrapper.m_Player_MousePos;
+            public InputAction @PointerPosition => m_Wrapper.m_Player_PointerPosition;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -290,12 +311,12 @@ namespace Yujanggi.Runtime.Input
             {
                 if (instance == null || m_Wrapper.m_PlayerActionsCallbackInterfaces.Contains(instance)) return;
                 m_Wrapper.m_PlayerActionsCallbackInterfaces.Add(instance);
-                @Mouse.started += instance.OnMouse;
-                @Mouse.performed += instance.OnMouse;
-                @Mouse.canceled += instance.OnMouse;
-                @MousePos.started += instance.OnMousePos;
-                @MousePos.performed += instance.OnMousePos;
-                @MousePos.canceled += instance.OnMousePos;
+                @PointerPress.started += instance.OnPointerPress;
+                @PointerPress.performed += instance.OnPointerPress;
+                @PointerPress.canceled += instance.OnPointerPress;
+                @PointerPosition.started += instance.OnPointerPosition;
+                @PointerPosition.performed += instance.OnPointerPosition;
+                @PointerPosition.canceled += instance.OnPointerPosition;
             }
 
             /// <summary>
@@ -307,12 +328,12 @@ namespace Yujanggi.Runtime.Input
             /// <seealso cref="PlayerActions" />
             private void UnregisterCallbacks(IPlayerActions instance)
             {
-                @Mouse.started -= instance.OnMouse;
-                @Mouse.performed -= instance.OnMouse;
-                @Mouse.canceled -= instance.OnMouse;
-                @MousePos.started -= instance.OnMousePos;
-                @MousePos.performed -= instance.OnMousePos;
-                @MousePos.canceled -= instance.OnMousePos;
+                @PointerPress.started -= instance.OnPointerPress;
+                @PointerPress.performed -= instance.OnPointerPress;
+                @PointerPress.canceled -= instance.OnPointerPress;
+                @PointerPosition.started -= instance.OnPointerPosition;
+                @PointerPosition.performed -= instance.OnPointerPosition;
+                @PointerPosition.canceled -= instance.OnPointerPosition;
             }
 
             /// <summary>
@@ -367,19 +388,19 @@ namespace Yujanggi.Runtime.Input
         public interface IPlayerActions
         {
             /// <summary>
-            /// Method invoked when associated input action "Mouse" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// Method invoked when associated input action "PointerPress" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
             /// </summary>
             /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-            void OnMouse(InputAction.CallbackContext context);
+            void OnPointerPress(InputAction.CallbackContext context);
             /// <summary>
-            /// Method invoked when associated input action "MousePos" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// Method invoked when associated input action "PointerPosition" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
             /// </summary>
             /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-            void OnMousePos(InputAction.CallbackContext context);
+            void OnPointerPosition(InputAction.CallbackContext context);
         }
     }
 }
