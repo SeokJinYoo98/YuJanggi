@@ -1,7 +1,7 @@
 # Mobile Expansion TODO
 
 ## 1. PC와 모바일을 함께 지원하는 포인터 입력 계층 구성
-- 대상: `Assets/Scripts/Runtime/Input/PointerInputHandler.cs`, `Assets/Scripts/Runtime/Input/IInput.cs`, `Assets/Scripts/Core/Domain/Domain.cs`의 `IInputHandler`, `Assets/Scripts/Runtime/Game/GameManager.cs`
+- 대상: `Assets/Scripts/Runtime/Input/PointerInputHandler.cs`, `Assets/Scripts/Runtime/Input/IInput.cs`, `YuJanggi.Core/Runtime/Domain/Domain.cs`의 `IInputHandler`, `Assets/Scripts/Runtime/Game/GameManager.cs`
 - 해야 할 일: 기존 마우스 클릭 동작을 유지하면서 터치 위치를 동일한 보드 좌표 이벤트로 변환하고, `GameManager`의 `PointerInputHandler` 구체 타입 의존을 모바일 입력 구현도 주입할 수 있는 형태로 정리한다. `PlayerInputs`의 Touch 바인딩 및 Android에서의 Input System 설정은 추가 확인 필요.
 - 필요한 이유: 현재 입력은 `PointerPress`와 `PointerPosition` 액션만 읽으며 조립 지점도 `PointerInputHandler`에 고정되어 있어 Android 터치 입력을 세션 흐름으로 전달할 경로가 없다.
 - 완료 조건: PC 클릭과 Android 단일 터치가 모두 `IInputHandler` 이벤트를 통해 같은 `LocalController` 선택/이동 흐름을 사용하고, 빈 공간 터치 및 입력 활성화/비활성화가 두 플랫폼에서 동일하게 동작한다.
@@ -19,7 +19,7 @@
 - 완료 조건: 지원할 최소/최대 화면 비율에서 보드 전체와 필수 조작이 안전 영역 안에 표시되고, 모든 버튼과 드롭다운이 터치 가능한 크기를 가지며, Cho/Han 카메라 방향 모두에서 입력 Raycast와 화면 표시가 일치한다. 현재 Canvas 설정과 지원 방향은 추가 확인 필요.
 
 ## 4. Android 생명주기와 시스템 뒤로가기 처리
-- 대상: `Assets/Scripts/Runtime/Game/LobbyManager.cs`, `Assets/Scripts/Runtime/Game/GameManager.cs`, `Assets/Scripts/Runtime/GameSession/GameSession.cs`, `Assets/Scripts/Runtime/Controller/AIController.cs`, `Assets/Scripts/Core/Domain/Domain.cs`의 `GameSessionStore`
+- 대상: `Assets/Scripts/Runtime/Game/LobbyManager.cs`, `Assets/Scripts/Runtime/Game/GameManager.cs`, `Assets/Scripts/Runtime/GameSession/GameSession.cs`, `Assets/Scripts/Runtime/Controller/AIController.cs`, `YuJanggi.Core/Runtime/Domain/Domain.cs`의 `GameSessionStore`
 - 해야 할 일: 앱 일시정지/복귀, 포커스 상실, 시스템 뒤로가기 시의 입력·턴 타이머·AI 비동기 작업·Scene 전환 정책을 정의하고 Runtime 생명주기에서 일관되게 처리한다. 프로세스 종료 후 진행 중 대국 복구가 제품 요구사항인지와 저장 형식은 추가 확인 필요.
 - 필요한 이유: 현재는 `OnApplicationQuit` 외에 모바일 생명주기 처리가 없고 세션 시작 정보는 정적 `GameSessionStore`에만 저장된다. Android 백그라운드 전환이나 OS 종료 시 타이머, AI 작업, 세션 정보가 예상과 다르게 동작할 수 있다.
 - 완료 조건: 홈 이동과 복귀, 화면 잠금, 앱 전환, 시스템 뒤로가기를 반복해도 입력 중복·AI 중복 실행·비정상 턴 경과가 없고, 로비와 대국 화면의 뒤로가기 결과 및 필요한 세션 보존 범위가 명세대로 동작한다.

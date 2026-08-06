@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
+    "com.seokjinyoo.yujanggi.core": "https://github.com/SeokJinYoo98/YuJanggi.Core.git#10bf2d982b5c4aa985f1145b6fbaafdf5407e864",
     "com.unity.ai.navigation": "2.0.11",
     "com.unity.collab-proxy": "2.10.2",
     "com.unity.ide.rider": "3.0.38",

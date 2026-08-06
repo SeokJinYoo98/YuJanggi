@@ -2,7 +2,7 @@
 
 > 게임 규칙을 Unity와 분리하고, 상태별로 입력과 화면 갱신을 통제한 Unity 6 기반 장기 게임입니다.
 
-Local, AI, Replay 모드를 구현했습니다. 장기 규칙은 Unity API를 참조하지 않는 Core에 두고, Unity Runtime은 입력과 화면 표현을 담당하도록 분리했습니다. 같은 규칙을 .NET 서버에서도 사용할 수 있도록 온라인 대전으로 확장하고 있습니다.
+Local, AI, Replay 모드를 구현했습니다. 장기 규칙은 Unity API를 참조하지 않는 [YuJanggi.Core](https://github.com/SeokJinYoo98/YuJanggi.Core)에 두고, Unity Runtime은 입력과 화면 표현을 담당하도록 분리했습니다. Unity와 .NET 서버가 같은 Core 저장소의 커밋을 참조하도록 구성해 온라인 대전으로 확장하고 있습니다.
 
 [포트폴리오](https://app.notion.com/p/3b28a299d1c480ed867fef02568ca410) | [실행 파일](https://app.notion.com/p/38e8a299d1c48043b6a8f045695abf57) | [온라인 서버 확장](https://github.com/SeokJinYoo98/ChattingServer)
 
@@ -52,7 +52,7 @@ Controller는 이동 요청만 만들고, Core가 규칙과 상태 변경을 처
 
 ### 1. Core와 Unity Runtime 분리
 
-규칙이 Unity 생명주기에 묶이지 않도록 [`Assets/Scripts/Core`](Assets/Scripts/Core)에 다음 책임을 배치했습니다.
+규칙이 Unity 생명주기에 묶이지 않도록 별도 저장소인 [YuJanggi.Core](https://github.com/SeokJinYoo98/YuJanggi.Core)에 다음 책임을 배치했습니다.
 
 - `Board`: 9 x 10 보드와 기물 상태
 - `Rule`: 기물별 이동 후보와 합법 수 검증
@@ -76,7 +76,7 @@ Replay 기능을 추가하면서 Live용 화면 갱신과 Replay용 화면 갱�
 
 ### 3. Rule Pipeline으로 합법 수 계산 단계 분리
 
-[`JanggiRule`](Assets/Scripts/Core/Match/Rule/JanggiRule.cs)은 규칙 계산을 다음 순서로 처리합니다.
+[`JanggiRule`](https://github.com/SeokJinYoo98/YuJanggi.Core/blob/main/Runtime/Match/Rule/JanggiRule.cs)은 규칙 계산을 다음 순서로 처리합니다.
 
 1. `MovementRule`이 기물별 이동 패턴으로 후보 칸 생성
 2. `PalaceRule`이 궁성 대각선과 궁, 사, 졸의 이동 제한 적용
@@ -101,24 +101,20 @@ AI 턴은 UniTask와 `CancellationTokenSource`로 처리해 턴이 끝나거나 
 
 ## Core 검증과 온라인 서버 확장
 
-온라인 대전을 준비하며 Core를 [ChattingServer](https://github.com/SeokJinYoo98/ChattingServer)의 .NET 10 프로젝트로 옮기고, MSTest로 장기 규칙 테스트 20건을 작성했습니다.
+온라인 대전을 준비하며 Core를 독립된 .NET 10 및 Unity UPM 패키지로 분리하고, MSTest로 장기 규칙 테스트 20건을 작성했습니다.
 
 테스트 과정에서 `MatchModel.TryMove()`가 현재 턴과 출발 기물의 진영을 비교하지 않는 결함을 발견했습니다. 상태 변경 전에 턴 소유권을 검사하도록 수정하고, 잘못된 이동 이후 보드, 턴, 점수, 기록이 유지되는지 회귀 테스트로 확인했습니다.
 
-[테스트 코드](https://github.com/SeokJinYoo98/ChattingServer/tree/main/YuJanggiCore.Tests) | [턴 소유권 수정 커밋](https://github.com/SeokJinYoo98/ChattingServer/commit/ffec1fdc8dae0ad2e690abd7502412cc9bac6a99) | [온라인 개발 계획](https://github.com/SeokJinYoo98/ChattingServer/blob/main/ToDo.md)
+[공용 Core와 테스트](https://github.com/SeokJinYoo98/YuJanggi.Core) | [턴 소유권 수정 커밋](https://github.com/SeokJinYoo98/ChattingServer/commit/ffec1fdc8dae0ad2e690abd7502412cc9bac6a99) | [온라인 개발 계획](https://github.com/SeokJinYoo98/ChattingServer/blob/main/ToDo.md)
 
 현재 TCP 길이 헤더와 JSON 메시지, 비동기 접속과 송신 제어까지 구현했습니다. 방 관리, 서버 이동 처리, Unity 네트워크 연결은 개발 중입니다.
 
 ## 프로젝트 구조
 
 ```text
+Packages
+└── com.seokjinyoo.yujanggi.core → YuJanggi.Core
 Assets/Scripts
-├── Core
-│   ├── Board
-│   ├── Domain
-│   └── Match
-│       ├── Movement
-│       └── Rule
 ├── Data
 └── Runtime
     ├── Board

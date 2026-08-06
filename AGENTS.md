@@ -42,7 +42,7 @@ Scene, Prefab, Asset, 설정 변경
 
 실제 저장소 구조를 먼저 확인하며, 존재하지 않는 경로나 클래스를 추측하여 만들지 않는다.
 
-Assets/Scripts/Core: Unity 비의존 규칙, 모델, 기록, 매치 로직
+Packages/manifest.json: `YuJanggi.Core` Git UPM 커밋 참조
 
 Assets/Scripts/Runtime: Unity 입력, 표현, UI, 오디오, 생명주기
 
@@ -54,9 +54,11 @@ Assets/Scripts/Runtime/Session: GameSession과 세션 상태
 
 의존 방향:
 
-Runtime → Core
-Core -X→ Runtime
-Core -X→ UnityEngine
+Runtime → YuJanggi.Core 패키지
+YuJanggi.Core -X→ Runtime
+YuJanggi.Core -X→ UnityEngine
+
+공용 규칙, 모델, 기록, 매치 로직은 별도 `YuJanggi.Core` 저장소에서 관리한다. 이 저장소에 Core 소스를 다시 복사하지 않고, 변경이 필요하면 Core 저장소의 커밋을 갱신한 뒤 `Packages/manifest.json`의 SHA를 변경한다.
 
 주요 책임:
 
@@ -82,7 +84,7 @@ View와 시각적 연출은 Core 상태를 변경하지 않는다.
 
 플레이 요청은 기존 GameSession과 세션 상태 흐름으로 전달한다.
 
-Core에 UnityEngine, MonoBehaviour 또는 Unity 생명주기 의존성을 추가하지 않는다.
+YuJanggi.Core에 UnityEngine, MonoBehaviour 또는 Unity 생명주기 의존성을 추가하지 않는다.
 
 2. 모바일 입력 확장
 
