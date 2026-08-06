@@ -8,11 +8,11 @@
       "hash": "e5acc106ee196bc5a32fb14cdf2987b0f96d11e0"
     },
     "com.seokjinyoo.yujanggi.core": {
-      "version": "https://github.com/SeokJinYoo98/YuJanggi.Core.git#10bf2d982b5c4aa985f1145b6fbaafdf5407e864",
+      "version": "https://github.com/SeokJinYoo98/YuJanggi.Core.git#357ee1c082d12fa90941ac4159cb2a4fbb8eb02c",
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "10bf2d982b5c4aa985f1145b6fbaafdf5407e864"
+      "hash": "357ee1c082d12fa90941ac4159cb2a4fbb8eb02c"
     },
     "com.unity.ai.navigation": {
       "version": "2.0.11",
