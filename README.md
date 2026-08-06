@@ -1,123 +1,154 @@
-
 # YuJanggi
 
-Unity 기반 장기 게임 프로젝트입니다.
+> 게임 규칙을 Unity와 분리하고, 상태별로 입력과 화면 갱신을 통제한 Unity 6 기반 장기 게임입니다.
 
-단순히 장기 게임을 구현하는 것보다,  
-입력·로직·표현의 책임을 분리하고  
-Live 게임과 Replay 화면 흐름이 서로 간섭하지 않는 구조 설계에 중점을 두었습니다.
+Local, AI, Replay 모드를 구현했습니다. 장기 규칙은 Unity API를 참조하지 않는 Core에 두고, Unity Runtime은 입력과 화면 표현을 담당하도록 분리했습니다. 같은 규칙을 .NET 서버에서도 사용할 수 있도록 온라인 대전으로 확장하고 있습니다.
 
-## 프로젝트 목표
+[포트폴리오](https://app.notion.com/p/3b28a299d1c480ed867fef02568ca410) | [실행 파일](https://app.notion.com/p/38e8a299d1c48043b6a8f045695abf57) | [온라인 서버 확장](https://github.com/SeokJinYoo98/ChattingServer)
 
-- Core 로직의 Unity 의존 제거
-- Input / Logic / Presentation 분리
-- Local / AI / Network 환경 확장 고려
-- Live / Replay 흐름 분리
-- Rule Pipeline 기반 규칙 처리 구조 설계
+## 프로젝트 정보
 
-## 기술 스택
-
-- Unity
-- C#
-- Coroutine
-- Event Driven Architecture
-
-## 핵심 구조
-<img width="1452" height="993" alt="흐름도" src="https://github.com/user-attachments/assets/06d0137e-378d-46d4-843b-3f4b44bd31bf" /><img width="821" height="672" alt="StateFlow" src="https://github.com/user-attachments/assets/c266e36d-b741-47f4-b2a2-c2f5fe034da6" />
-
-Input
-→ Controller
-→ GameSession
-→ MatchManager
-→ MatchEvents
-→ GameSession
-→ View
-
-GameSession이 이벤트 흐름을 중재하며,
-View와 Model이 직접 상태를 변경하지 않도록 구조를 구성했습니다.
-
-## 주요 구현 내용
-
-### Session 중심 흐름 제어
-
-초기에는 MatchManager와 View가 직접 연결되어 있었지만,
-Replay 기능 추가 과정에서 이벤트 충돌과 상태 동기화 문제가 발생했습니다.
-
-이를 해결하기 위해 GameSession을 중심으로 이벤트 흐름을 통합하고,
-게임 상태별 동작을 SessionState로 분리했습니다.
-
-### Live / Replay 흐름 분리
-
-Replay가 단순히 게임을 멈춘 뒤 과거 상태를 보여주는 방식이 아니라,
-사용자가 과거 수를 탐색하는 동안에도 실제 게임 진행은 계속 유지되도록 설계했습니다.
-
-- Live: 이벤트 기반 상태 갱신
-- Replay: Record 기반 화면 재구성
-
-두 흐름의 책임을 분리해 UI 충돌과 상태 꼬임 문제를 해결했습니다.
-
-### Rule Pipeline
-
-장기 규칙을 단일 조건문으로 처리하지 않고,
-다음 단계로 분리했습니다.
-
-1. 이동 후보 생성
-2. 궁성 이동 제한 적용
-3. 장군 회피 가능 여부 검사
-4. 최종 이동 가능 위치 결정
-
-이를 통해 규칙 추가와 유지보수가 쉬운 구조를 구성했습니다.
-
-### Controller 추상화
-
-입력 처리를 Local / AI / Network 환경과 독립적으로 동작할 수 있도록 구성했습니다.
-
-- LocalController
-- AIController
-- (확장 예정) NetworkController
-
-모든 입력은 동일한 Move Request 흐름으로 처리됩니다.
-
-## 프로젝트 구조
-
-Core
-- Board
-- Rule
-- Match
-- Session
-- Controller
-
-Runtime
-- Input
-- View
-- UI
-- Audio
+| 항목 | 내용 |
+| --- | --- |
+| 개발 기간 | 2026.03부터 개발 중 |
+| 개발 인원 | 1명 |
+| 담당 | 기획, 구조 설계, 장기 규칙, Unity 연동, UI, 연출 |
+| 개발 환경 | Unity 6000.3.1f1, C#, URP |
+| 주요 기술 | UniTask, DOTween, ScriptableObject, Object Pool |
 
 ## 주요 기능
 
-- 장기 이동 규칙 구현
-- 장군 / 체크 판정
-- AI 턴 처리
-- 리플레이 전진 / 후진
-- 기물 이동 애니메이션
-- 사운드 처리
-- 결과 UI
+| 구분 | 구현 내용 |
+| --- | --- |
+| 장기 규칙 | 기물 이동, 궁성 규칙, 합법 수 필터링, 장군, 외통수, 결과 판정 |
+| 대국 모드 | Local 대국, AI 대국, Live 중 기보 탐색, 종료 후 Replay |
+| 대국 관리 | 턴 진행, 한 수 쉼, 무르기, 기권, 점수, 기보 기록 |
+| 화면 표현 | 선택 기물과 합법 수 표시, 이동 애니메이션, 캡처 파티클, 사운드, 결과 UI |
 
-## 트러블슈팅
+## 전체 구조
 
-### Replay와 Live UI 충돌 문제
+```mermaid
+flowchart LR
+    C[Local / AI Controller] --> S[GameSession]
+    S --> ST[SessionState]
+    ST --> M[MatchModel / Core]
+    M --> E[MatchEvents]
+    E --> S
+    ST --> V[MatchView / ReplayView]
+```
 
-Replay 도중에도 실제 게임 상태는 계속 변경되면서,
-View 이벤트가 중복 갱신되는 문제가 발생했습니다.
+Controller는 이동 요청만 만들고, Core가 규칙과 상태 변경을 처리합니다. `GameSession`은 현재 상태에 맞는 입력과 이벤트만 `MatchView` 또는 `ReplayView`에 전달합니다.
 
-이를 해결하기 위해:
-- Replay 렌더링 흐름과
-- Live 이벤트 흐름을 분리하고,
-- SessionState 기반으로 UI 갱신 책임을 제어했습니다.
+<details>
+<summary>기존 구조 이미지 보기</summary>
 
-## 향후 개선 예정
+<img width="1452" height="993" alt="YuJanggi 전체 흐름" src="https://github.com/user-attachments/assets/06d0137e-378d-46d4-843b-3f4b44bd31bf" />
 
-- Network 대전
-- AI 고도화
-- Replay 저장 / 불러오기
-- Undo / Record 관리 개선
+<img width="821" height="672" alt="SessionState 흐름" src="https://github.com/user-attachments/assets/c266e36d-b741-47f4-b2a2-c2f5fe034da6" />
+
+</details>
+
+## 핵심 구현
+
+### 1. Core와 Unity Runtime 분리
+
+규칙이 Unity 생명주기에 묶이지 않도록 [`Assets/Scripts/Core`](Assets/Scripts/Core)에 다음 책임을 배치했습니다.
+
+- `Board`: 9 x 10 보드와 기물 상태
+- `Rule`: 기물별 이동 후보와 합법 수 검증
+- `Match`: 이동 실행, 턴, 점수, 기보, 승패 판정
+- `Domain`: 좌표, 기물, 진영, 선택 상태
+
+[`Assets/Scripts/Runtime`](Assets/Scripts/Runtime)은 입력, UI, View, 사운드를 담당합니다. 실행 방식과 화면 표현이 달라도 Local과 AI가 같은 Core 규칙을 사용합니다.
+
+### 2. SessionState로 Live와 Replay 충돌 해결
+
+Replay 기능을 추가하면서 Live용 화면 갱신과 Replay용 화면 갱신이 같은 View를 제어해 이벤트 중복 호출과 상태 동기화 문제가 발생했습니다.
+
+[`GameSession`](Assets/Scripts/Runtime/GameSession/GameSession.cs)이 이벤트 흐름을 중재하고, 동작을 다음 상태로 분리했습니다.
+
+- `LiveState`: 이동, 선택, 무르기, 한 수 쉼, 기권 처리
+- `ReplayState`: 진행 중인 대국의 이전 수와 다음 수 탐색
+- `EndState`: 대국 종료와 결과 처리
+- `EndReplayState`: 종료된 대국의 기보 탐색
+
+상태마다 허용되는 입력과 View 갱신을 분리하고, 공통 동작은 [`SessionStateBase`](Assets/Scripts/Runtime/GameSession/State/GameSessionState.cs)에 모았습니다.
+
+### 3. Rule Pipeline으로 합법 수 계산 단계 분리
+
+[`JanggiRule`](Assets/Scripts/Core/Match/Rule/JanggiRule.cs)은 규칙 계산을 다음 순서로 처리합니다.
+
+1. `MovementRule`이 기물별 이동 패턴으로 후보 칸 생성
+2. `PalaceRule`이 궁성 대각선과 궁, 사, 졸의 이동 제한 적용
+3. 후보 수를 임시 실행한 뒤 왕이 장군 상태인지 검사
+4. 보드를 원상 복구하고 불법 수 제거
+
+후보 생성과 합법성 검증을 분리했으며, AI도 같은 `IJanggiRule`을 통해 이동 가능한 수를 계산합니다.
+
+### 4. 입력 방식을 이동 요청으로 통합
+
+[`LocalController`](Assets/Scripts/Runtime/Controller/LocalController.cs)와 [`AIController`](Assets/Scripts/Runtime/Controller/AIController.cs)는 모두 출발 좌표와 도착 좌표를 가진 이동 요청을 `GameSession`에 전달합니다.
+
+AI 턴은 UniTask와 `CancellationTokenSource`로 처리해 턴이 끝나거나 대국이 초기화될 때 실행 중인 작업을 취소합니다. 입력 출처가 달라도 이후 검증과 상태 변경 흐름은 동일합니다.
+
+### 5. Unity 화면 표현과 반복 생성 관리
+
+- [`PieceView`](Assets/Scripts/Runtime/Piece/PieceView.cs): DOTween으로 기물 이동을 표현하고 중복 Tween을 정리
+- [`ParticleView`](Assets/Scripts/Runtime/Particle/ParticleView.cs): 캡처 파티클을 Object Pool에서 재사용
+- [`MoveGuideView`](Assets/Scripts/Runtime/Board/MoveGuideView.cs): 이동 가능 위치 표시 오브젝트 재사용
+- [`PieceData`](Assets/Scripts/Data/PieceData.cs): 기물 종류, 진영, Mesh를 ScriptableObject로 관리
+- `IBoardClickable`: 클릭 대상이 보드 좌표를 직접 제공해 입력 계층의 좌표 계산 의존 제거
+
+## Core 검증과 온라인 서버 확장
+
+온라인 대전을 준비하며 Core를 [ChattingServer](https://github.com/SeokJinYoo98/ChattingServer)의 .NET 10 프로젝트로 옮기고, MSTest로 장기 규칙 테스트 20건을 작성했습니다.
+
+테스트 과정에서 `MatchModel.TryMove()`가 현재 턴과 출발 기물의 진영을 비교하지 않는 결함을 발견했습니다. 상태 변경 전에 턴 소유권을 검사하도록 수정하고, 잘못된 이동 이후 보드, 턴, 점수, 기록이 유지되는지 회귀 테스트로 확인했습니다.
+
+[테스트 코드](https://github.com/SeokJinYoo98/ChattingServer/tree/main/YuJanggiCore.Tests) | [턴 소유권 수정 커밋](https://github.com/SeokJinYoo98/ChattingServer/commit/ffec1fdc8dae0ad2e690abd7502412cc9bac6a99) | [온라인 개발 계획](https://github.com/SeokJinYoo98/ChattingServer/blob/main/ToDo.md)
+
+현재 TCP 길이 헤더와 JSON 메시지, 비동기 접속과 송신 제어까지 구현했습니다. 방 관리, 서버 이동 처리, Unity 네트워크 연결은 개발 중입니다.
+
+## 프로젝트 구조
+
+```text
+Assets/Scripts
+├── Core
+│   ├── Board
+│   ├── Domain
+│   └── Match
+│       ├── Movement
+│       └── Rule
+├── Data
+└── Runtime
+    ├── Board
+    ├── Controller
+    ├── GameSession
+    ├── Input
+    ├── Particle
+    ├── Piece
+    └── UI
+```
+
+## 실행 방법
+
+1. 저장소를 Clone합니다.
+2. Unity Hub에서 Unity `6000.3.1f1`로 프로젝트를 엽니다.
+3. Unity Editor에서 Play를 실행합니다.
+
+## 진행 중인 작업
+
+- Android 포인터 입력과 드래그 조작
+- 화면 비율과 Safe Area 대응
+- Android 생명주기와 실제 단말 검증
+- 서버 권위형 온라인 대전 연결
+- AI 판단 로직 고도화
+- Replay 저장과 불러오기
+
+모바일 확장 작업의 범위와 완료 조건은 [TODO.md](TODO.md)에 정리했습니다.
+
+## 사용 에셋
+
+- 장기말: [장기 Janggi KOREA Ver 접이식 장기판 버전](https://www.acon3d.com/ko/product/1000013872)
+- UI와 배경: Aseprite로 직접 제작
+- 사운드: [Pixabay Chess Sound Effects](https://pixabay.com/sound-effects/search/chess/)
