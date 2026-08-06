@@ -1,46 +1,64 @@
-# YuJanggi
+<div align="center">
 
-> 게임 규칙을 Unity와 분리하고, 상태별로 입력과 화면 갱신을 통제한 Unity 6 기반 장기 게임입니다.
+# YuJanggi.Unity
 
-Local, AI, Replay 모드를 구현했습니다. 장기 규칙은 Unity API를 참조하지 않는 [YuJanggi.Core](https://github.com/SeokJinYoo98/YuJanggi.Core)에 두고, Unity Runtime은 입력과 화면 표현을 담당하도록 분리했습니다. Unity와 .NET 서버가 같은 Core 저장소의 커밋을 참조하도록 구성해 온라인 대전으로 확장하고 있습니다.
+**장기 규칙과 Unity 표현을 분리한 Unity 6 기반 한국 장기 게임 클라이언트**
 
-[포트폴리오](https://app.notion.com/p/3b28a299d1c480ed867fef02568ca410) | [실행 파일](https://app.notion.com/p/38e8a299d1c48043b6a8f045695abf57) | [온라인 서버 확장](https://github.com/SeokJinYoo98/ChattingServer)
+![Unity](https://img.shields.io/badge/Unity-6000.3.1f1-000000?logo=unity&logoColor=white)
+![C#](https://img.shields.io/badge/C%23-Unity_Runtime-512BD4?logo=dotnet&logoColor=white)
+![Core](https://img.shields.io/badge/Core-Git_UPM-2ea44f)
+![Status](https://img.shields.io/badge/status-active_development-f59e0b)
 
-## 프로젝트 정보
+[포트폴리오](https://app.notion.com/p/3b28a299d1c480ed867fef02568ca410) ·
+[실행 파일](https://app.notion.com/p/38e8a299d1c48043b6a8f045695abf57) ·
+[Core](https://github.com/SeokJinYoo98/YuJanggi.Core) ·
+[Server](https://github.com/SeokJinYoo98/YuJanggi.Server)
 
-| 항목 | 내용 |
-| --- | --- |
-| 개발 기간 | 2026.03부터 개발 중 |
-| 개발 인원 | 1명 |
-| 담당 | 기획, 구조 설계, 장기 규칙, Unity 연동, UI, 연출 |
-| 개발 환경 | Unity 6000.3.1f1, C#, URP |
-| 주요 기술 | UniTask, DOTween, ScriptableObject, Object Pool |
+</div>
+
+## 프로젝트 소개
+
+YuJanggi.Unity는 Local 대국, AI 대국, 진행 중 기보 탐색과 종료 후 Replay를 지원하는 개인 장기 프로젝트입니다.
+
+장기 규칙과 대국 상태는 Unity API에 의존하지 않는 [YuJanggi.Core](https://github.com/SeokJinYoo98/YuJanggi.Core)가 담당합니다. 이 저장소는 입력, 세션 흐름, 보드와 기물 표현, UI, 오디오처럼 Unity에서만 필요한 책임에 집중합니다.
+
+> **현재 상태**
+>
+> Local·AI·Replay 흐름은 구현되어 있습니다. Android 화면 대응과 실제 단말 검증, 서버 권위형 온라인 대전 연결은 진행 중입니다.
 
 ## 주요 기능
 
-| 구분 | 구현 내용 |
+| 영역 | 구현 내용 |
 | --- | --- |
-| 장기 규칙 | 기물 이동, 궁성 규칙, 합법 수 필터링, 장군, 외통수, 결과 판정 |
-| 대국 모드 | Local 대국, AI 대국, Live 중 기보 탐색, 종료 후 Replay |
-| 대국 관리 | 턴 진행, 한 수 쉼, 무르기, 기권, 점수, 기보 기록 |
-| 화면 표현 | 선택 기물과 합법 수 표시, 이동 애니메이션, 캡처 파티클, 사운드, 결과 UI |
+| 대국 | Local 대국, AI 대국, 턴 진행, 한 수 쉼, 무르기, 기권 |
+| 장기 규칙 | 기물 이동, 궁성 규칙, 합법 수 필터링, 장군, 외통수, 점수와 결과 판정 |
+| Replay | 진행 중 이전·다음 수 탐색, 종료 후 전체 기보 탐색, Live 복귀 시 화면 동기화 |
+| 입력 | Unity Input System 기반 포인터 입력, 마우스와 Primary Touch 공통 처리 |
+| 표현 | 기물 이동 Tween, 이동 가이드, 캡처 파티클, 사운드, 결과 UI |
+| 데이터 | ScriptableObject 기반 기물 종류·진영·Mesh 관리 |
 
-## 전체 구조
+## 아키텍처
 
-```mermaid
+~~~mermaid
 flowchart LR
-    C[Local / AI Controller] --> S[GameSession]
-    S --> ST[SessionState]
-    ST --> M[MatchModel / Core]
-    M --> E[MatchEvents]
-    E --> S
-    ST --> V[MatchView / ReplayView]
-```
+    I["Mouse / Touch"] --> IN["Runtime Input"]
+    IN --> C["Local / AI Controller"]
+    C --> S["GameSession"]
+    S --> ST["SessionState"]
+    ST --> CORE["YuJanggi.Core"]
+    CORE --> EV["Match Events"]
+    EV --> ST
+    ST --> V["MatchView / ReplayView"]
+~~~
 
-Controller는 이동 요청만 만들고, Core가 규칙과 상태 변경을 처리합니다. `GameSession`은 현재 상태에 맞는 입력과 이벤트만 `MatchView` 또는 `ReplayView`에 전달합니다.
+- **Controller**는 입력을 출발 좌표와 도착 좌표를 가진 이동 요청으로 변환합니다.
+- **GameSession**은 현재 세션 상태에 요청과 Core 이벤트를 위임합니다.
+- **SessionState**는 Live, Replay, End 상태별로 허용할 입력과 화면 갱신을 결정합니다.
+- **Core**만 보드, 턴, 점수, 기보와 승패 상태를 변경합니다.
+- **View**는 Core 상태를 직접 변경하지 않고 결과를 화면에 표현합니다.
 
 <details>
-<summary>기존 구조 이미지 보기</summary>
+<summary>기존 설계 이미지 보기</summary>
 
 <img width="1452" height="993" alt="YuJanggi 전체 흐름" src="https://github.com/user-attachments/assets/06d0137e-378d-46d4-843b-3f4b44bd31bf" />
 
@@ -48,100 +66,103 @@ Controller는 이동 요청만 만들고, Core가 규칙과 상태 변경을 처
 
 </details>
 
-## 핵심 구현
+## 핵심 설계
 
-### 1. Core와 Unity Runtime 분리
+### Core와 Unity Runtime 분리
 
-규칙이 Unity 생명주기에 묶이지 않도록 별도 저장소인 [YuJanggi.Core](https://github.com/SeokJinYoo98/YuJanggi.Core)에 다음 책임을 배치했습니다.
+공용 규칙은 Git UPM 패키지로 가져오며 <code>Packages/manifest.json</code>에서 사용할 Core 커밋을 고정합니다.
 
-- `Board`: 9 x 10 보드와 기물 상태
-- `Rule`: 기물별 이동 후보와 합법 수 검증
-- `Match`: 이동 실행, 턴, 점수, 기보, 승패 판정
-- `Domain`: 좌표, 기물, 진영, 선택 상태
+| 저장소 | 책임 |
+| --- | --- |
+| [YuJanggi.Unity](https://github.com/SeokJinYoo98/YuJanggi.Unity) | 입력, 세션 조율, View, UI, 오디오와 Unity 생명주기 |
+| [YuJanggi.Core](https://github.com/SeokJinYoo98/YuJanggi.Core) | 보드, 기물, 이동 규칙, 턴, 점수, 기보와 대국 상태 |
+| [YuJanggi.Server](https://github.com/SeokJinYoo98/YuJanggi.Server) | TCP 세션, 자동 매칭, 서버 권위형 이동 판정과 결과 전파 |
 
-[`Assets/Scripts/Runtime`](Assets/Scripts/Runtime)은 입력, UI, View, 사운드를 담당합니다. 실행 방식과 화면 표현이 달라도 Local과 AI가 같은 Core 규칙을 사용합니다.
+이 구조로 Unity와 .NET 서버가 같은 규칙 구현을 사용하고, 화면이나 네트워크 코드가 대국 상태를 직접 변경하지 않도록 했습니다.
 
-### 2. SessionState로 Live와 Replay 충돌 해결
+### Live와 Replay 상태 분리
 
-Replay 기능을 추가하면서 Live용 화면 갱신과 Replay용 화면 갱신이 같은 View를 제어해 이벤트 중복 호출과 상태 동기화 문제가 발생했습니다.
+Replay 화면과 계속 진행되는 Live 모델이 서로 다른 시점을 가리킬 수 있기 때문에 <code>GameSession</code>이 다음 상태를 명시적으로 관리합니다.
 
-[`GameSession`](Assets/Scripts/Runtime/GameSession/GameSession.cs)이 이벤트 흐름을 중재하고, 동작을 다음 상태로 분리했습니다.
+- <code>SessionLiveState</code>: 선택, 이동, 무르기, 한 수 쉼과 최신 모델 반영
+- <code>SessionReplayState</code>: Live 모델을 유지한 채 과거 기보를 화면에 표시
+- <code>SessionEndState</code>: 입력 중지와 대국 결과 표시
+- <code>SessionEndReplayState</code>: 종료된 대국의 기보 탐색
 
-- `LiveState`: 이동, 선택, 무르기, 한 수 쉼, 기권 처리
-- `ReplayState`: 진행 중인 대국의 이전 수와 다음 수 탐색
-- `EndState`: 대국 종료와 결과 처리
-- `EndReplayState`: 종료된 대국의 기보 탐색
+Live로 복귀할 때 <code>MatchView.SyncBoardState()</code>로 화면을 최신 모델 상태에 다시 맞춥니다.
 
-상태마다 허용되는 입력과 View 갱신을 분리하고, 공통 동작은 [`SessionStateBase`](Assets/Scripts/Runtime/GameSession/State/GameSessionState.cs)에 모았습니다.
+### 입력과 표현의 책임 분리
 
-### 3. Rule Pipeline으로 합법 수 계산 단계 분리
+<code>PointerInputHandler</code>가 Raycast 결과에서 보드 좌표를 얻어 입력 계층으로 전달하고, <code>LocalController</code>가 선택과 이동 요청을 생성합니다. 드래그나 애니메이션 중 화면 표현은 Core 상태를 변경하지 않습니다.
 
-[`JanggiRule`](https://github.com/SeokJinYoo98/YuJanggi.Core/blob/main/Runtime/Match/Rule/JanggiRule.cs)은 규칙 계산을 다음 순서로 처리합니다.
+반복 생성되는 이동 가이드와 파티클은 Object Pool로 재사용하며, 기물 이동은 DOTween, AI 턴의 비동기 지연과 취소는 UniTask로 처리합니다.
 
-1. `MovementRule`이 기물별 이동 패턴으로 후보 칸 생성
-2. `PalaceRule`이 궁성 대각선과 궁, 사, 졸의 이동 제한 적용
-3. 후보 수를 임시 실행한 뒤 왕이 장군 상태인지 검사
-4. 보드를 원상 복구하고 불법 수 제거
+## 기술 스택
 
-후보 생성과 합법성 검증을 분리했으며, AI도 같은 `IJanggiRule`을 통해 이동 가능한 수를 계산합니다.
-
-### 4. 입력 방식을 이동 요청으로 통합
-
-[`LocalController`](Assets/Scripts/Runtime/Controller/LocalController.cs)와 [`AIController`](Assets/Scripts/Runtime/Controller/AIController.cs)는 모두 출발 좌표와 도착 좌표를 가진 이동 요청을 `GameSession`에 전달합니다.
-
-AI 턴은 UniTask와 `CancellationTokenSource`로 처리해 턴이 끝나거나 대국이 초기화될 때 실행 중인 작업을 취소합니다. 입력 출처가 달라도 이후 검증과 상태 변경 흐름은 동일합니다.
-
-### 5. Unity 화면 표현과 반복 생성 관리
-
-- [`PieceView`](Assets/Scripts/Runtime/Piece/PieceView.cs): DOTween으로 기물 이동을 표현하고 중복 Tween을 정리
-- [`ParticleView`](Assets/Scripts/Runtime/Particle/ParticleView.cs): 캡처 파티클을 Object Pool에서 재사용
-- [`MoveGuideView`](Assets/Scripts/Runtime/Board/MoveGuideView.cs): 이동 가능 위치 표시 오브젝트 재사용
-- [`PieceData`](Assets/Scripts/Data/PieceData.cs): 기물 종류, 진영, Mesh를 ScriptableObject로 관리
-- `IBoardClickable`: 클릭 대상이 보드 좌표를 직접 제공해 입력 계층의 좌표 계산 의존 제거
-
-## Core 검증과 온라인 서버 확장
-
-온라인 대전을 준비하며 Core를 독립된 .NET 10 및 Unity UPM 패키지로 분리하고, MSTest로 장기 규칙 테스트 20건을 작성했습니다.
-
-테스트 과정에서 `MatchModel.TryMove()`가 현재 턴과 출발 기물의 진영을 비교하지 않는 결함을 발견했습니다. 상태 변경 전에 턴 소유권을 검사하도록 수정하고, 잘못된 이동 이후 보드, 턴, 점수, 기록이 유지되는지 회귀 테스트로 확인했습니다.
-
-[공용 Core와 테스트](https://github.com/SeokJinYoo98/YuJanggi.Core) | [턴 소유권 수정 커밋](https://github.com/SeokJinYoo98/ChattingServer/commit/ffec1fdc8dae0ad2e690abd7502412cc9bac6a99) | [온라인 개발 계획](https://github.com/SeokJinYoo98/ChattingServer/blob/main/ToDo.md)
-
-현재 TCP 길이 헤더와 JSON 메시지, 비동기 접속과 송신 제어까지 구현했습니다. 방 관리, 서버 이동 처리, Unity 네트워크 연결은 개발 중입니다.
+| 구분 | 기술 |
+| --- | --- |
+| Engine | Unity 6000.3.1f1, URP 17.3 |
+| Language | C# |
+| Input | Unity Input System 1.17 |
+| Async | UniTask |
+| Animation | DOTween |
+| Data | ScriptableObject |
+| Shared rules | YuJanggi.Core 0.1.0, Git UPM commit pinning |
 
 ## 프로젝트 구조
 
-```text
+~~~text
 Packages
-└── com.seokjinyoo.yujanggi.core → YuJanggi.Core
+└── com.seokjinyoo.yujanggi.core  # YuJanggi.Core
+
 Assets/Scripts
-├── Data
+├── Data                           # Piece ScriptableObject
 └── Runtime
+    ├── Audio
     ├── Board
     ├── Controller
+    ├── Game
     ├── GameSession
+    │   └── State
     ├── Input
     ├── Particle
     ├── Piece
     └── UI
-```
+~~~
 
-## 실행 방법
+## 시작하기
 
-1. 저장소를 Clone합니다.
-2. Unity Hub에서 Unity `6000.3.1f1`로 프로젝트를 엽니다.
-3. Unity Editor에서 Play를 실행합니다.
+### 요구 사항
 
-## 진행 중인 작업
+- Unity Hub
+- Unity <code>6000.3.1f1</code>
+- Git
 
-- Android 포인터 입력과 드래그 조작
-- 화면 비율과 Safe Area 대응
+### 실행
+
+~~~powershell
+git clone https://github.com/SeokJinYoo98/YuJanggi.Unity.git
+~~~
+
+1. Unity Hub에서 Clone한 폴더를 엽니다.
+2. Package Manager가 <code>YuJanggi.Core</code>와 다른 패키지를 복원할 때까지 기다립니다.
+3. 시작 Scene을 열고 Play Mode를 실행합니다.
+
+Core는 <code>Packages/manifest.json</code>에 기록된 커밋 SHA로 고정되므로, Core를 갱신할 때는 검증된 SHA를 명시적으로 변경해야 합니다.
+
+## 검증과 개발 상태
+
+Core에는 이동 규칙과 상태 무결성을 확인하는 MSTest 20개 실행 케이스가 있습니다. Unity Editor, Android 빌드와 실제 단말 동작은 별도 확인이 필요합니다.
+
+현재 우선순위:
+
+- Android 화면 비율과 Safe Area 대응
 - Android 생명주기와 실제 단말 검증
-- 서버 권위형 온라인 대전 연결
+- [YuJanggi.Server](https://github.com/SeokJinYoo98/YuJanggi.Server) 연결 및 NetworkController 구현
 - AI 판단 로직 고도화
 - Replay 저장과 불러오기
 
-모바일 확장 작업의 범위와 완료 조건은 [TODO.md](TODO.md)에 정리했습니다.
+모바일 작업의 세부 범위는 [TODO.md](TODO.md)를 참고하세요.
 
 ## 사용 에셋
 
