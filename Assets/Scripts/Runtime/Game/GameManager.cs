@@ -121,7 +121,7 @@ namespace Yujanggi.Runtime.Game
             return type switch
             {
                 PlayerType.Local => new LocalController(match.Rule, match.Board, team, input),
-                PlayerType.AI => new AIController(match.Rule, match.Board, team),
+                PlayerType.AI => new AIController(match.Rule, match.Board, team, AISessionSettings.Strategy),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }

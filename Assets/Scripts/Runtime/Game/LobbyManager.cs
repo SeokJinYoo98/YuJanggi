@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Yujanggi.Core.Domain;
+using Yujanggi.Runtime.Controller;
 using Yujanggi.Runtime.UI;
 
 namespace Yujanggi.Runtime.Game
@@ -57,10 +58,13 @@ namespace Yujanggi.Runtime.Game
                     local.TurnTime);
 
             else if (_curr is AIPanelView ai)
+            {
                 info = CreateAISession(
                     (PlayerTeam)ai.LocalPlayer,
                     (Formation)ai.LocalPlayerFormation,
                     ai.TurnTime);
+                AISessionSettings.Strategy = ai.Strategy;
+            }
 
             else return;
 
@@ -75,6 +79,7 @@ namespace Yujanggi.Runtime.Game
         }
         private GameSessionInfo CreateLocalSession(Formation choFormation, Formation hanFormation, int time)
         {
+            AISessionSettings.Strategy = AIMoveStrategyType.Random;
             return new GameSessionInfo
             {
                 Mode            = GameModeType.Local,
