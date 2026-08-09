@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Yujanggi.Core.Board;
 using Yujanggi.Core.Domain;
 using Yujanggi.Core.Rule;
@@ -98,19 +99,26 @@ namespace Yujanggi.Runtime.Controller
 
     public sealed class MinimaxAIMoveStrategy : IAIMoveStrategy
     {
-        private readonly Random _random = new();
-        private readonly int _searchDepth;
-        private PlayerTeam _maximizingTeam;
+        private const int MateScore = 100_000;
+        private const int MaxQuiescenceDepth = 4;
 
-        public MinimaxAIMoveStrategy(int searchDepth = 2)
+        private readonly Random _random = new();
+        private readonly int _maxSearchDepth;
+        private readonly int _timeLimitMilliseconds;
+        private readonly Dictionary<ulong, TranspositionEntry> _transpositionTable = new();
+        private PlayerTeam _maximizingTeam;
+        private Stopwatch _stopwatch;
+
+        public MinimaxAIMoveStrategy(int maxSearchDepth = 4, int timeLimitMilliseconds = 350)
         {
-            _searchDepth = Math.Max(1, searchDepth);
+            _maxSearchDepth = Math.Max(1, maxSearchDepth);
+            _timeLimitMilliseconds = Math.Max(50, timeLimitMilliseconds);
         }
 
         public bool TrySelectMove(IBoardModel board, IJanggiRule rule, PlayerTeam team, out AIMove move)
         {
             var simulation = new AISimulationBoard(board);
-            var moves = AIMoveGenerator.Generate(simulation, rule, team);
+            var moves = OrderMoves(simulation, rule, team);
             if (moves.Count == 0)
             {
                 move = default;
@@ -118,46 +126,86 @@ namespace Yujanggi.Runtime.Controller
             }
 
             _maximizingTeam = team;
-            int bestScore = int.MinValue;
-            var bestMoves = new List<AIMove>();
-            foreach (var candidate in moves)
-            {
-                var record = simulation.DoMove(candidate.From, candidate.To);
-                int score = Search(simulation, rule, AIPlayerTeam.Opponent(team), _searchDepth - 1, int.MinValue, int.MaxValue);
-                simulation.UndoMove(record);
+            _transpositionTable.Clear();
+            _stopwatch = Stopwatch.StartNew();
 
-                if (score > bestScore)
+            var bestMove = moves[0];
+            for (int depth = 1; depth <= _maxSearchDepth; ++depth)
+            {
+                try
                 {
-                    bestScore = score;
-                    bestMoves.Clear();
-                    bestMoves.Add(candidate);
+                    int bestScore = int.MinValue;
+                    var bestMoves = new List<AIMove>();
+                    foreach (var candidate in moves)
+                    {
+                        ThrowIfTimedOut();
+
+                        var record = simulation.DoMove(candidate.From, candidate.To);
+                        int score;
+                        try
+                        {
+                            score = Search(simulation, rule, AIPlayerTeam.Opponent(team), depth - 1, int.MinValue, int.MaxValue);
+                        }
+                        finally
+                        {
+                            simulation.UndoMove(record);
+                        }
+
+                        if (score > bestScore)
+                        {
+                            bestScore = score;
+                            bestMoves.Clear();
+                            bestMoves.Add(candidate);
+                        }
+                        else if (score == bestScore)
+                        {
+                            bestMoves.Add(candidate);
+                        }
+                    }
+
+                    bestMove = bestMoves[_random.Next(bestMoves.Count)];
+                    moves.Remove(bestMove);
+                    moves.Insert(0, bestMove);
                 }
-                else if (score == bestScore)
+                catch (SearchTimeoutException)
                 {
-                    bestMoves.Add(candidate);
+                    break;
                 }
             }
 
-            move = bestMoves[_random.Next(bestMoves.Count)];
+            move = bestMove;
             return true;
         }
 
         private int Search(IBoardModel board, IJanggiRule rule, PlayerTeam currentTeam, int depth, int alpha, int beta)
         {
-            if (depth == 0)
-                return Evaluate(board);
+            ThrowIfTimedOut();
 
-            var moves = AIMoveGenerator.Generate(board, rule, currentTeam);
+            ulong positionKey = CalculatePositionKey(board, currentTeam);
+            if (_transpositionTable.TryGetValue(positionKey, out var cached) && cached.Depth >= depth)
+                return cached.Score;
+
+            var moves = OrderMoves(board, rule, currentTeam);
             if (moves.Count == 0)
                 return EvaluateTerminal(board, rule, currentTeam);
+            if (depth == 0)
+                return QuiescenceSearch(board, rule, currentTeam, alpha, beta, MaxQuiescenceDepth);
 
             bool maximizing = currentTeam == _maximizingTeam;
             int bestScore = maximizing ? int.MinValue : int.MaxValue;
+            bool wasCutOff = false;
             foreach (var candidate in moves)
             {
                 var record = board.DoMove(candidate.From, candidate.To);
-                int score = Search(board, rule, AIPlayerTeam.Opponent(currentTeam), depth - 1, alpha, beta);
-                board.UndoMove(record);
+                int score;
+                try
+                {
+                    score = Search(board, rule, AIPlayerTeam.Opponent(currentTeam), depth - 1, alpha, beta);
+                }
+                finally
+                {
+                    board.UndoMove(record);
+                }
 
                 if (maximizing)
                 {
@@ -171,21 +219,103 @@ namespace Yujanggi.Runtime.Controller
                 }
 
                 if (beta <= alpha)
+                {
+                    wasCutOff = true;
                     break;
+                }
             }
 
+            // Cut-off scores are bounds, not exact values, so do not reuse them
+            // as a direct static score on another branch.
+            if (!wasCutOff)
+                _transpositionTable[positionKey] = new TranspositionEntry(depth, bestScore);
+
             return bestScore;
+        }
+
+        private int QuiescenceSearch(
+            IBoardModel board,
+            IJanggiRule rule,
+            PlayerTeam currentTeam,
+            int alpha,
+            int beta,
+            int remainingDepth)
+        {
+            ThrowIfTimedOut();
+
+            bool maximizing = currentTeam == _maximizingTeam;
+            bool mustEscapeCheck = IsKingInCheck(board, rule, currentTeam);
+            var moves = OrderMoves(board, rule, currentTeam);
+            if (moves.Count == 0)
+                return EvaluateTerminal(board, rule, currentTeam);
+
+            int standPat = Evaluate(board, rule);
+            if (remainingDepth == 0)
+                return standPat;
+
+            // A checked side has no legal "stand pat" position: every legal
+            // escape must be searched, even if the static score crosses a bound.
+            if (!mustEscapeCheck && maximizing)
+            {
+                if (standPat >= beta)
+                    return beta;
+                alpha = Math.Max(alpha, standPat);
+            }
+            else if (!mustEscapeCheck)
+            {
+                if (standPat <= alpha)
+                    return alpha;
+                beta = Math.Min(beta, standPat);
+            }
+
+            foreach (var candidate in moves)
+            {
+                if (!mustEscapeCheck && !board.HasPiece(candidate.To))
+                    continue;
+
+                var record = board.DoMove(candidate.From, candidate.To);
+                int score;
+                try
+                {
+                    score = QuiescenceSearch(
+                        board,
+                        rule,
+                        AIPlayerTeam.Opponent(currentTeam),
+                        alpha,
+                        beta,
+                        remainingDepth - 1);
+                }
+                finally
+                {
+                    board.UndoMove(record);
+                }
+
+                if (maximizing)
+                {
+                    if (score >= beta)
+                        return beta;
+                    alpha = Math.Max(alpha, score);
+                }
+                else
+                {
+                    if (score <= alpha)
+                        return alpha;
+                    beta = Math.Min(beta, score);
+                }
+            }
+
+            return maximizing ? alpha : beta;
         }
 
         private int EvaluateTerminal(IBoardModel board, IJanggiRule rule, PlayerTeam teamWithoutMove)
         {
             if (rule is not JanggiRule janggiRule || !janggiRule.IsKingInCheck(board, teamWithoutMove))
-                return Evaluate(board);
+                return Evaluate(board, rule);
 
-            return teamWithoutMove == _maximizingTeam ? -100_000 : 100_000;
+            return teamWithoutMove == _maximizingTeam ? -MateScore : MateScore;
         }
 
-        private int Evaluate(IBoardModel board)
+        private int Evaluate(IBoardModel board, IJanggiRule rule)
         {
             int score = 0;
             for (int x = 0; x < board.WIDTH; ++x)
@@ -197,12 +327,104 @@ namespace Yujanggi.Runtime.Controller
                         continue;
 
                     var piece = board.GetPiece(pos);
-                    int value = AIPieceValue.Get(piece.Type);
+                    int value = AIPieceValue.Get(piece.Type) + GetPositionalValue(board, pos, piece);
                     score += piece.Team == _maximizingTeam ? value : -value;
                 }
             }
 
+            var opponent = AIPlayerTeam.Opponent(_maximizingTeam);
+            if (IsKingInCheck(board, rule, opponent))
+                score += 3;
+            if (IsKingInCheck(board, rule, _maximizingTeam))
+                score -= 5;
+
             return score;
+        }
+
+        private static int GetPositionalValue(IBoardModel board, Pos pos, PieceModel piece)
+        {
+            int value = 0;
+            if (piece.Type == PieceType.Soldier)
+            {
+                int progress = piece.Team == PlayerTeam.Cho ? pos.Z : board.HEIGHT - 1 - pos.Z;
+                value += progress;
+            }
+
+            bool inEnemyPalace = board.IsPalace(pos) &&
+                                 (piece.Team == PlayerTeam.Cho ? pos.Z >= board.HEIGHT - 3 : pos.Z <= 2);
+            if (inEnemyPalace)
+            {
+                if (piece.Type == PieceType.Chariot)
+                    value += 4;
+                else if (piece.Type == PieceType.Cannon)
+                    value += 2;
+            }
+
+            return value;
+        }
+
+        private static List<AIMove> OrderMoves(IBoardModel board, IJanggiRule rule, PlayerTeam team)
+        {
+            var moves = AIMoveGenerator.Generate(board, rule, team);
+            moves.Sort((left, right) => ScoreMove(board, right).CompareTo(ScoreMove(board, left)));
+            return moves;
+        }
+
+        private static int ScoreMove(IBoardModel board, AIMove move)
+        {
+            if (!board.HasPiece(move.To))
+                return 0;
+
+            var captured = board.GetPiece(move.To);
+            var moved = board.GetPiece(move.From);
+            return (AIPieceValue.Get(captured.Type) * 16) - AIPieceValue.Get(moved.Type);
+        }
+
+        private static bool IsKingInCheck(IBoardModel board, IJanggiRule rule, PlayerTeam team)
+            => rule is JanggiRule janggiRule && janggiRule.IsKingInCheck(board, team);
+
+        private void ThrowIfTimedOut()
+        {
+            if (_stopwatch != null && _stopwatch.ElapsedMilliseconds >= _timeLimitMilliseconds)
+                throw new SearchTimeoutException();
+        }
+
+        private static ulong CalculatePositionKey(IBoardModel board, PlayerTeam currentTeam)
+        {
+            const ulong offsetBasis = 14_695_981_039_346_656_037UL;
+            const ulong prime = 1_099_511_628_211UL;
+
+            ulong hash = offsetBasis;
+            for (int x = 0; x < board.WIDTH; ++x)
+            {
+                for (int z = 0; z < board.HEIGHT; ++z)
+                {
+                    var piece = board.GetPiece(new Pos(x, z));
+                    hash ^= (ulong)((int)piece.Team + 1);
+                    hash *= prime;
+                    hash ^= (ulong)((int)piece.Type + 1);
+                    hash *= prime;
+                }
+            }
+
+            hash ^= (ulong)((int)currentTeam + 1);
+            return hash;
+        }
+
+        private readonly struct TranspositionEntry
+        {
+            public TranspositionEntry(int depth, int score)
+            {
+                Depth = depth;
+                Score = score;
+            }
+
+            public int Depth { get; }
+            public int Score { get; }
+        }
+
+        private sealed class SearchTimeoutException : Exception
+        {
         }
     }
 
