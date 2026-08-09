@@ -1,185 +1,30 @@
-0. 최우선 규칙: codex 브랜치만 사용
+# YuJanggi 작업 지침
 
-저장소에 영향을 주는 모든 작업은 반드시 정확히 codex 브랜치에서만 수행한다.
+이 문서는 `YuJanggi.Core`, `YuJanggi.Server`, `YuJanggi.Unity`에 동일하게 둔다. 각 저장소의 `README.md`와 기존 코드 구조를 우선 존중한다.
 
-작업 시작 전:
+## 공통 원칙
 
-git branch --show-current
-git status --short --branch
+- 변경 전 `git status --short`로 기존 사용자 변경을 확인하고, 관련 없는 변경은 수정하거나 커밋하지 않는다.
+- 기능 변경에는 가능한 가장 가까운 자동화 테스트를 추가하거나 갱신하고, 변경 범위에 맞는 테스트를 실행한다.
+- 새 의존성, 설정 값, 네트워크 프로토콜 변경은 필요한 저장소 모두에 미치는 영향을 확인한다.
+- 공개 API, 직렬화 모델, 네트워크 메시지 변경은 하위 호환성 및 호출 지점을 함께 검토한다.
+- `ToDo.md`, `ToDoList.md` 등 ToDo 문서는 만들거나 유지하지 않는다. 작업 계획과 후속 작업은 이슈, PR 또는 코드 주석에 기록한다.
 
-처리 규칙:
+## 저장소 경계
 
-현재 브랜치가 codex이고 작업 트리가 깨끗하면 진행한다.
+- **YuJanggi.Core**: Unity와 서버가 공유하는 순수 C# 장기 규칙 엔진이다. `UnityEngine`, UI, 네트워크, 플랫폼 전용 의존성을 추가하지 않는다.
+- **YuJanggi.Server**: 서버 권위형 매치, 연결, 영속화와 네트워크 처리를 담당한다. 게임 규칙과 상태 변경은 Core를 통해 수행한다.
+- **YuJanggi.Unity**: 입력, 화면, 애니메이션, 오디오와 클라이언트 흐름을 담당한다. 보드 상태를 우회해 직접 변경하지 않고 Core의 검증된 진입점을 사용한다.
 
-현재 브랜치가 codex이지만 기존 변경 사항이 있으면 수정하지 말고 보고한다. 사용자가 계속 진행하라고 명시한 경우에만 기존 변경을 보존하며 작업한다.
+## 구현 기준
 
-detached HEAD이거나 현재 브랜치가 codex가 아닌 상태에서 기존 변경 사항이 있으면 중단하고 보고한다.
+- 이동·포획·턴·종료처럼 게임 상태를 변경하는 로직은 단일 진입점에서 검증한 뒤 적용한다.
+- Core를 변경하면 Unity와 Server가 동일한 Core 버전을 사용한다는 전제를 유지한다.
+- 온라인 대국의 최종 규칙 검증은 Server에서 수행한다. 로컬 AI는 Unity에 둘 수 있으나, 선택한 수는 Core 규칙으로 검증한다.
+- 코드 스타일과 네임스페이스는 해당 저장소의 기존 관례를 따른다. 포맷만을 위한 대규모 변경은 피한다.
 
-다른 브랜치이며 작업 트리가 깨끗한 경우, 로컬 codex 브랜치가 있을 때만 전환한다.
+## 검증과 커밋
 
-git show-ref --verify --quiet refs/heads/codex
-git switch codex
-git branch --show-current
-git status --short --branch
-
-로컬 codex 브랜치가 없거나 전환 후 브랜치가 정확히 codex가 아니면 중단하고 보고한다. 브랜치를 임의로 생성하지 않는다.
-
-codex 외 브랜치에서는 다음을 금지한다.
-
-파일 생성, 수정, 삭제, 이름 변경
-
-패키지 설치, 코드 생성, 자동 포맷
-
-Scene, Prefab, Asset, 설정 변경
-
-저장소 파일을 생성하거나 갱신하는 빌드 및 도구 실행
-
-커밋과 푸시
-
-명시적인 요청 없이는 브랜치 생성·삭제, merge, rebase, cherry-pick, stash, reset, clean, restore, force push, 커밋, 푸시를 수행하지 않는다. 기존 변경 사항을 되돌리거나 덮어쓰지 않는다.
-
-1. 저장소 구조
-
-실제 저장소 구조를 먼저 확인하며, 존재하지 않는 경로나 클래스를 추측하여 만들지 않는다.
-
-Packages/manifest.json: `YuJanggi.Core` Git UPM 커밋 참조
-
-Assets/Scripts/Runtime: Unity 입력, 표현, UI, 오디오, 생명주기
-
-Assets/Scripts/Runtime/Input: 포인터 및 보드 입력
-
-Assets/Scripts/Runtime/View: 보드와 장기말 표현
-
-Assets/Scripts/Runtime/Session: GameSession과 세션 상태
-
-의존 방향:
-
-Runtime → YuJanggi.Core 패키지
-YuJanggi.Core -X→ Runtime
-YuJanggi.Core -X→ UnityEngine
-
-공용 규칙, 모델, 기록, 매치 로직은 별도 `YuJanggi.Core` 저장소에서 관리한다. 이 저장소에 Core 소스를 다시 복사하지 않고, 변경이 필요하면 Core 저장소의 커밋을 갱신한 뒤 `Packages/manifest.json`의 SHA를 변경한다.
-
-주요 책임:
-
-PcInputHandler: 포인터 입력과 보드 클릭 감지
-
-PieceView: 장기말 표현과 시각적 이동
-
-BoardView: 보드와 장기말 표현 관리
-
-GameSession: 매치 흐름과 세션 상태 전환 조율
-
-SessionLiveState: 라이브 플레이 요청 처리
-
-ReplayView: 기록 기반 리플레이 화면 반영
-
-LiveView: 이벤트 기반 라이브 결과 화면 반영
-
-아키텍처 불변 조건:
-
-PieceView는 입력을 직접 읽거나 Core 매치 로직을 직접 호출하지 않는다.
-
-View와 시각적 연출은 Core 상태를 변경하지 않는다.
-
-플레이 요청은 기존 GameSession과 세션 상태 흐름으로 전달한다.
-
-YuJanggi.Core에 UnityEngine, MonoBehaviour 또는 Unity 생명주기 의존성을 추가하지 않는다.
-
-2. 모바일 입력 확장
-
-기존 PC 마우스 입력을 유지하면서 모바일 포인터·터치를 추가한다.
-
-포인터 감지는 Runtime 입력 계층에서 처리한다.
-
-데스크톱과 모바일이 공유하는 포인터 흐름을 우선한다.
-
-드래그 중에는 화면 표현만 바꾼다.
-
-드롭 요청은 기존 세션 흐름으로 전달한다.
-
-입력 핸들러가 좌표를 전달할 수 있으면 View에 Update를 추가하지 않는다.
-
-Runtime 입력 핸들러의 드래그 처리를 위한 Update 사용은 허용한다.
-
-별도 요청이 없으면 새로운 입력 프레임워크, 패키지, 플러그인을 추가하지 않는다.
-
-플랫폼 조건부 컴파일은 공통 처리로 해결할 수 없을 때만 사용한다.
-
-Pointer Input
-→ Runtime Input
-→ GameSession / Session State
-→ Core Match Logic
-→ LiveView / ReplayView
-
-3. 변경 원칙
-
-수정 전:
-
-관련 파일, 호출부, 이벤트, 직렬화 참조를 확인한다.
-
-요청에 필요한 최소 변경 범위를 정한다.
-
-수정 중:
-
-관련 없는 리팩터링을 하지 않는다.
-
-C#, Input Actions, JSON, Markdown, Unity YAML 파일은 LF 줄바꿈을 유지한다. 줄바꿈 정규화 작업에서는 코드와 직렬화 데이터의 내용은 변경하지 않는다.
-
-public API와 직렬화 필드 변경을 최소화한다.
-
-Scene, Prefab, ProjectSettings, Packages는 요청에 포함되거나 반드시 필요한 경우에만 수정한다.
-
-Library, Temp, Logs, Obj, 빌드 결과물을 수정하거나 커밋하지 않는다.
-
-기존 .meta 파일을 삭제하거나 임의로 재생성하지 않는다.
-
-확인되지 않은 구조를 추측하여 구현하지 않는다.
-
-계획이나 문서 작성만 요청받으면 지정된 문서 외에는 변경하지 않는다.
-
-수정 후:
-
-git diff --check
-git diff --stat
-git status --short --branch
-
-다음을 확인한다.
-
-현재 브랜치가 codex인지
-
-컴파일 오류 가능성과 호출부 영향
-
-직렬화 필드와 Inspector 참조 영향
-
-Core의 Unity 비의존성이 유지되는지
-
-View가 Core 상태를 직접 변경하지 않는지
-
-기존 PC 입력 경로가 유지되는지
-
-실제로 실행하지 않은 Unity Editor, 테스트, 빌드, 실기기 동작을 검증했다고 표현하지 않는다.
-
-4. 변경 보고
-
-첫 줄:
-
-작업 브랜치: codex
-
-아래 순서로 간결하게 보고하며 해당 사항이 없으면 없음으로 작성한다.
-
-변경된 파일
-
-추가·삭제·수정된 클래스와 메서드
-
-Core 동작 변경 여부
-
-직렬화 필드 변경 여부
-
-Unity Inspector 수동 작업
-
-수행한 정적 검증과 테스트
-
-Unity Editor 추가 확인 사항
-
-확인되지 않은 가정과 위험 요소
+- Core 변경은 `dotnet test .\\Tests~\\YuJanggi.Core.Tests.csproj`를 우선 실행한다.
+- 테스트를 실행하지 못한 경우 원인과 미검증 범위를 명시한다.
+- 커밋은 하나의 목적만 담고, 관련 파일만 포함한다. 커밋 메시지는 `feat`, `fix`, `refactor`, `docs`, `test` 형식을 사용한다.
