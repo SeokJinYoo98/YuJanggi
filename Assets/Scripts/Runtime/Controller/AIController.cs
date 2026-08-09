@@ -38,7 +38,7 @@ namespace Yujanggi.Runtime.Controller
 
         public bool TryThink()
         {
-            _hasSelectedMove = _strategy.TrySelectMove(_boardModel, _rule, Team, out _selectedMove);
+            _hasSelectedMove = TrySelectMove(_boardModel, _rule, Team, out _selectedMove);
             return _hasSelectedMove;
         }
         public bool TryGetSelectedMove()
@@ -79,7 +79,20 @@ namespace Yujanggi.Runtime.Controller
         {
             try
             {
-                if (!TryThink())
+                // MatchModel is owned by the Unity main thread.  Copy its current
+                // state first, then run the expensive search only on the copy.
+                var boardSnapshot = new AISimulationBoard(_boardModel);
+                var searchRule = new JanggiRule();
+                var team = Team;
+                AIMove selectedMove = default;
+                bool hasSelectedMove = await UniTask.RunOnThreadPool(
+                    () => TrySelectMove(boardSnapshot, searchRule, team, out selectedMove),
+                    cancellationToken: token);
+
+                token.ThrowIfCancellationRequested();
+                _selectedMove = selectedMove;
+                _hasSelectedMove = hasSelectedMove;
+                if (!_hasSelectedMove)
                     return;
 
                 await UniTask.Delay(500, cancellationToken: token);
@@ -91,6 +104,15 @@ namespace Yujanggi.Runtime.Controller
             {
                 // 정상 취소
             }
+        }
+
+        private bool TrySelectMove(IBoardModel board, IJanggiRule rule, PlayerTeam team, out AIMove move)
+        {
+            // A cancelled worker can take a short time to return.  Serialising
+            // access prevents a replacement turn from sharing mutable strategy
+            // state (transposition table and timer) with that worker.
+            lock (_strategy)
+                return _strategy.TrySelectMove(board, rule, team, out move);
         }
     }
 }
