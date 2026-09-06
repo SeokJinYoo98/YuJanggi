@@ -2,7 +2,7 @@
 
 Unity 6 기반 한국 장기 게임입니다.
 
-로컬 대국과 AI 대국과 기보 리플레이를 지원합니다.
+로컬 대국, AI 대국, 기보 리플레이를 지원합니다.
 
 [포트폴리오](https://app.notion.com/p/3b28a299d1c480ed867fef02568ca410) / [실행 파일](https://app.notion.com/p/38e8a299d1c48043b6a8f045695abf57) / [Core](https://github.com/SeokJinYoo98/YuJanggi.Core) / [Server](https://github.com/SeokJinYoo98/YuJanggi.Server)
 
@@ -53,9 +53,10 @@ Core는 Git UPM으로 참조합니다. Unity와 Server의 Core 커밋은 함께 
 - **온라인 미완성:** 대국 씬 진입, 이동 요청과 서버 결과 반영
 
   NetworkController는 빈 구현입니다.
+
 - **검증:** Core 테스트 20개 케이스
 
-  Unity와 Android 빌드와 단말 동작은 별도 검증이 필요합니다.
+  Unity와 Android 빌드, 실제 단말 동작은 별도 검증이 필요합니다.
 
 통신 코드: Assets/Scripts/Runtime/Network
 
