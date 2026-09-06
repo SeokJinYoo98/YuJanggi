@@ -54,9 +54,6 @@ Core는 Git UPM으로 참조합니다. Unity와 Server의 Core 커밋은 함께 
 
   NetworkController는 빈 구현입니다.
 
-- **검증:** Core 테스트 20개 케이스
-
-  Unity와 Android 빌드, 실제 단말 동작은 별도 검증이 필요합니다.
 
 통신 코드: Assets/Scripts/Runtime/Network
 
