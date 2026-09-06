@@ -31,6 +31,7 @@ YuJanggi.Unity는 Local 대국, AI 대국, 진행 중 기보 탐색과 종료 �
 | 영역 | 구현 내용 |
 | --- | --- |
 | 대국 | Local 대국, AI 대국, 턴 진행, 한 수 쉼, 무르기, 기권 |
+| AI | Random·Greedy·Minimax 전략, 선택한 수의 Core 검증 |
 | 장기 규칙 | 기물 이동, 궁성 규칙, 합법 수 필터링, 장군, 외통수, 점수와 결과 판정 |
 | Replay | 진행 중 이전·다음 수 탐색, 종료 후 전체 기보 탐색, Live 복귀 시 화면 동기화 |
 | 입력 | Unity Input System 기반 포인터 입력, 마우스와 Primary Touch 공통 처리 |
@@ -54,8 +55,8 @@ flowchart LR
 - **Controller**는 입력을 출발 좌표와 도착 좌표를 가진 이동 요청으로 변환합니다.
 - **GameSession**은 현재 세션 상태에 요청과 Core 이벤트를 위임합니다.
 - **SessionState**는 Live, Replay, End 상태별로 허용할 입력과 화면 갱신을 결정합니다.
-- **Core**만 보드, 턴, 점수, 기보와 승패 상태를 변경합니다.
-- **View**는 Core 상태를 직접 변경하지 않고 결과를 화면에 표현합니다.
+- **Core**는 실제 대국의 보드, 턴, 점수, 기보와 승패 처리를 담당하며, 대국 요청은 <code>MatchModel</code>을 통해 적용합니다.
+- **View**는 실제 대국 보드를 변경하지 않고 결과를 화면에 표현합니다. <code>ReplayView</code>는 Core의 <code>Record</code> API를 통해 리플레이 모드와 기보 탐색 커서를 갱신합니다.
 
 <details>
 <summary>기존 설계 이미지 보기</summary>
@@ -78,7 +79,7 @@ flowchart LR
 | [YuJanggi.Core](https://github.com/SeokJinYoo98/YuJanggi.Core) | 보드, 기물, 이동 규칙, 턴, 점수, 기보와 대국 상태 |
 | [YuJanggi.Server](https://github.com/SeokJinYoo98/YuJanggi.Server) | TCP 세션, 자동 매칭, 서버 권위형 이동 판정과 결과 전파 |
 
-이 구조로 Unity와 .NET 서버가 같은 규칙 구현을 사용하고, 화면이나 네트워크 코드가 대국 상태를 직접 변경하지 않도록 했습니다.
+Unity와 .NET 서버는 Core를 공유하지만 참조 커밋은 각각 관리됩니다. 같은 규칙 버전을 유지하려면 Unity 패키지와 Server submodule을 동일한 검증된 커밋으로 맞춰야 합니다. 로컬·AI 대국의 실제 이동은 <code>MatchModel.TryMove()</code>에서 검증합니다.
 
 ### Live와 Replay 상태 분리
 
@@ -96,6 +97,14 @@ Live로 복귀할 때 <code>MatchView.SyncBoardState()</code>로 화면을 최�
 <code>PointerInputHandler</code>가 Raycast 결과에서 보드 좌표를 얻어 입력 계층으로 전달하고, <code>LocalController</code>가 선택과 이동 요청을 생성합니다. 드래그나 애니메이션 중 화면 표현은 Core 상태를 변경하지 않습니다.
 
 반복 생성되는 이동 가이드와 파티클은 Object Pool로 재사용하며, 기물 이동은 DOTween, AI 턴의 비동기 지연과 취소는 UniTask로 처리합니다.
+
+### 온라인 연결 상태
+
+<code>TcpGameClient</code>는 TCP 접속·송수신과 수신 이벤트 큐를 제공하고, <code>TcpGameClientBehaviour</code>는 <code>Update()</code>에서 수신 이벤트를 Unity 메인 스레드로 전달합니다. <code>ServerMessageFactory</code>는 참가·매칭·이동 등의 요청 메시지를 생성합니다.
+
+공용 메시지 계약은 <code>Assets/Plugins/YuJanggiCommon</code>의 <code>YuJanggiCommon.dll</code>과 JSON 관련 DLL로 포함되어 있습니다. 서버 프로토콜을 변경할 때 이 DLL의 호환성도 함께 확인해야 합니다.
+
+현재 작업 중인 로비 코드에는 참가·매칭 응답과 게임 시작 메시지 처리가 있습니다. 온라인 대국 씬 진입, 이동 요청 전송, 서버 이동 결과의 대국 상태 반영은 아직 연결되지 않았으며, <code>NetworkController</code>는 빈 구현입니다. 온라인 대국 전체 흐름은 완성되지 않았습니다.
 
 ## 기술 스택
 
@@ -124,6 +133,7 @@ Assets/Scripts
     ├── Game
     ├── GameSession
     │   └── State
+    ├── Network                       # TCP 전송과 메시지 생성
     ├── Input
     ├── Particle
     ├── Piece
@@ -146,23 +156,13 @@ git clone https://github.com/SeokJinYoo98/YuJanggi.Unity.git
 
 1. Unity Hub에서 Clone한 폴더를 엽니다.
 2. Package Manager가 <code>YuJanggi.Core</code>와 다른 패키지를 복원할 때까지 기다립니다.
-3. 시작 Scene을 열고 Play Mode를 실행합니다.
+3. <code>Assets/Scenes/LobbyScene.unity</code>를 열고 Play Mode를 실행합니다. 빌드에서도 이 씬이 첫 씬으로 등록되어 있습니다.
 
 Core는 <code>Packages/manifest.json</code>에 기록된 커밋 SHA로 고정되므로, Core를 갱신할 때는 검증된 SHA를 명시적으로 변경해야 합니다.
 
 ## 검증과 개발 상태
 
 Core에는 이동 규칙과 상태 무결성을 확인하는 MSTest 20개 실행 케이스가 있습니다. Unity Editor, Android 빌드와 실제 단말 동작은 별도 확인이 필요합니다.
-
-현재 우선순위:
-
-- Android 화면 비율과 Safe Area 대응
-- Android 생명주기와 실제 단말 검증
-- [YuJanggi.Server](https://github.com/SeokJinYoo98/YuJanggi.Server) 연결 및 NetworkController 구현
-- AI 판단 로직 고도화
-- Replay 저장과 불러오기
-
-모바일 작업의 세부 범위는 [TODO.md](TODO.md)를 참고하세요.
 
 ## 사용 에셋
 
