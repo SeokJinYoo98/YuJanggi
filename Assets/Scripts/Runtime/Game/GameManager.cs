@@ -10,10 +10,8 @@ namespace Yujanggi.Runtime.Game
     using Core.Rule;
     using GameSession;
     using Input;
-    using System;
     using Audio;
     using Board;
-    using Controller;
     using UI;
     using Particle;
 
@@ -40,15 +38,17 @@ namespace Yujanggi.Runtime.Game
         private void Awake()
         {
             _audio = AudioManager.Instance;
-            var sessionInfo   = GetSessionInfo();
-            var matchView     = CreateMatchView();
-            var matchModel    = CreateMatchModel(sessionInfo.TurnTime, out var record);
-            var replayView    = CreateReplayView(record);
-            var sessionCho    = CreateController(sessionInfo.Cho, PlayerTeam.Cho, _localInput, matchModel);
-            var sessionHan    = CreateController(sessionInfo.Han, PlayerTeam.Han, _localInput, matchModel);
+            var sessionInfo = GetSessionInfo();
+            var matchView = CreateMatchView();
+            var matchModel = CreateMatchModel(sessionInfo.TurnTime, out var record);
+            var replayView = CreateReplayView(record);
 
-            _session          = CreateSession(in sessionInfo, matchView, matchModel, replayView, sessionCho, sessionHan);
-
+            _session = GameSessionFactory.CreateSession(
+                sessionInfo,
+                matchView,
+                matchModel,
+                replayView,
+                _localInput);
             SetCamera(in sessionInfo);
         }
         private void OnEnable()
@@ -81,22 +81,6 @@ namespace Yujanggi.Runtime.Game
 
 
         #region SessionFactory       
-        private GameSession      CreateSession(
-            in GameSessionInfo      sessionInfo,
-            MatchView               matchView,
-            MatchModel              matchModel,
-            ReplayView              replayView,
-            IPlayerController       cho,
-            IPlayerController       han)
-        {
-            return new GameSession(
-                sessionInfo, 
-                matchView, 
-                matchModel,
-                replayView, 
-                cho, han, 
-                _localInput);
-        }
         private ReplayView           CreateReplayView(Record record)
         {
             return new ReplayView(_boardView, record, _runner, _audio, _displayModeText);
@@ -112,19 +96,6 @@ namespace Yujanggi.Runtime.Game
         }
         private MatchView            CreateMatchView()
             => new MatchView(_particleView, _moveGuideView, _boardView, _resultUI, _matchUI);
-        private IPlayerController    CreateController(
-           PlayerType type,
-           PlayerTeam team,
-           IInputHandler input,
-           MatchModel match)
-        {
-            return type switch
-            {
-                PlayerType.Local => new LocalController(match.Rule, match.Board, team, input),
-                PlayerType.AI => new AIController(match.Rule, match.Board, team, AISessionSettings.Strategy),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-        }
         #endregion
         #region UIRequestHandlers        
         public void HandleGiveUp()
