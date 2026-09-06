@@ -2,7 +2,7 @@
 
 Unity 6 기반 한국 장기 게임입니다.
 
-로컬 대국, AI 대국, 기보 리플레이를 지원합니다.
+로컬 대국, AI 대국, 기보 리플레이를 구현하며 게임 규칙과 화면의 분리, 상태 전환, 비동기 AI 처리에 집중했습니다.
 
 [포트폴리오](https://app.notion.com/p/3b28a299d1c480ed867fef02568ca410) / [실행 파일](https://app.notion.com/p/38e8a299d1c48043b6a8f045695abf57) / [Core](https://github.com/SeokJinYoo98/YuJanggi.Core) / [Server](https://github.com/SeokJinYoo98/YuJanggi.Server)
 
@@ -16,15 +16,17 @@ Unity 6 기반 한국 장기 게임입니다.
 
 - **입력과 표현:** 마우스와 터치, 이동 가이드, 애니메이션, 사운드
 
-## 구조
+## 설계에서 집중한 점
 
-입력 → Controller → GameSession / State → Core → View
+- **규칙과 화면 분리:** Controller는 이동을 요청하고 Core가 검증합니다. View는 결과를 표현해 입력 방식과 규칙 구현을 분리했습니다.
 
-- **Core:** 이동 검증, 보드, 턴, 점수, 기보, 승패 처리
+- **Live와 Replay 분리:** 진행 중인 대국을 유지하면서 과거 기보를 볼 수 있도록 상태를 나눴습니다. Live 복귀 시 최신 보드로 화면을 맞춥니다.
 
-- **Unity:** 입력, 세션 흐름, 화면과 오디오
+- **비동기 AI:** 복사한 보드에서 탐색을 수행해 실제 대국 보드와 분리했습니다. 턴 종료 시 취소를 요청하고, 선택한 수는 Core에서 다시 검증합니다.
 
-- **ReplayView:** 실제 대국 보드는 유지하고 기보 커서와 화면을 갱신
+- **반복 오브젝트 재사용:** 이동 가이드와 파티클은 Object Pool로 관리하고, 기물 데이터는 ScriptableObject로 분리했습니다.
+
+ReplayView는 실제 대국 보드를 유지하며 기보 커서와 화면을 갱신합니다.
 
 Core는 Git UPM으로 참조합니다. Unity와 Server의 Core 커밋은 함께 맞춰야 합니다.
 
@@ -35,8 +37,6 @@ Core는 Git UPM으로 참조합니다. Unity와 Server의 Core 커밋은 함께 
 - 입력: Input System **1.17**
 
 - 비동기와 애니메이션: UniTask, DOTween
-
-기물 데이터는 ScriptableObject, 이동 가이드와 파티클은 Object Pool을 사용합니다.
 
 ## 실행
 
@@ -53,7 +53,6 @@ Core는 Git UPM으로 참조합니다. Unity와 Server의 Core 커밋은 함께 
 - **온라인 미완성:** 대국 씬 진입, 이동 요청과 서버 결과 반영
 
   NetworkController는 빈 구현입니다.
-
 
 통신 코드: Assets/Scripts/Runtime/Network
 
